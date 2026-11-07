@@ -1,5 +1,5 @@
 import { parse } from "@babel/parser";
-import { print } from "./printer.js";
+import { print } from "./printer/index.js";
 import { applyToArrow } from "./transforms/toArrow.js";
 
 /**

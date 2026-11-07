@@ -5,7 +5,7 @@ Babel-based formatter that restyles JavaScript / TypeScript into **Wider** comma
 ## Install
 
 ```bash
-cd wider-fmt
+cd formatter-ts
 bun install   # or: npm install
 ```
 
@@ -14,7 +14,7 @@ bun install   # or: npm install
 ```bash
 node src/cli.js -i input.js -o output.js
 node src/cli.js -i input.js --indent 4 --to-arrow --no-semicolons
-cat input.js | node src/cli.js > output.js
+bun 
 ```
 
 | Flag | Description | Default |
@@ -33,13 +33,13 @@ cat input.js | node src/cli.js > output.js
 ```js
 import { format } from "./src/index.js";
 
-const out = format(source, {
-  indent: 2,
-  trailingComma: true,
-  semicolons: true,
-  toArrow: false,
-  filename: "file.js",
-});
+const out = format(source,
+  { indent: 2
+  , trailingComma: true
+  , semicolons: true
+  , toArrow: false
+  , filename: "file.js"
+  })
 ```
 
 ## Architecture
@@ -50,4 +50,19 @@ source → @babel/parser → optional transforms → custom Wider printer → ou
 
 - **Parse:** `@babel/parser`
 - **Transforms:** plain AST walks (e.g. `--to-arrow`)
-- **Print:** `src/printer.js` owns all style (comma-first, indent, semis, single-line params)
+- **Print:** the `src/printer/` modules own all style (comma-first, indent, semis, single-line params)
+
+```
+src/printer/
+  index.js       entry point: options, context, print()
+  dispatch.js    node-type → handler switch (recursive printNode)
+  context.js     indent unit + semicolon helpers
+  layout.js      reindent / continuation-line helpers
+  literals.js    literals, templates, property keys
+  functions.js   functions, arrows, parameter lists
+  objects.js     objects, arrays, destructuring patterns
+  statements.js  variables, blocks, if/loops, try/catch
+  expressions.js calls, member access
+  classes.js     classes, methods, properties
+  modules.js     imports/exports
+```
