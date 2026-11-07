@@ -11,7 +11,7 @@
     ".": "./src/index.js"
   },
   "scripts": {
-    "format": "node ./src/cli.js"
+    "format": "bun ./src/cli.js"
   },
   "dependencies": {
     "@babel/parser": "^8.1.0"
