@@ -1,0 +1,30 @@
+{
+  "name": "wider-format",
+  "version": "0.1.0",
+  "description": "Wider-style comma-first JavaScript/TypeScript formatter (Babel-based)",
+  "type": "module",
+  "bin": {
+    "wider-format": "./src/cli.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "format": "node ./src/cli.js"
+  },
+  "dependencies": {
+    "@babel/parser": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  }
+}
