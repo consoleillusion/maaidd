@@ -29,7 +29,7 @@ precommit(){
 }
 postcommit(){
     mkdir -p "${METRIC_DIR}"
-    mv "${METRIC_DIR}/x.json" "${METRIC_DIR}/$(git rev-parse HEAD)"
+    mv "${METRIC_DIR}/x.json" "${METRIC_DIR}/$(git rev-parse HEAD).json"
 }
 
 commit(){
