@@ -15,29 +15,22 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
-      packages = forAllSystems (system:
+      apps = forAllSystems (system:
         let
           pkgs = import nixpkgs { inherit system; };
-        in
-        {
-          default = pkgs.writeShellApplication {
+          formatter = pkgs.writeShellApplication {
             name = "wider-format";
-
-            runtimeInputs = [
-              pkgs.bun
-            ];
-
+            runtimeInputs = [ pkgs.bun ];
             text = ''
               exec bun ${self}/src/cli.js "$@"
             '';
           };
+        in
+        {
+          default = {
+            type = "app";
+            program = "${formatter}/bin/wider-format";
+          };
         });
-
-      apps = forAllSystems (system: {
-        default = {
-          type = "app";
-          program = "${self.packages.${system}.default}/bin/wider-format";
-        };
-      });
     };
 }
