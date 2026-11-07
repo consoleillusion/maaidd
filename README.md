@@ -1,6 +1,6 @@
-# wider-format
+# Formatter
 
-Babel-based formatter that restyles JavaScript / TypeScript into **Wider** comma-first layout.
+Babel-based formatter that restyles JavaScript / TypeScript into leading comma-first layout. It also measures the complexity
 
 ## Install
 
@@ -45,7 +45,7 @@ const out = format(source,
 ## Architecture
 
 ```
-source → @babel/parser → optional transforms → custom Wider printer → output
+source → @babel/parser → optional transforms → custom printer → output
 ```
 
 - **Parse:** `@babel/parser`
