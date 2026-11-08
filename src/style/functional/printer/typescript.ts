@@ -111,11 +111,8 @@ export function printTypeFlat(
       const params = (node.params ?? []).map((p: any) =>
         printNode(p, ctx, depth),
       );
-      const ret = printTypeFlat(
-        node.typeAnnotation?.typeAnnotation,
-        ctx,
-        depth,
-      );
+      const retNode = node.returnType ?? node.typeAnnotation;
+      const ret = printTypeFlat(retNode?.typeAnnotation ?? retNode, ctx, depth);
       if (ret === null) return null;
       const prefix = node.type === "TSConstructorType" ? "new " : "";
       return `${prefix}(${params.join(", ")}) => ${ret}`;
@@ -213,27 +210,24 @@ function printTypeProperty(prop: any, ctx: Ctx, depth: number): string {
     const params = (prop.params ?? []).map((p: any) =>
       printNode(p, ctx, depth),
     );
-    const annotation = prop.typeAnnotation
-      ? printNode(prop.typeAnnotation, ctx, depth)
-      : "";
+    const ret = prop.returnType ?? prop.typeAnnotation;
+    const annotation = ret ? printNode(ret, ctx, depth) : "";
     return `${key}(${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSCallSignatureDeclaration") {
     const params = (prop.params ?? []).map((p: any) =>
       printNode(p, ctx, depth),
     );
-    const annotation = prop.typeAnnotation
-      ? printNode(prop.typeAnnotation, ctx, depth)
-      : "";
+    const ret = prop.returnType ?? prop.typeAnnotation;
+    const annotation = ret ? printNode(ret, ctx, depth) : "";
     return `(${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSConstructSignatureDeclaration") {
     const params = (prop.params ?? []).map((p: any) =>
       printNode(p, ctx, depth),
     );
-    const annotation = prop.typeAnnotation
-      ? printNode(prop.typeAnnotation, ctx, depth)
-      : "";
+    const ret = prop.returnType ?? prop.typeAnnotation;
+    const annotation = ret ? printNode(ret, ctx, depth) : "";
     return `new (${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSIndexSignature") {
@@ -313,7 +307,8 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
     const params = (node.params ?? []).map((p: any) =>
       printNode(p, ctx, depth),
     );
-    const ret = printTypeBody(node.typeAnnotation?.typeAnnotation, ctx, depth);
+    const retNode = node.returnType ?? node.typeAnnotation;
+    const ret = printTypeBody(retNode?.typeAnnotation ?? retNode, ctx, depth);
     const prefix = node.type === "TSConstructorType" ? "new " : "";
     return `${prefix}(${params.join(", ")}) => ${ret}`;
   }
