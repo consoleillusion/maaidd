@@ -10,7 +10,7 @@ export function printCall(node: any, ctx: any, depth: number): string {
   const opt = node.optional ? "?." : "";
 
   if (node.type === "NewExpression" && !node.arguments.length) {
-    return neu + callee;
+    return neu + callee + "()";
   }
 
   const printedArgs = node.arguments.map((a: any) => printNode(a, ctx, depth));
