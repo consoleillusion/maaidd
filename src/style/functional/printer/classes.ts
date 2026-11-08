@@ -5,7 +5,6 @@ import { printNode } from "./dispatch.ts";
 import { semi } from "./context.ts";
 import { printParams } from "./functions.ts";
 import { printKey } from "./literals.ts";
-
 export function printClass(node: any, ctx: any, depth: number): string {
   const name = node.id ? " " + printNode(node.id, ctx, depth) : "";
   const superClass = node.superClass
@@ -19,13 +18,11 @@ export function printClass(node: any, ctx: any, depth: number): string {
   const body = printNode(node.body, ctx, depth);
   return head + " " + body.trimStart();
 }
-
 export function printClassBody(node: any, ctx: any, depth: number): string {
   if (!node.body.length) return "{}";
   const lines = node.body.map((m: any) => printNode(m, ctx, depth + 1));
   return "{\n" + lines.join("\n") + "\n" + ctx.ind(depth) + "}";
 }
-
 export function printClassMethod(node: any, ctx: any, depth: number): string {
   const static_ = node.static ? "static " : "";
   const async = node.async ? "async " : "";
@@ -40,7 +37,6 @@ export function printClassMethod(node: any, ctx: any, depth: number): string {
     `${static_}${kind}${async}${gen}${key}(${params}) ${body.trimStart()}`
   );
 }
-
 export function printClassProperty(node: any, ctx: any, depth: number): string {
   const static_ = node.static ? "static " : "";
   const key = printKey(node, ctx, depth);

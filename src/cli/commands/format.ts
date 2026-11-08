@@ -9,7 +9,6 @@ import {
   parseIndent,
   parsePositiveInt,
 } from "./shared.ts";
-
 const formatCommand = buildCommand({
   docs: {
     brief: "Format files, directories, or stdin with Biome or functional style",
@@ -88,12 +87,10 @@ const formatCommand = buildCommand({
       },
     },
   } as any,
-  func: (flags: any, ...paths: string[]) => {
+  func: (flags: any, ...paths) => {
     const stdout = (s: string) => process.stdout.write(s);
     const stderr = (s: string) => process.stderr.write(s + "\n");
-
     const config = flags.config ? loadConfig(flags.config) : loadConfig();
-
     const options: Record<string, unknown> = {};
     if (flags.style !== undefined) options.style = flags.style;
     if (flags.indent !== undefined) options.indent = parseIndent(flags.indent);
@@ -110,10 +107,8 @@ const formatCommand = buildCommand({
     if (wasFlagProvided("to-arrow")) options.toArrow = flags.toArrow;
     if (wasFlagProvided("biome", "no-biome")) options.biome = flags.biome;
     if (flags.config !== undefined) options.configPath = flags.config;
-
     const resolved = resolveFormatOptions(options, config);
     formatPaths(paths, flags.output, resolved, stdout, stderr);
   },
 });
-
 export { formatCommand };

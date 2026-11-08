@@ -8,11 +8,8 @@ import {
   codegraphStatus,
   runCodegraph,
 } from "../../codegraph.ts";
-
 const graphCommand = buildCommand({
-  docs: {
-    brief: "Query the code-graph index",
-  },
+  docs: { brief: "Query the code-graph index" },
   parameters: {
     positional: {
       kind: "array",
@@ -23,10 +20,9 @@ const graphCommand = buildCommand({
       },
     },
   } as any,
-  func: (_flags: any, ...args: string[]) => {
+  func: (_flags: any, ...args) => {
     const stdout = (s: string) => process.stdout.write(s + "\n");
     const stderr = (s: string) => process.stderr.write(s + "\n");
-
     if (!existsSync(codegraphIndexPath())) {
       stderr(
         "No code-graph index found. Run `bunx @sdsrs/code-graph incremental-index` first.",
@@ -34,12 +30,10 @@ const graphCommand = buildCommand({
       process.exitCode = 1;
       return;
     }
-
     if (args.length === 0) {
       stdout(codegraphStatus());
       return;
     }
-
     const result = runCodegraph(args);
     if (result.error) {
       stdout(codegraphStatus());
@@ -47,11 +41,9 @@ const graphCommand = buildCommand({
       process.exitCode = 1;
       return;
     }
-
     if (result.stdout) stdout(result.stdout.trimEnd());
     if (result.stderr) stderr(result.stderr.trimEnd());
     if (result.status !== 0) process.exitCode = result.status;
   },
 });
-
 export { graphCommand };

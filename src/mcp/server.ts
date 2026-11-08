@@ -15,10 +15,8 @@ import {
   codegraphStatus,
   runCodegraph,
 } from "../codegraph.ts";
-
 export function createMcpServer(): McpServer {
   const server = new McpServer({ name: "maaidd", version: "0.1.0" });
-
   // metrics tool — run FTA and return results
   server.tool(
     "metrics",
@@ -48,9 +46,7 @@ export function createMcpServer(): McpServer {
         } else {
           text = JSON.stringify(result, null, 2);
         }
-        return {
-          content: [{ type: "text" as const, text }],
-        };
+        return { content: [{ type: "text" as const, text }] };
       } catch (err) {
         return {
           content: [
@@ -64,14 +60,11 @@ export function createMcpServer(): McpServer {
       }
     },
   );
-
   // gate tool — check thresholds
   server.tool(
     "gate",
     "Check code metrics against configured thresholds",
-    {
-      path: z.string().default("src").describe("Path to check"),
-    },
+    { path: z.string().default("src").describe("Path to check") },
     async ({ path }) => {
       const config = loadConfig();
       try {
@@ -80,13 +73,8 @@ export function createMcpServer(): McpServer {
         const passed = violations.length === 0;
         const text = passed
           ? `Gate passed: ${result.total} files checked`
-          : `Gate failed: ${violations.length} violations\n${violations
-              .map((v) => `  ${v.message}`)
-              .join("\n")}`;
-        return {
-          content: [{ type: "text" as const, text }],
-          isError: !passed,
-        };
+          : `Gate failed: ${violations.length} violations\n${violations.map((v) => `  ${v.message}`).join("\n")}`;
+        return { content: [{ type: "text" as const, text }], isError: !passed };
       } catch (err) {
         return {
           content: [
@@ -100,7 +88,6 @@ export function createMcpServer(): McpServer {
       }
     },
   );
-
   // history tool — read metric snapshots with aggregated trend values
   server.tool(
     "history",
@@ -131,7 +118,6 @@ export function createMcpServer(): McpServer {
       return { content: [{ type: "text" as const, text }] };
     },
   );
-
   // codegraph tool — run code-graph commands or inspect the local index.
   server.tool(
     "codegraph",
@@ -161,7 +147,6 @@ export function createMcpServer(): McpServer {
           isError: true,
         };
       }
-
       const commandArgs =
         args ?? (query?.trim() ? query.trim().split(/\s+/) : []);
       if (commandArgs.length === 0) {
@@ -169,7 +154,6 @@ export function createMcpServer(): McpServer {
           content: [{ type: "text" as const, text: codegraphStatus() }],
         };
       }
-
       const result = runCodegraph(commandArgs);
       const output = [result.stdout, result.stderr]
         .filter(Boolean)
@@ -184,10 +168,8 @@ export function createMcpServer(): McpServer {
       };
     },
   );
-
   return server;
 }
-
 export async function runMcpServer(): Promise<void> {
   const server = createMcpServer();
   const transport = new StdioServerTransport();

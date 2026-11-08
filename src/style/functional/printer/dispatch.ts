@@ -48,7 +48,6 @@ import {
 } from "./typescript.ts";
 import { printJsx, printJsxFlat } from "./jsx.ts";
 import { takeLeadingComments, takeRemainingComments } from "./comments.ts";
-
 const PREC: Record<string, number> = {
   "||": 1,
   "??": 1,
@@ -76,8 +75,7 @@ const PREC: Record<string, number> = {
   "%": 10,
   "**": 11,
 };
-
-function needsExprParens(node: any): boolean {
+const needsExprParens = (node: any) => {
   return (
     node?.type === "ConditionalExpression" ||
     node?.type === "AssignmentExpression" ||
@@ -88,15 +86,14 @@ function needsExprParens(node: any): boolean {
     node?.type === "TSSatisfiesExpression" ||
     node?.type === "TSTypeAssertion"
   );
-}
-
-function printBinaryOperand(
+};
+const printBinaryOperand = (
   node: any,
   ctx: Ctx,
   depth: number,
   op: string,
   side: "left" | "right",
-): string {
+) => {
   const inner = printNode(node, ctx, depth);
   if (needsExprParens(node)) return "(" + inner + ")";
   if (node.type === "BinaryExpression" || node.type === "LogicalExpression") {
@@ -112,9 +109,8 @@ function printBinaryOperand(
       return "(" + inner + ")";
   }
   return inner;
-}
-
-function printUnaryArg(node: any, ctx: Ctx, depth: number, op: string): string {
+};
+const printUnaryArg = (node: any, ctx: Ctx, depth: number, op: string) => {
   const inner = printNode(node, ctx, depth);
   if (needsExprParens(node)) return "(" + inner + ")";
   if (
@@ -135,9 +131,8 @@ function printUnaryArg(node: any, ctx: Ctx, depth: number, op: string): string {
       return "(" + inner + ")";
   }
   return inner;
-}
-
-function printConditionalBranch(node: any, ctx: Ctx, depth: number): string {
+};
+const printConditionalBranch = (node: any, ctx: Ctx, depth: number) => {
   const inner = printNode(node, ctx, depth);
   if (
     node?.type === "AssignmentExpression" ||
@@ -147,8 +142,7 @@ function printConditionalBranch(node: any, ctx: Ctx, depth: number): string {
   )
     return "(" + inner + ")";
   return inner;
-}
-
+};
 export function printNode(
   node: any,
   ctx: Ctx,
@@ -157,7 +151,6 @@ export function printNode(
 ): string {
   if (!node) return "";
   const t = node.type;
-
   switch (t) {
     case "File":
       return printNode(node.program, ctx, depth);
@@ -169,24 +162,20 @@ export function printNode(
       lines.push(...takeRemainingComments(node.comments, ctx));
       return lines.join("\n");
     }
-
     case "VariableDeclaration":
       return printVariableDeclaration(node, ctx, depth);
     case "VariableDeclarator":
       return printVariableDeclarator(node, ctx, depth);
-
     case "FunctionDeclaration":
       return printFunction(node, ctx, depth, true);
     case "FunctionExpression":
       return printFunction(node, ctx, depth, false);
     case "ArrowFunctionExpression":
       return printArrow(node, ctx, depth);
-
     case "ObjectExpression":
       return printObject(node, ctx, depth, { column });
     case "ArrayExpression":
       return printArray(node, ctx, depth, { column });
-
     case "BlockStatement":
       return printBlock(node, ctx, depth);
     case "ReturnStatement":
@@ -235,7 +224,6 @@ export function printNode(
       return printSwitch(node, ctx, depth);
     case "LabeledStatement":
       return printLabeled(node, ctx, depth);
-
     case "CallExpression":
     case "OptionalCallExpression":
     case "NewExpression":
@@ -295,7 +283,6 @@ export function printNode(
       return node.expressions
         .map((e: any) => printNode(e, ctx, depth))
         .join(", ");
-
     case "Identifier": {
       const ann = node.typeAnnotation
         ? printTypeAnnotation(node.typeAnnotation, ctx, depth)
@@ -319,7 +306,6 @@ export function printNode(
       return (
         printNode(node.tag, ctx, depth) + printTemplate(node.quasi, ctx, depth)
       );
-
     case "ArrayPattern":
       return printArrayPattern(node, ctx, depth);
     case "ObjectPattern":
@@ -342,7 +328,6 @@ export function printNode(
         node.argument?.type === "YieldExpression";
       return "..." + (needs ? "(" + arg + ")" : arg);
     }
-
     case "ClassDeclaration":
     case "ClassExpression":
       return printClass(node, ctx, depth);
@@ -354,7 +339,6 @@ export function printNode(
     case "ClassProperty":
     case "ClassPrivateProperty":
       return printClassProperty(node, ctx, depth);
-
     case "ImportDeclaration":
       return printImport(node, ctx, depth);
     case "ExportNamedDeclaration":
@@ -363,7 +347,6 @@ export function printNode(
       return printExportDefault(node, ctx, depth);
     case "ExportAllDeclaration":
       return printExportAll(node, ctx, depth);
-
     case "AwaitExpression": {
       const arg = printNode(node.argument, ctx, depth);
       const needs =
@@ -396,13 +379,10 @@ export function printNode(
       );
     case "ImportExpression":
       return "import(" + printNode(node.source, ctx, depth) + ")";
-
     case "EmptyStatement":
       return "";
     case "DebuggerStatement":
       return ctx.ind(depth) + "debugger" + semi(ctx);
-
-    // TypeScript — preserved and printed
     case "TSAsExpression":
       return (
         printNode(node.expression, ctx, depth) +
@@ -455,12 +435,9 @@ export function printNode(
         printNode(node.expression, ctx, depth) +
         semi(ctx)
       );
-
-    // JSX — preserved and printed
     case "JSXElement":
     case "JSXFragment":
       return printJsx(node, ctx, depth);
-
     default:
       if (node.value != null && typeof node.value !== "object") {
         return String(node.value);

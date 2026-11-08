@@ -7,7 +7,6 @@ import {
   buildUninstallCommand,
 } from "@stricli/auto-complete";
 import type { MaaiddContext } from "../context.ts";
-
 const bashCompletionScript = `
 _maaidd_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
@@ -18,20 +17,12 @@ _maaidd_completions() {
 }
 complete -F _maaidd_completions maaidd
 `.trim();
-
 const installCmd = buildInstallCommand("maaidd", {
   bash: bashCompletionScript,
 });
 const uninstallCmd = buildUninstallCommand("maaidd", { bash: true });
-
 const completionCommand = buildRouteMap({
-  routes: {
-    install: installCmd,
-    uninstall: uninstallCmd,
-  },
-  docs: {
-    brief: "Install or uninstall shell completion for maaidd",
-  },
+  routes: { install: installCmd, uninstall: uninstallCmd },
+  docs: { brief: "Install or uninstall shell completion for maaidd" },
 });
-
 export { completionCommand };

@@ -5,28 +5,25 @@ import { printNode } from "./dispatch.ts";
 import { semi } from "./context.ts";
 import { shiftContinuations } from "./layout.ts";
 import { takeLeadingComments } from "./comments.ts";
-
 export function printVariableDeclaration(
   node: any,
   ctx: any,
   depth: number,
 ): string {
-  const kind = node.kind; // const | let | var
+  const kind = node.kind;
+  // const | let | var
   const decls = node.declarations.map((d: any) =>
     printVariableDeclarator(d, ctx, depth),
   );
-
   if (decls.length === 1) {
     return ctx.ind(depth) + kind + " " + decls[0] + semi(ctx);
   }
-
   const pad = kind.length + 1;
   const lines = decls.map((d: string, i: number) =>
     i === 0 ? d : ctx.ind(depth) + " ".repeat(pad) + d,
   );
   return ctx.ind(depth) + kind + " " + lines.join(",\n") + semi(ctx);
 }
-
 export function printVariableDeclarator(
   node: any,
   ctx: any,
@@ -37,9 +34,7 @@ export function printVariableDeclarator(
     id += printNode(node.id.typeAnnotation, ctx, depth);
   }
   if (!node.init) return id;
-
   const init = printNode(node.init, ctx, depth);
-
   // If the initializer is an object/array that expands, break after `=`
   if (init.includes("\n") && init.startsWith("{")) {
     return (
@@ -57,10 +52,8 @@ export function printVariableDeclarator(
       shiftContinuations(init, ctx.ind(depth + 1))
     );
   }
-
   return id + " = " + shiftContinuations(init, ctx.ind(depth));
 }
-
 export function printBlock(node: any, ctx: any, depth: number): string {
   if (!node.body.length) return "{}";
   const lines = node.body.flatMap((s: any) => [
@@ -69,12 +62,10 @@ export function printBlock(node: any, ctx: any, depth: number): string {
   ]);
   return "{\n" + lines.join("\n") + "\n" + ctx.ind(depth) + "}";
 }
-
 export function printIf(node: any, ctx: any, depth: number): string {
   const test = printNode(node.test, ctx, depth);
   const consequent = formatClause(node.consequent, ctx, depth);
   let out = ctx.ind(depth) + "if (" + test + ") " + consequent;
-
   if (node.alternate) {
     if (node.alternate.type === "IfStatement") {
       out +=
@@ -93,14 +84,12 @@ export function printIf(node: any, ctx: any, depth: number): string {
   }
   return out;
 }
-
-function formatClause(node: any, ctx: any, depth: number): string {
+const formatClause = (node: any, ctx: any, depth: number) => {
   if (node.type === "BlockStatement") {
     return printNode(node, ctx, depth).trimStart();
   }
   return "\n" + printNode(node, ctx, depth + 1);
-}
-
+};
 export function printLoop(node: any, ctx: any, depth: number): string {
   if (node.type === "WhileStatement") {
     return (
@@ -148,13 +137,11 @@ export function printLoop(node: any, ctx: any, depth: number): string {
   }
   return ctx.ind(depth) + "/* loop */";
 }
-
 export function printSwitch(node: any, ctx: any, depth: number): string {
   const discriminant = printNode(node.discriminant, ctx, depth);
   if (!node.cases.length) {
     return ctx.ind(depth) + "switch (" + discriminant + ") {}";
   }
-
   const lines: string[] = [];
   lines.push(ctx.ind(depth) + "switch (" + discriminant + ") {");
   for (const c of node.cases) {
@@ -172,7 +159,6 @@ export function printSwitch(node: any, ctx: any, depth: number): string {
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
 }
-
 export function printLabeled(node: any, ctx: any, depth: number): string {
   return (
     ctx.ind(depth) +
@@ -181,7 +167,6 @@ export function printLabeled(node: any, ctx: any, depth: number): string {
     printNode(node.body, ctx, depth).trimStart()
   );
 }
-
 export function printTry(node: any, ctx: any, depth: number): string {
   let out =
     ctx.ind(depth) + "try " + printNode(node.block, ctx, depth).trimStart();

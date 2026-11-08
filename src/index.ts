@@ -8,7 +8,6 @@ import { formatWithBiome } from "./style/biome.ts";
 import { formatFunctional } from "./style/functional/index.ts";
 import { loadConfig, resolveFormatOptions } from "./config.ts";
 import type { FormatOptions, ResolvedFormatOptions } from "./types.ts";
-
 /**
  * Format source code.
  *
@@ -21,11 +20,9 @@ export function format(source: string, options: FormatOptions = {}): string {
     ? loadConfig(options.configPath)
     : loadConfig();
   const resolved = resolveFormatOptions(options, config);
-
   if (resolved.style === "functional") {
     return formatFunctional(source, resolved);
   }
-
   // Biome mode: toArrow is not supported (Biome has no equivalent transform).
   // Style flags are only forwarded if explicitly provided, so biome.json governs.
   const explicit = new Set<string>();
@@ -34,10 +31,8 @@ export function format(source: string, options: FormatOptions = {}): string {
   if (options.semicolons !== undefined) explicit.add("semicolons");
   if (options.quoteStyle !== undefined) explicit.add("quote-style");
   if (options.trailingComma !== undefined) explicit.add("trailing-comma");
-
   return formatWithBiome(source, resolved, { explicit });
 }
-
 export { formatFunctional, formatWithBiome, loadConfig, resolveFormatOptions };
 export type { FormatOptions, ResolvedFormatOptions };
 export default format;

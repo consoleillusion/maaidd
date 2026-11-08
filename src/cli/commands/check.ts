@@ -12,7 +12,6 @@ import {
   parseIndent,
   parsePositiveInt,
 } from "./shared.ts";
-
 const checkCommand = buildCommand({
   docs: {
     brief: "Check formatting without writing; exits 1 if any file would change",
@@ -84,12 +83,10 @@ const checkCommand = buildCommand({
       },
     },
   } as any,
-  func: (flags: any, ...paths: string[]) => {
+  func: (flags: any, ...paths) => {
     const stderr = (s: string) => process.stderr.write(s + "\n");
     const stdout = (s: string) => process.stdout.write(s + "\n");
-
     const config = flags.config ? loadConfig(flags.config) : loadConfig();
-
     const options: Record<string, unknown> = {};
     if (flags.style !== undefined) options.style = flags.style;
     if (flags.indent !== undefined) options.indent = parseIndent(flags.indent);
@@ -106,13 +103,10 @@ const checkCommand = buildCommand({
     if (wasFlagProvided("to-arrow")) options.toArrow = flags.toArrow;
     if (wasFlagProvided("biome", "no-biome")) options.biome = flags.biome;
     if (flags.config !== undefined) options.configPath = flags.config;
-
     const resolved = resolveFormatOptions(options, config);
-
     let changed = 0;
     let checked = 0;
     let failed = 0;
-
     const checkFile = (path: string): void => {
       let source: string;
       try {
@@ -126,7 +120,6 @@ const checkCommand = buildCommand({
       }
       if (!source.trim()) return;
       checked++;
-
       try {
         const result = format(source, { ...resolved, filename: path });
         if (result !== source) {
@@ -140,7 +133,6 @@ const checkCommand = buildCommand({
         );
       }
     };
-
     if (paths.length === 0) {
       const source = readFileSync(0, "utf8");
       if (source.trim()) {
@@ -174,16 +166,13 @@ const checkCommand = buildCommand({
         }
       }
     }
-
     if (checked > 0) {
       const status = changed > 0 ? `${changed} would change` : "all clean";
       stderr(
         `${checked} checked, ${status}${failed ? `, ${failed} failed` : ""}`,
       );
     }
-
     if (changed > 0 || failed > 0) process.exitCode = 1;
   },
 });
-
 export { checkCommand };

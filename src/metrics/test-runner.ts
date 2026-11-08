@@ -9,11 +9,8 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-
 export type TestStatus = "pass" | "fail" | "skip" | "todo";
-
 export interface TestCaseResult {
-  /** Stable identity: suite hierarchy (e.g. describe/classname) */
   suite: string;
   name: string;
   file: string;
@@ -21,7 +18,6 @@ export interface TestCaseResult {
   durationMs: number | null;
   error?: string;
 }
-
 export interface TestRunSummary {
   command: string;
   total: number | null;
@@ -31,22 +27,18 @@ export interface TestRunSummary {
   todo: number | null;
   exitCode: number;
   error?: string;
-  /** Per-test results when collected (e.g. Bun JUnit); absent for legacy/counts-only. */
   results?: TestCaseResult[];
   resultsDetail?: "full" | "counts-only";
 }
-
 export interface TestRunnerOptions {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
 }
-
-function count(output: string, bun: RegExp, node: RegExp): number | null {
+const count = (output: string, bun: RegExp, node: RegExp) => {
   const match = bun.exec(output) ?? node.exec(output);
   return match ? Number(match[1]) : null;
-}
-
-function attr(tag: string, name: string): string {
+};
+const attr = (tag: string, name: string) => {
   const m = new RegExp(`${name}="([^"]*)"`).exec(tag);
   return m
     ? m[1]
@@ -55,17 +47,15 @@ function attr(tag: string, name: string): string {
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
     : "";
-}
-
-function unesc(s: string): string {
+};
+const unesc = (s: string) => {
   return s
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
     .replace(/&amp;/g, "&");
-}
-
+};
 /** Parse Bun/JUnit XML into per-test results (best-effort). */
 export function parseJunitResults(xml: string): TestCaseResult[] {
   const results: TestCaseResult[] = [];
@@ -101,21 +91,18 @@ export function parseJunitResults(xml: string): TestCaseResult[] {
   }
   return results;
 }
-
-function isBunTestCommand(command: string): boolean {
+const isBunTestCommand = (command: string) => {
   // default "bun run test" and direct "bun test" forms
   return (
     /^\s*bun\s+run\s+test\b/.test(command) || /^\s*bun\s+test\b/.test(command)
   );
-}
-
-function withJunit(command: string, outfile: string): string {
+};
+const withJunit = (command: string, outfile: string) => {
   const flags = `--reporter=junit --reporter-outfile=${JSON.stringify(outfile)}`;
   if (/^\s*bun\s+run\s+test\b/.test(command)) return `${command} -- ${flags}`;
   if (/^\s*bun\s+test\b/.test(command)) return `${command} ${flags}`;
   return command;
-}
-
+};
 /** Parse Bun and Node test summaries without depending on ANSI styling. */
 export function parseTestOutput(
   command: string,
@@ -128,16 +115,14 @@ export function parseTestOutput(
     new RegExp(`^\\s*(\\d+)\\s+${name}\\s*$`, "m");
   const nodeCount = (name: string) =>
     new RegExp(`^\\s*#\\s+${name}\\s+(\\d+)\\s*$`, "m");
-
   const passed = count(output, bunCount("pass"), nodeCount("pass"));
   const failed = count(output, bunCount("fail"), nodeCount("fail"));
   const skipped = count(output, bunCount("skip(?:ped)?"), nodeCount("skipped"));
   const todo = count(output, bunCount("todo"), nodeCount("todo"));
-
   const bunTotal = /^\s*Ran\s+(\d+)\s+tests?\b/m.exec(output);
   const nodeTotal = /^\s*#\s+tests\s+(\d+)\s*$/m.exec(output);
   const summed = [passed, failed, skipped, todo]
-    .filter((value): value is number => value !== null)
+    .filter((value): value is null => value !== null)
     .reduce((sum, value) => sum + value, 0);
   const hasCounts = [passed, failed, skipped, todo].some(
     (value) => value !== null,
@@ -149,10 +134,8 @@ export function parseTestOutput(
       : hasCounts
         ? summed
         : null;
-
   return { command, total, passed, failed, skipped, todo, exitCode };
 }
-
 /** Run a test command and return its summary; never throw for test failures. */
 export function runTestSuite(
   command = "bun run test",
@@ -178,7 +161,6 @@ export function runTestSuite(
     const exitCode = result.status ?? 1;
     const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
     const summary = parseTestOutput(command, output, exitCode);
-
     if (result.error) {
       summary.error = result.error.message;
     }

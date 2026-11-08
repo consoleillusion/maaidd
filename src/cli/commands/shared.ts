@@ -11,7 +11,6 @@ import {
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { format } from "../../index.ts";
 import type { FormatOptions } from "../../types.ts";
-
 export const FORMATTABLE_EXTENSIONS = new Set([
   ".js",
   ".jsx",
@@ -22,7 +21,6 @@ export const FORMATTABLE_EXTENSIONS = new Set([
   ".mts",
   ".cts",
 ]);
-
 export const SKIP_DIRS = new Set([
   "node_modules",
   ".git",
@@ -32,7 +30,6 @@ export const SKIP_DIRS = new Set([
   "dist",
   "build",
 ]);
-
 /** Recursively collect formattable files under dir. */
 export function collectFiles(dir: string): string[] {
   const files: string[] = [];
@@ -44,7 +41,6 @@ export function collectFiles(dir: string): string[] {
   } catch {
     return files;
   }
-
   for (const entry of entries) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -59,7 +55,6 @@ export function collectFiles(dir: string): string[] {
   }
   return files;
 }
-
 /** Check if a path is a directory. */
 export function isDirectory(path: string): boolean {
   try {
@@ -68,9 +63,8 @@ export function isDirectory(path: string): boolean {
     return false;
   }
 }
-
 /** Check if any of the given flag names appear in process.argv. */
-export function wasFlagProvided(...names: string[]): boolean {
+export function wasFlagProvided(...names): boolean {
   const argv = process.argv.slice(2);
   return names.some((n) => {
     if (n.length === 1) {
@@ -79,7 +73,6 @@ export function wasFlagProvided(...names: string[]): boolean {
     return argv.includes(`--${n}`) || argv.some((a) => a.startsWith(`--${n}=`));
   });
 }
-
 /** Format a single file, writing to destPath. Returns false for empty input. */
 export function formatFile(
   sourcePath: string,
@@ -88,7 +81,6 @@ export function formatFile(
 ): boolean {
   const source = readFileSync(sourcePath, "utf8");
   if (!source.trim()) return false;
-
   const result = format(source, { ...options, filename: sourcePath });
   if (destPath !== sourcePath) {
     mkdirSync(dirname(destPath), { recursive: true });
@@ -96,7 +88,6 @@ export function formatFile(
   writeFileSync(destPath, result, "utf8");
   return true;
 }
-
 /** Format stdin, write to stdout. */
 export function formatStdin(
   options: FormatOptions,
@@ -110,7 +101,6 @@ export function formatStdin(
   });
   stdout(result);
 }
-
 /** Format a single file path, optionally writing to output. */
 export function formatSingleFile(
   inputPath: string,
@@ -130,7 +120,6 @@ export function formatSingleFile(
     return;
   }
   if (!source.trim()) return;
-
   let result: string;
   try {
     result = format(source, { ...options, filename: inputPath });
@@ -141,19 +130,16 @@ export function formatSingleFile(
     process.exitCode = 1;
     return;
   }
-
   if (!outputPath) {
     stdout(result);
     return;
   }
-
   const dest = isDirectory(outputPath)
     ? join(outputPath, basename(inputPath))
     : outputPath;
   mkdirSync(dirname(dest), { recursive: true });
   writeFileSync(dest, result, "utf8");
 }
-
 /** Format a directory, optionally mirroring to output dir. */
 export function formatDirectory(
   inputPath: string,
@@ -166,16 +152,13 @@ export function formatDirectory(
     process.exitCode = 1;
     return;
   }
-
   const files = collectFiles(inputPath);
   if (!files.length) {
     stderr(`No formattable files found in ${inputPath}`);
     return;
   }
-
   let formatted = 0;
   let failed = 0;
-
   for (const file of files) {
     const dest = outputPath
       ? join(outputPath, relative(inputPath, file))
@@ -189,14 +172,12 @@ export function formatDirectory(
       );
     }
   }
-
   const failedSuffix = failed ? `, ${failed} failed` : "";
   stderr(
     `Formatted ${formatted} file${formatted === 1 ? "" : "s"}${failedSuffix}`,
   );
   if (failed) process.exitCode = 1;
 }
-
 /** Format a path (file or directory), or stdin if no path. */
 export function formatPaths(
   paths: readonly string[],
@@ -209,7 +190,6 @@ export function formatPaths(
     formatStdin(options, stdout);
     return;
   }
-
   for (const p of paths) {
     if (!exists(p)) {
       stderr(`Input not found: ${p}`);
@@ -223,16 +203,14 @@ export function formatPaths(
     }
   }
 }
-
-function exists(path: string): boolean {
+const exists = (path: string) => {
   try {
     statSync(path);
     return true;
   } catch {
     return false;
   }
-}
-
+};
 /** Parse indent string: "2", "4", "8", or "tab". */
 export function parseIndent(input: string): number | "tab" {
   if (input === "tab") return "tab";
@@ -240,7 +218,6 @@ export function parseIndent(input: string): number | "tab" {
   if (!Number.isFinite(n) || n <= 0) return 2;
   return Math.min(8, Math.round(n));
 }
-
 /** Parse a positive integer from a string. */
 export function parsePositiveInt(input: string): number {
   const n = Number(input);

@@ -3,7 +3,6 @@
  */
 import type { FtaResult, FtaFileMetric } from "./fta.ts";
 import type { MetricsThresholds } from "../types.ts";
-
 export interface GateViolation {
   file: string;
   metric: string;
@@ -11,13 +10,11 @@ export interface GateViolation {
   threshold: number;
   message: string;
 }
-
 export function checkGate(
   result: FtaResult,
   thresholds: MetricsThresholds,
 ): GateViolation[] {
   const violations: GateViolation[] = [];
-
   for (const m of result.metrics) {
     if (m.cyclo > thresholds.maxCyclomatic) {
       violations.push({
@@ -38,6 +35,5 @@ export function checkGate(
       });
     }
   }
-
   return violations;
 }

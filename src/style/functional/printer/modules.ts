@@ -4,13 +4,11 @@
 import { printNode } from "./dispatch.ts";
 import { semi } from "./context.ts";
 import { printLiteral } from "./literals.ts";
-
 export function printImport(node: any, ctx: any, depth: number): string {
   const src = printLiteral(node.source);
   if (!node.specifiers.length) {
     return ctx.ind(depth) + "import " + src + semi(ctx);
   }
-
   const def = node.specifiers.find(
     (s: any) => s.type === "ImportDefaultSpecifier",
   );
@@ -20,7 +18,6 @@ export function printImport(node: any, ctx: any, depth: number): string {
   const named = node.specifiers.filter(
     (s: any) => s.type === "ImportSpecifier",
   );
-
   const parts: string[] = [];
   if (def) parts.push(def.local.name);
   if (ns) parts.push("* as " + ns.local.name);
@@ -37,7 +34,6 @@ export function printImport(node: any, ctx: any, depth: number): string {
         " }",
     );
   }
-
   const typePrefix = node.importKind === "type" ? "type " : "";
   return (
     ctx.ind(depth) +
@@ -49,7 +45,6 @@ export function printImport(node: any, ctx: any, depth: number): string {
     semi(ctx)
   );
 }
-
 export function printExportNamed(node: any, ctx: any, depth: number): string {
   if (node.declaration) {
     return (
@@ -58,7 +53,6 @@ export function printExportNamed(node: any, ctx: any, depth: number): string {
       printNode(node.declaration, ctx, depth).trimStart()
     );
   }
-
   const specs =
     "{ " +
     node.specifiers
@@ -73,7 +67,6 @@ export function printExportNamed(node: any, ctx: any, depth: number): string {
   const typePrefix = node.exportKind === "type" ? "type " : "";
   return ctx.ind(depth) + "export " + typePrefix + specs + src + semi(ctx);
 }
-
 export function printExportDefault(node: any, ctx: any, depth: number): string {
   const decl = printNode(node.declaration, ctx, depth).trimStart();
   const needsSemi = !node.declaration.type.endsWith("Declaration");
@@ -81,7 +74,6 @@ export function printExportDefault(node: any, ctx: any, depth: number): string {
     ctx.ind(depth) + "export default " + decl + (needsSemi ? semi(ctx) : "")
   );
 }
-
 export function printExportAll(node: any, ctx: any, depth: number): string {
   const src = printLiteral(node.source);
   const exported = node.exported ? " " + node.exported.name : "";

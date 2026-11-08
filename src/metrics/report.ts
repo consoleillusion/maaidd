@@ -9,12 +9,10 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, dirname } from "node:path";
 import { loadConfig } from "../config.ts";
-import { readAggregatedHistory, type SnapshotAggregate } from "./history.ts";
+import { readAggregatedHistory, SnapshotAggregate } from "./history.ts";
 import type { TestCaseResult } from "./test-runner.ts";
-
 const require = createRequire(import.meta.url);
-
-function loadUplotJs(): string {
+const loadUplotJs = () => {
   try {
     const pkgPath = require.resolve("uplot/package.json");
     const candidate = join(dirname(pkgPath), "dist", "uPlot.iife.min.js");
@@ -22,9 +20,8 @@ function loadUplotJs(): string {
   } catch {
     return '<script src="https://cdn.jsdelivr.net/npm/uplot@1.6.32/dist/uPlot.iife.min.js"></script>';
   }
-}
-
-function loadUplotCss(): string {
+};
+const loadUplotCss = () => {
   try {
     const pkgPath = require.resolve("uplot/package.json");
     const candidate = join(dirname(pkgPath), "dist", "uPlot.min.css");
@@ -32,8 +29,7 @@ function loadUplotCss(): string {
   } catch {
     return "";
   }
-}
-
+};
 type SeriesKey =
   | "testsTotal"
   | "testsPassed"
@@ -49,13 +45,7 @@ type SeriesKey =
   | "totalLines"
   | "avgHalsteadVolume"
   | "totalHalsteadBugs";
-
-const series: {
-  key: SeriesKey;
-  label: string;
-  stroke: string;
-  scale: string;
-}[] = [
+const series: null[] = [
   { key: "testsTotal", label: "Tests", stroke: "#64748b", scale: "y" },
   { key: "testsPassed", label: "Passing tests", stroke: "#22c55e", scale: "y" },
   { key: "testsFailed", label: "Failing tests", stroke: "#ef4444", scale: "y" },
@@ -106,24 +96,18 @@ const series: {
     scale: "y3",
   },
 ];
-
-function chartValue(
-  snapshot: SnapshotAggregate,
-  key: SeriesKey,
-): number | null {
+const chartValue = (snapshot: SnapshotAggregate, key: SeriesKey) => {
   const value = snapshot[key];
   return value === null ? null : Number(value ?? 0);
-}
-
-function esc(s: string): string {
+};
+const esc = (s: string) => {
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
+};
+const testDetailsHtml = (snapshots: SnapshotAggregate[]) => {
   const blocks = snapshots.map((s) => {
     const results = s.testResults ?? [];
     if (!results.length)
@@ -147,8 +131,7 @@ function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
     return `<details${failed.length ? " open" : ""}><summary><span class="code">${esc(s.shortSha)}</span> — ${passed.length} passed, ${failed.length} failed, ${skipped.length} skipped/todo (${results.length} total)</summary>${section("Failed", failed)}${section("Skipped/Todo", skipped)}${section("Passed", passed)}</details>`;
   });
   return blocks.join("\n");
-}
-
+};
 export function generateReport(metricDir = "."): string {
   const config = loadConfig();
   const snapshots = readAggregatedHistory(
@@ -156,11 +139,9 @@ export function generateReport(metricDir = "."): string {
     config.metrics.thresholds,
     { includePending: true },
   );
-
   if (snapshots.length === 0) {
     return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maaidd.db</code>).</p></body></html>";
   }
-
   const labels = snapshots.map((s) => s.shortSha);
   const x = snapshots.map((_, i) => i);
   const values = series.map((s) =>
@@ -170,7 +151,6 @@ export function generateReport(metricDir = "."): string {
   const uplotCss = loadUplotCss();
   const tableRows = buildTableRows(snapshots);
   const details = testDetailsHtml(snapshots);
-
   const dataJson = JSON.stringify({
     labels,
     series: series.map((s) => ({
@@ -181,7 +161,6 @@ export function generateReport(metricDir = "."): string {
     values,
     x,
   });
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -295,16 +274,14 @@ for (const s of series) {
 </body>
 </html>`;
 }
-
-function testCount(value: number | null): string {
+const testCount = (value: number | null) => {
   return value === null ? "n/a" : String(value);
-}
-
-function buildTableRows(snapshots: SnapshotAggregate[]): string {
+};
+const buildTableRows = (snapshots: SnapshotAggregate[]) => {
   return snapshots
     .map(
       (s) =>
         `      <tr><td class="code">${s.shortSha}</td><td>${testCount(s.testsPassed)}${s.testsTotal === null ? "" : ` / ${s.testsTotal}`}</td><td>${testCount(s.testsFailed)}</td><td>${s.totalFiles}</td><td>${s.totalLines}</td><td>${s.passing}</td><td>${s.failing}</td><td>${s.avgCyclo.toFixed(1)}</td><td>${s.maxCyclo}</td><td>${s.avgFtaScore.toFixed(1)}</td></tr>`,
     )
     .join("\n");
-}
+};

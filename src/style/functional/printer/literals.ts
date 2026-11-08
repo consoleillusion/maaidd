@@ -1,6 +1,5 @@
 import type { Ctx } from "./context.ts";
 import { printNode } from "./dispatch.ts";
-
 export function printLiteral(node: any): string {
   if (node.type === "StringLiteral") {
     if (node.extra && typeof node.extra.raw === "string") return node.extra.raw;
@@ -15,7 +14,6 @@ export function printLiteral(node: any): string {
   if (node.type === "NullLiteral") return "null";
   return String(node.value ?? "");
 }
-
 export function printTemplate(node: any, ctx: Ctx, depth: number): string {
   let out = "`";
   for (let i = 0; i < node.quasis.length; i++) {
@@ -26,7 +24,6 @@ export function printTemplate(node: any, ctx: Ctx, depth: number): string {
   }
   return out + "`";
 }
-
 export function printKey(prop: any, ctx: Ctx, depth: number): string {
   if (prop.computed) {
     return "[" + printNode(prop.key, ctx, depth) + "]";

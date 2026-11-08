@@ -5,8 +5,7 @@ import { printNode } from "./dispatch.ts";
 import { fits, shiftContinuations } from "./layout.ts";
 import { printFlat } from "./flat.ts";
 import type { Ctx } from "./context.ts";
-
-function printJsxName(node: any, ctx: Ctx, depth: number): string {
+const printJsxName = (node: any, ctx: Ctx, depth: number) => {
   if (node.type === "JSXIdentifier") return node.name;
   if (node.type === "JSXMemberExpression") {
     return (
@@ -19,9 +18,8 @@ function printJsxName(node: any, ctx: Ctx, depth: number): string {
     return node.namespace.name + ":" + node.name.name;
   }
   return printNode(node, ctx, depth);
-}
-
-function printJsxAttribute(node: any, ctx: Ctx, depth: number): string {
+};
+const printJsxAttribute = (node: any, ctx: Ctx, depth: number) => {
   if (node.type === "JSXSpreadAttribute") {
     return "{..." + printNode(node.argument, ctx, depth) + "}";
   }
@@ -36,16 +34,14 @@ function printJsxAttribute(node: any, ctx: Ctx, depth: number): string {
     return name + "={" + printNode(node.value.expression, ctx, depth) + "}";
   }
   return name + "={" + printNode(node.value, ctx, depth) + "}";
-}
-
-function normalizeJsxText(value: string): string {
+};
+const normalizeJsxText = (value: string) => {
   // Biome introduces indentation-only JSXText around nested elements. It is
   // layout, not content; meaningful text newlines collapse to one space.
   if (!value.trim()) return "";
   return value.replace(/\s*\n\s*/g, " ");
-}
-
-function printJsxChild(node: any, ctx: Ctx, depth: number): string {
+};
+const printJsxChild = (node: any, ctx: Ctx, depth: number) => {
   if (node.type === "JSXText") {
     return normalizeJsxText(node.value);
   }
@@ -57,16 +53,14 @@ function printJsxChild(node: any, ctx: Ctx, depth: number): string {
     return "{..." + printNode(node.expression, ctx, depth) + "}";
   }
   return printNode(node, ctx, depth);
-}
-
-function printJsxChildLines(children: any[], ctx: Ctx, depth: number): string {
+};
+const printJsxChildLines = (children: any[], ctx: Ctx, depth: number) => {
   return children
     .map((child) => printJsxChild(child, ctx, depth))
     .filter((text) => text.trim().length > 0)
     .map((text) => ctx.ind(depth) + text)
     .join("\n");
-}
-
+};
 export function printJsxFlat(
   node: any,
   ctx: Ctx,
@@ -104,24 +98,20 @@ export function printJsxFlat(
   }
   return null;
 }
-
 export function printJsx(node: any, ctx: Ctx, depth: number): string {
   if (node.type === "JSXFragment") {
     return printJsxFragment(node, ctx, depth);
   }
   return printJsxElement(node, ctx, depth);
 }
-
-function printJsxElement(node: any, ctx: Ctx, depth: number): string {
+const printJsxElement = (node: any, ctx: Ctx, depth: number) => {
   const name = printJsxName(node.openingElement.name, ctx, depth);
   const attrs = node.openingElement.attributes;
-
   // Try flat first
   const flat = printJsxFlat(node, ctx, depth);
   if (flat && fits(flat, ctx, depth * ctx.indentWidth)) {
     return flat;
   }
-
   if (!node.children.length) {
     if (!attrs.length) return `<${name} />`;
     const attrLines = attrs.map(
@@ -129,13 +119,11 @@ function printJsxElement(node: any, ctx: Ctx, depth: number): string {
     );
     return `<${name}\n` + attrLines.join("\n") + "\n" + ctx.ind(depth) + "/>";
   }
-
   // Has children — expand
   if (!attrs.length) {
     const childTexts = printJsxChildLines(node.children, ctx, depth + 1);
     return `<${name}>\n` + childTexts + "\n" + ctx.ind(depth) + `</${name}>`;
   }
-
   const attrLines = attrs.map(
     (a: any) => ctx.ind(depth + 1) + printJsxAttribute(a, ctx, depth + 1),
   );
@@ -151,14 +139,11 @@ function printJsxElement(node: any, ctx: Ctx, depth: number): string {
     ctx.ind(depth) +
     `</${name}>`
   );
-}
-
-function printJsxFragment(node: any, ctx: Ctx, depth: number): string {
+};
+const printJsxFragment = (node: any, ctx: Ctx, depth: number) => {
   const flat = printJsxFlat(node, ctx, depth);
   if (flat && fits(flat, ctx, depth * ctx.indentWidth)) return flat;
-
   if (!node.children.length) return "<></>";
-
   const childTexts = printJsxChildLines(node.children, ctx, depth + 1);
   return "<>\n" + childTexts + "\n" + ctx.ind(depth) + "</>";
-}
+};

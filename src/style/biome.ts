@@ -3,11 +3,8 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { ResolvedFormatOptions } from "../types.ts";
-
 const require = createRequire(import.meta.url);
-
 let cachedBinary: string | undefined;
-
 /** Locate the Biome executable without assuming a particular package manager layout. */
 export function resolveBiomeBinary(): string {
   if (cachedBinary) return cachedBinary;
@@ -16,7 +13,6 @@ export function resolveBiomeBinary(): string {
     cachedBinary = fromEnv;
     return cachedBinary;
   }
-
   try {
     const packageJson = require.resolve("@biomejs/biome/package.json");
     const candidate = join(dirname(packageJson), "bin", "biome");
@@ -24,28 +20,22 @@ export function resolveBiomeBinary(): string {
       cachedBinary = candidate;
       return cachedBinary;
     }
-  } catch {
-    // Fall through to the local .bin lookup.
-  }
-
+  } catch {}
   const local = join(process.cwd(), "node_modules", ".bin", "biome");
   if (existsSync(local)) {
     cachedBinary = local;
     return cachedBinary;
   }
-
   cachedBinary = "biome";
   return cachedBinary;
 }
-
-function indentArgs(options: ResolvedFormatOptions): string[] {
+const indentArgs = (options: ResolvedFormatOptions) => {
   if (options.indent === "tab") {
     return ["--indent-style=tab", "--indent-width=2"];
   }
   return ["--indent-style=space", `--indent-width=${options.indent}`];
-}
-
-function allStyleArgs(options: ResolvedFormatOptions): string[] {
+};
+const allStyleArgs = (options: ResolvedFormatOptions) => {
   return [
     ...indentArgs(options),
     `--line-width=${options.lineWidth}`,
@@ -53,12 +43,11 @@ function allStyleArgs(options: ResolvedFormatOptions): string[] {
     `--javascript-formatter-quote-style=${options.quoteStyle}`,
     `--trailing-commas=${options.trailingComma}`,
   ];
-}
-
-function explicitStyleArgs(
+};
+const explicitStyleArgs = (
   options: ResolvedFormatOptions,
   explicit: ReadonlySet<string>,
-): string[] {
+) => {
   const args: string[] = [];
   if (explicit.has("indent")) args.push(...indentArgs(options));
   if (explicit.has("line-width"))
@@ -73,15 +62,11 @@ function explicitStyleArgs(
     args.push(`--trailing-commas=${options.trailingComma}`);
   }
   return args;
-}
-
+};
 export interface BiomeRunOptions {
-  /** Force all resolved style options onto the Biome command. */
   forceStyle?: boolean;
-  /** Names of CLI flags that were explicitly supplied. */
   explicit?: ReadonlySet<string>;
 }
-
 /**
  * Run Biome over a single source string.
  *
@@ -107,7 +92,6 @@ export function formatWithBiome(
     encoding: "utf8",
     maxBuffer: 32 * 1024 * 1024,
   });
-
   if (result.error) {
     throw new Error(`Unable to run Biome: ${result.error.message}`);
   }
@@ -119,7 +103,6 @@ export function formatWithBiome(
   }
   return result.stdout;
 }
-
 export function biomeVersion(): string | undefined {
   const result = spawnSync(resolveBiomeBinary(), ["--version"], {
     encoding: "utf8",

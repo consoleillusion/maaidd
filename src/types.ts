@@ -3,7 +3,6 @@ export type Indent = number | "tab";
 export type CommaStyle = "leading" | "trailing";
 export type QuoteStyle = "double" | "single";
 export type TrailingComma = "all" | "es5" | "none";
-
 export interface FunctionalOptions {
   commaStyle: CommaStyle;
   objectValueIndent: number;
@@ -12,24 +11,19 @@ export interface FunctionalOptions {
   semicolons: boolean;
   maxInlineArrayItems: number;
 }
-
 export interface MetricsThresholds {
   maxCyclomatic: number;
   minFtaScore: number;
 }
-
 export interface MetricsOptions {
   excludeUnder: number;
-  /** Command used to collect test counts for saved snapshots. */
   testCommand: string;
   thresholds: MetricsThresholds;
 }
-
 export interface McpOptions {
   codegraph: boolean;
   metrics: boolean;
 }
-
 export interface MaaiddConfig {
   style: Style;
   indent: Indent;
@@ -43,7 +37,6 @@ export interface MaaiddConfig {
   metrics: MetricsOptions;
   mcp: McpOptions;
 }
-
 export interface FormatOptions {
   style?: Style;
   indent?: Indent;
@@ -58,7 +51,6 @@ export interface FormatOptions {
   configPath?: string;
   functional?: Partial<FunctionalOptions>;
 }
-
 export interface ResolvedFormatOptions {
   style: Style;
   indent: Indent;
@@ -73,7 +65,6 @@ export interface ResolvedFormatOptions {
   configPath?: string;
   functional: FunctionalOptions;
 }
-
 export const DEFAULT_CONFIG: MaaiddConfig = {
   style: "biome",
   indent: 2,
@@ -94,13 +85,7 @@ export const DEFAULT_CONFIG: MaaiddConfig = {
   metrics: {
     excludeUnder: 0,
     testCommand: "bun run test",
-    thresholds: {
-      maxCyclomatic: 20,
-      minFtaScore: 50,
-    },
+    thresholds: { maxCyclomatic: 20, minFtaScore: 50 },
   },
-  mcp: {
-    codegraph: true,
-    metrics: true,
-  },
+  mcp: { codegraph: true, metrics: true },
 };

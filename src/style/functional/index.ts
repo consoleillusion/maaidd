@@ -13,20 +13,15 @@ import { makeContext } from "./printer/context.ts";
 import { printNode } from "./printer/dispatch.ts";
 import { applyToArrow } from "../../transforms/toArrow.ts";
 import type { ResolvedFormatOptions } from "../../types.ts";
-
 export function formatFunctional(
   source: string,
   options: ResolvedFormatOptions,
 ): string {
   // 1. Biome normalizes everything (quotes, semis, whitespace, comments).
-  const biomeOptions: ResolvedFormatOptions = {
-    ...options,
-    semicolons: true, // Biome adds semicolons; the printer preserves them
-  };
+  const biomeOptions: ResolvedFormatOptions = { ...options, semicolons: true };
   const normalized = formatWithBiome(source, biomeOptions, {
     forceStyle: true,
   });
-
   // 2. Re-parse the Biome output.
   const isTS = /\.(?:[cm]?ts|tsx)$/i.test(options.filename);
   const ast = parse(normalized, {
@@ -45,12 +40,10 @@ export function formatFunctional(
       "decorators-legacy",
     ] as any,
   });
-
   // 3. Optionally transform function declarations to const arrows.
   if (options.toArrow) {
     applyToArrow(ast);
   }
-
   // 4. Apply leading-comma layout as a diff from Biome.
   const ctx = makeContext({
     indent: options.indent,
@@ -62,6 +55,5 @@ export function formatFunctional(
     forceBlankLines: options.functional.forceBlankLines,
     maxInlineArrayItems: options.functional.maxInlineArrayItems,
   });
-
   return printNode(ast, ctx, 0) + "\n";
 }

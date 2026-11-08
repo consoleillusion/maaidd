@@ -5,7 +5,6 @@ import { buildCommand } from "@stricli/core";
 import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-
 const DEFAULT_MAAIDD_CONFIG = `{
   "style": "biome",
   "indent": 2,
@@ -37,7 +36,6 @@ const DEFAULT_MAAIDD_CONFIG = `{
   }
 }
 `;
-
 const DEFAULT_BIOME_CONFIG = `{
   "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
   "formatter": {
@@ -65,7 +63,6 @@ const DEFAULT_BIOME_CONFIG = `{
   }
 }
 `;
-
 const initCommand = buildCommand({
   docs: {
     brief:
@@ -120,5 +117,4 @@ const initCommand = buildCommand({
     }
   },
 });
-
 export { initCommand };

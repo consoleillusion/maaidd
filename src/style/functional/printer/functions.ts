@@ -1,7 +1,6 @@
 import type { Ctx } from "./context.ts";
 import { fits, shiftContinuations } from "./layout.ts";
 import { printNode } from "./dispatch.ts";
-
 export function printParams(
   params: any[],
   ctx: Ctx,
@@ -12,14 +11,12 @@ export function printParams(
   const flat = "(" + parts.join(", ") + ")";
   const start = column ?? depth * ctx.indentWidth;
   if (!flat.includes("\n") && fits(flat, ctx, start)) return flat;
-
   const lines = parts.map((part, index) => {
     const suffix = index === parts.length - 1 ? "" : ",";
     return ctx.ind(depth + 1) + part + suffix;
   });
   return "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")";
 }
-
 export function printFunction(
   node: any,
   ctx: Ctx,
@@ -46,7 +43,6 @@ export function printFunction(
   const text = head + " " + body.trimStart();
   return isDecl ? ctx.ind(depth) + text : text;
 }
-
 export function printArrow(node: any, ctx: Ctx, depth: number): string {
   const async = node.async ? "async " : "";
   const typeParameters = node.typeParameters
@@ -62,11 +58,9 @@ export function printArrow(node: any, ctx: Ctx, depth: number): string {
     ? printNode(node.returnType, ctx, depth)
     : "";
   const head = `${async}${typeParameters}${params}${returnType} =>`;
-
   if (node.body?.type === "BlockStatement") {
     return head + " " + printNode(node.body, ctx, depth).trimStart();
   }
-
   // Parenthesize object literals so concise arrows don't become blocks.
   if (node.body?.type === "ObjectExpression") {
     const body = printNode(node.body, ctx, depth + 1);
@@ -80,7 +74,6 @@ export function printArrow(node: any, ctx: Ctx, depth: number): string {
       ")"
     );
   }
-
   const body = printNode(node.body, ctx, depth + 1);
   if (!body.includes("\n")) return head + " " + body;
   return head + "\n" + ctx.ind(depth + 1) + body;

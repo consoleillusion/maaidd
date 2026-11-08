@@ -2,20 +2,15 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import {
   DEFAULT_CONFIG,
-  type FormatOptions,
-  type Indent,
-  type MaaiddConfig,
-  type ResolvedFormatOptions,
+  FormatOptions,
+  Indent,
+  MaaiddConfig,
+  ResolvedFormatOptions,
 } from "./types.ts";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown) => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function mergeDeep<T extends Record<string, unknown>>(
-  base: T,
-  patch: unknown,
-): T {
+};
+const mergeDeep = (base: T, patch: unknown) => {
   if (!isRecord(patch)) return structuredClone(base);
   const out: Record<string, unknown> = { ...structuredClone(base) };
   for (const [key, value] of Object.entries(patch)) {
@@ -27,8 +22,7 @@ function mergeDeep<T extends Record<string, unknown>>(
     }
   }
   return out as T;
-}
-
+};
 /** Walk up from start looking for maaidd.config.json. */
 export function findConfigPath(start = process.cwd()): string | undefined {
   let dir = resolve(start);
@@ -40,7 +34,6 @@ export function findConfigPath(start = process.cwd()): string | undefined {
     dir = parent;
   }
 }
-
 export function loadConfig(configPath?: string): MaaiddConfig {
   const file = configPath ? resolve(configPath) : findConfigPath();
   if (!file || !existsSync(file)) return structuredClone(DEFAULT_CONFIG);
@@ -57,14 +50,12 @@ export function loadConfig(configPath?: string): MaaiddConfig {
     parsed,
   ) as unknown as MaaiddConfig;
 }
-
 export function normalizeIndent(indent: Indent): Indent {
   if (indent === "tab") return "tab";
   const value = Number(indent);
   if (!Number.isFinite(value) || value <= 0) return 2;
   return Math.min(8, Math.round(value));
 }
-
 export function resolveFormatOptions(
   input: FormatOptions = {},
   config: MaaiddConfig = DEFAULT_CONFIG,
@@ -72,7 +63,6 @@ export function resolveFormatOptions(
   const filename = input.filename ?? "stdin.ts";
   const typescript =
     input.typescript ?? /\.(?:[cm]?ts|tsx)$/i.test(filename) ?? false;
-
   return {
     style: input.style ?? config.style,
     indent: normalizeIndent(input.indent ?? config.indent),
@@ -85,9 +75,6 @@ export function resolveFormatOptions(
     filename,
     typescript,
     configPath: input.configPath,
-    functional: {
-      ...config.functional,
-      ...(input.functional ?? {}),
-    },
+    functional: { ...config.functional, ...(input.functional ?? {}) },
   };
 }

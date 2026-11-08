@@ -7,8 +7,7 @@ import { fits, joinWithBlankLines } from "./layout.ts";
 import { printFlat } from "./flat.ts";
 import { printKey } from "./literals.ts";
 import type { Ctx } from "./context.ts";
-
-function printTypeArgsFlat(node: any, ctx: Ctx, depth: number): string | null {
+const printTypeArgsFlat = (node: any, ctx: Ctx, depth: number) => {
   if (!node) return "";
   const params = node.params ?? [];
   if (!params.length) return "";
@@ -19,8 +18,7 @@ function printTypeArgsFlat(node: any, ctx: Ctx, depth: number): string | null {
     parts.push(f);
   }
   return "<" + parts.join(", ") + ">";
-}
-
+};
 export function printTypeFlat(
   node: any,
   ctx: Ctx,
@@ -82,7 +80,7 @@ export function printTypeFlat(
     case "TSTypeParameterDeclaration":
       return printTypeParams(node, ctx, depth);
     case "TSTypeLiteral":
-      return null; // always expand
+      return null;
     case "TSIntersectionType":
     case "TSUnionType": {
       const parts: string[] = [];
@@ -195,8 +193,7 @@ export function printTypeFlat(
       return null;
   }
 }
-
-function printTypeProperty(prop: any, ctx: Ctx, depth: number): string {
+const printTypeProperty = (prop: any, ctx: Ctx, depth: number) => {
   if (prop.type === "TSPropertySignature") {
     const key = printKey(prop, ctx, depth);
     const optional = prop.optional ? "?" : "";
@@ -240,12 +237,10 @@ function printTypeProperty(prop: any, ctx: Ctx, depth: number): string {
     return `[${params.join(", ")}]${annotation}`;
   }
   return `/* ${prop.type} */`;
-}
-
-function printTypeLiteral(node: any, ctx: Ctx, depth: number): string {
+};
+const printTypeLiteral = (node: any, ctx: Ctx, depth: number) => {
   const members = node.members ?? [];
   if (!members.length) return "{}";
-
   const lines: string[] = [];
   lines.push("{");
   for (let i = 0; i < members.length; i++) {
@@ -255,15 +250,13 @@ function printTypeLiteral(node: any, ctx: Ctx, depth: number): string {
   }
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
-}
-
-function printUnionOrIntersection(node: any, ctx: Ctx, depth: number): string {
+};
+const printUnionOrIntersection = (node: any, ctx: Ctx, depth: number) => {
   const sep = node.type === "TSUnionType" ? "| " : "& ";
   const types = node.types;
   if (!types.length) {
     return node.type === "TSUnionType" ? "never" : "unknown";
   }
-
   // Try flat
   const flatParts: string[] = [];
   for (const t of types) {
@@ -278,7 +271,6 @@ function printUnionOrIntersection(node: any, ctx: Ctx, depth: number): string {
     const flat = flatParts.join(node.type === "TSUnionType" ? " | " : " & ");
     if (fits(flat, ctx, depth * ctx.indentWidth)) return flat;
   }
-
   const lines: string[] = [];
   for (let i = 0; i < types.length; i++) {
     const f = printTypeFlat(types[i], ctx, depth + 1);
@@ -293,12 +285,10 @@ function printUnionOrIntersection(node: any, ctx: Ctx, depth: number): string {
     }
   }
   return lines.join("\n");
-}
-
-function printTypeBody(node: any, ctx: Ctx, depth: number): string {
+};
+const printTypeBody = (node: any, ctx: Ctx, depth: number) => {
   const flat = printTypeFlat(node, ctx, depth);
   if (flat !== null) return flat;
-
   if (node.type === "TSTypeLiteral") return printTypeLiteral(node, ctx, depth);
   if (node.type === "TSUnionType" || node.type === "TSIntersectionType") {
     return printUnionOrIntersection(node, ctx, depth);
@@ -313,9 +303,8 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
     return `${prefix}(${params.join(", ")}) => ${ret}`;
   }
   return `/* ${node.type} */`;
-}
-
-function printTypeParam(p: any, ctx: Ctx, depth: number): string {
+};
+const printTypeParam = (p: any, ctx: Ctx, depth: number) => {
   const name = typeof p.name === "string" ? p.name : (p.name?.name ?? "");
   const c = p.constraint
     ? " extends " +
@@ -328,9 +317,8 @@ function printTypeParam(p: any, ctx: Ctx, depth: number): string {
         printTypeBody(p.default, ctx, depth))
     : "";
   return name + c + d;
-}
-
-function printTypeParams(node: any, ctx: Ctx, depth: number): string {
+};
+const printTypeParams = (node: any, ctx: Ctx, depth: number) => {
   const params = node?.params ?? [];
   if (!params.length) return "";
   return (
@@ -344,8 +332,7 @@ function printTypeParams(node: any, ctx: Ctx, depth: number): string {
       .join(", ") +
     ">"
   );
-}
-
+};
 export function printTypeAnnotation(
   node: any,
   ctx: Ctx,
@@ -361,7 +348,6 @@ export function printTypeAnnotation(
   if (!inner) return "";
   return ": " + printTypeBody(inner, ctx, depth);
 }
-
 export function printTSInterface(node: any, ctx: Ctx, depth: number): string {
   const name = node.id.name;
   const typeParams = node.typeParameters
@@ -373,14 +359,12 @@ export function printTSInterface(node: any, ctx: Ctx, depth: number): string {
         .map((e: any) => printTypeFlat(e.expression, ctx, depth))
         .join(", ")
     : "";
-
   const body = node.body?.body ?? [];
   if (!body.length) {
     return (
       ctx.ind(depth) + `interface ${name}${typeParams ?? ""}${extends_} {}`
     );
   }
-
   const lines: string[] = [];
   lines.push(
     ctx.ind(depth) + `interface ${name}${typeParams ?? ""}${extends_} {`,
@@ -393,14 +377,12 @@ export function printTSInterface(node: any, ctx: Ctx, depth: number): string {
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
 }
-
 export function printTSEnum(node: any, ctx: Ctx, depth: number): string {
   const name = node.id.name;
   const members = node.body?.members ?? node.members ?? [];
   if (!members.length) {
     return ctx.ind(depth) + `enum ${name} {}`;
   }
-
   const lines: string[] = [];
   lines.push(ctx.ind(depth) + `enum ${name} {`);
   for (let i = 0; i < members.length; i++) {
@@ -415,7 +397,6 @@ export function printTSEnum(node: any, ctx: Ctx, depth: number): string {
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
 }
-
 export function printTSTypeAlias(node: any, ctx: Ctx, depth: number): string {
   const name = node.id.name;
   const typeParams = node.typeParameters
@@ -426,7 +407,6 @@ export function printTSTypeAlias(node: any, ctx: Ctx, depth: number): string {
     ctx.ind(depth) + `type ${name}${typeParams ?? ""} = ${body}` + semi(ctx)
   );
 }
-
 export function printTSModule(node: any, ctx: Ctx, depth: number): string {
   const name = node.id?.name ?? node.id?.value ?? "";
   const body = node.body?.body ?? [];

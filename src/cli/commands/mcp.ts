@@ -3,7 +3,6 @@
  */
 import { buildCommand } from "@stricli/core";
 import { runMcpServer } from "../../mcp/server.ts";
-
 const mcpCommand = buildCommand({
   docs: {
     brief:
@@ -14,5 +13,4 @@ const mcpCommand = buildCommand({
     await runMcpServer();
   },
 });
-
 export { mcpCommand };

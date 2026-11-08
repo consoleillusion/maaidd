@@ -6,26 +6,21 @@
  *   const foo = (a, b) => { ... }
  */
 type Node = any;
-
-function isTopLevel(decl: Node): boolean {
+const isTopLevel = (decl: Node) => {
   return (
     decl.type === "FunctionDeclaration" &&
     decl.id !== null &&
     decl.id !== undefined
   );
-}
-
+};
 export function applyToArrow(ast: Node): void {
   if (!ast || typeof ast !== "object") return;
-
   const walk = (node: Node): void => {
     if (!node || typeof node !== "object") return;
-
     if (Array.isArray(node)) {
       for (const child of node) walk(child);
       return;
     }
-
     if (Array.isArray(node.body)) {
       const body = node.body;
       for (let i = 0; i < body.length; i++) {
@@ -55,7 +50,6 @@ export function applyToArrow(ast: Node): void {
         }
       }
     }
-
     for (const key of Object.keys(node)) {
       if (key === "type" || key === "loc" || key === "start" || key === "end") {
         continue;
@@ -66,6 +60,5 @@ export function applyToArrow(ast: Node): void {
       }
     }
   };
-
   walk(ast);
 }

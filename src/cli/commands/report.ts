@@ -8,7 +8,6 @@
 import { buildCommand } from "@stricli/core";
 import { generateReport } from "../../metrics/report.ts";
 import { writeFileSync } from "node:fs";
-
 const reportCommand = buildCommand({
   docs: {
     brief: "Generate uPlot HTML history dashboard from metric snapshots",
@@ -27,7 +26,6 @@ const reportCommand = buildCommand({
   func: (flags: any) => {
     const stdout = (s: string) => process.stdout.write(s);
     const html = generateReport();
-
     if (flags.output) {
       writeFileSync(flags.output, html, "utf8");
       process.stderr.write(`Report written to ${flags.output}\n`);
@@ -36,5 +34,4 @@ const reportCommand = buildCommand({
     }
   },
 });
-
 export { reportCommand };

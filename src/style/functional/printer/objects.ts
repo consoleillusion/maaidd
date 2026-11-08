@@ -5,17 +5,14 @@ import { printFlat } from "./flat.ts";
 import { printNode } from "./dispatch.ts";
 import { printKey } from "./literals.ts";
 import { printParams } from "./functions.ts";
-
 export interface CollectionOptions {
   forceExpand?: boolean;
   column?: number;
   position?: "value" | "inline";
 }
-
-function collectionColumn(ctx: Ctx, depth: number, column?: number): number {
+const collectionColumn = (ctx: Ctx, depth: number, column?: number) => {
   return column ?? depth * ctx.indentWidth;
-}
-
+};
 /**
  * Leading-comma object.
  *
@@ -30,7 +27,6 @@ export function printObject(
 ): string {
   const props = node.properties ?? [];
   if (!props.length) return "{}";
-
   if (!options.forceExpand) {
     const flat = printFlat(node, ctx, depth);
     if (
@@ -40,7 +36,6 @@ export function printObject(
       return flat;
     }
   }
-
   const lines: string[] = [];
   const first = props[0];
   const firstComments = takeLeadingComments(first, ctx, depth);
@@ -54,7 +49,6 @@ export function printObject(
   } else {
     lines.push("{ " + printObjectProperty(first, ctx, depth) + firstTrailing);
   }
-
   for (let i = 1; i < props.length; i++) {
     const prop = props[i];
     const comments = takeLeadingComments(prop, ctx, depth);
@@ -64,11 +58,9 @@ export function printObject(
       ctx.ind(depth) + ", " + printObjectProperty(prop, ctx, depth) + trailing,
     );
   }
-
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
 }
-
 export function printObjectProperty(
   prop: any,
   ctx: Ctx,
@@ -77,7 +69,6 @@ export function printObjectProperty(
   if (prop.type === "SpreadElement" || prop.type === "RestElement") {
     return "..." + printNode(prop.argument, ctx, depth);
   }
-
   if (
     prop.type === "ObjectMethod" ||
     prop.type === "ClassMethod" ||
@@ -85,7 +76,6 @@ export function printObjectProperty(
   ) {
     return printMethodLike(prop, ctx, depth);
   }
-
   const key = printKey(prop, ctx, depth);
   if (prop.shorthand) {
     const annotation = prop.typeAnnotation
@@ -93,10 +83,8 @@ export function printObjectProperty(
       : "";
     return key + annotation;
   }
-
   const value = prop.value;
   if (!value) return key;
-
   if (value.type === "ObjectExpression" && value.properties.length > 0) {
     const valueDepth = depth + ctx.opts.objectValueIndent;
     return (
@@ -106,7 +94,6 @@ export function printObjectProperty(
       printObject(value, ctx, valueDepth, { forceExpand: true })
     );
   }
-
   if (value.type === "ArrayExpression") {
     const flat = printFlat(value, ctx, depth);
     const column = depth * ctx.indentWidth + key.length + 2;
@@ -115,7 +102,6 @@ export function printObjectProperty(
       fits(flat, ctx, column) &&
       value.elements.length <= ctx.opts.maxInlineArrayItems;
     if (inline) return key + ": " + flat;
-
     const valueDepth = depth + ctx.opts.arrayValueIndent;
     return (
       key +
@@ -124,7 +110,6 @@ export function printObjectProperty(
       printArray(value, ctx, valueDepth, { forceExpand: true })
     );
   }
-
   if (
     value.type === "FunctionExpression" ||
     value.type === "ArrowFunctionExpression" ||
@@ -136,14 +121,12 @@ export function printObjectProperty(
       printNode(value, ctx, depth + 1, depth * ctx.indentWidth + key.length + 2)
     );
   }
-
   const column = depth * ctx.indentWidth + key.length + 2;
   const printed = printNode(value, ctx, depth, column);
   if (!printed.includes("\n")) return key + ": " + printed;
   return key + ":\n" + ctx.ind(depth + 1) + printNode(value, ctx, depth + 1);
 }
-
-function printMethodLike(prop: any, ctx: Ctx, depth: number): string {
+const printMethodLike = (prop: any, ctx: Ctx, depth: number) => {
   const kind =
     prop.kind === "get" || prop.kind === "set" ? prop.kind + " " : "";
   const async = prop.async ? "async " : "";
@@ -155,8 +138,7 @@ function printMethodLike(prop: any, ctx: Ctx, depth: number): string {
     : "";
   const body = printNode(prop.body, ctx, depth);
   return `${kind}${async}${generator}${key}(${params})${returnType} ${body.trimStart()}`;
-}
-
+};
 export function printArray(
   node: any,
   ctx: Ctx,
@@ -165,7 +147,6 @@ export function printArray(
 ): string {
   const elements = node.elements ?? [];
   if (!elements.length) return "[]";
-
   if (!options.forceExpand) {
     const flat = printFlat(node, ctx, depth);
     if (
@@ -175,7 +156,6 @@ export function printArray(
       return flat;
     }
   }
-
   const lines: string[] = [];
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i];
@@ -184,7 +164,6 @@ export function printArray(
       lines.push((i === 0 ? "[ " : ctx.ind(depth) + ", ").trimEnd());
       continue;
     }
-
     const comments = takeLeadingComments(element, ctx, depth);
     if (comments.length) {
       if (i === 0) lines.push("[");
@@ -194,7 +173,6 @@ export function printArray(
       lines.push(ctx.ind(depth) + shiftContinuations(text, "  ") + trailing);
       continue;
     }
-
     const text = printArrayElement(element, ctx, depth);
     const trailing = takeTrailingComment(element, ctx);
     if (i === 0) {
@@ -205,28 +183,22 @@ export function printArray(
       );
     }
   }
-
   lines.push(ctx.ind(depth) + "]");
   return lines.join("\n");
 }
-
-function printArrayElement(element: any, ctx: Ctx, depth: number): string {
+const printArrayElement = (element: any, ctx: Ctx, depth: number) => {
   return printNode(element, ctx, depth, depth * ctx.indentWidth + 2);
-}
-
+};
 export function printObjectPattern(node: any, ctx: Ctx, depth: number): string {
   return printObject(node, ctx, depth);
 }
-
 export function printArrayPattern(node: any, ctx: Ctx, depth: number): string {
   return printArray(node, ctx, depth);
 }
-
 /** Used by call arguments and JSX children when a collection starts inline. */
 export function embedInline(text: string, prefix: string): string {
   return prefix + shiftContinuations(text, " ".repeat(prefix.length));
 }
-
 export function indentCollection(
   text: string,
   ctx: Ctx,

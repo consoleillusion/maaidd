@@ -13,7 +13,6 @@ import {
 } from "../../metrics/history.ts";
 import { runTestSuite } from "../../metrics/test-runner.ts";
 import { loadConfig } from "../../config.ts";
-
 const metricsCommand = buildCommand({
   docs: {
     brief: "Run FTA metrics; optionally save tests + metrics for a git commit",
@@ -83,10 +82,9 @@ const metricsCommand = buildCommand({
       },
     },
   } as any,
-  func: (flags: any, ...paths: string[]) => {
+  func: (flags: any, ...paths) => {
     const stdout = (s: string) => process.stdout.write(s + "\n");
     const stderr = (s: string) => process.stderr.write(s + "\n");
-
     const config = flags.config ? loadConfig(flags.config) : loadConfig();
     const dbDir = ".";
     if (flags.finalize) {
@@ -96,15 +94,12 @@ const metricsCommand = buildCommand({
       stderr(`Saved: ${path}`);
       return;
     }
-
     const path = paths[0] ?? "src";
     const fmt = flags.format ?? "table";
     const excludeUnder = flags.excludeUnder
       ? Number(flags.excludeUnder)
       : config.metrics.excludeUnder;
-
     const result = runFta(path, excludeUnder);
-
     switch (fmt) {
       case "json":
         stdout(JSON.stringify(result.metrics, null, 2));
@@ -119,7 +114,6 @@ const metricsCommand = buildCommand({
         printTable(result.metrics, result.average, result.total, stdout);
         break;
     }
-
     if (flags.save || flags.pending) {
       const tests = flags.tests
         ? runTestSuite(flags.testCommand ?? config.metrics.testCommand)
@@ -131,7 +125,6 @@ const metricsCommand = buildCommand({
         stderr(`Tests: ${passed}/${total} passed, ${failed} failed`);
         if (tests.error) stderr(`Test summary warning: ${tests.error}`);
       }
-
       const saved = flags.pending
         ? savePendingSnapshot(dbDir, result.metrics, tests)
         : saveSnapshot(dbDir, currentCommit(), result.metrics, tests, {
@@ -141,42 +134,31 @@ const metricsCommand = buildCommand({
     }
   },
 });
-
-function printTable(
-  metrics: {
-    file_name: string;
-    cyclo: number;
-    fta_score: number;
-    assessment: string;
-    line_count: number;
-  }[],
+const printTable = (
+  metrics: null[],
   average: number | null,
   total: number,
   stdout: (s: string) => void,
-): void {
+) => {
   if (!metrics.length) {
     stdout("No files to analyze.");
     return;
   }
-
   const rows = metrics.sort((a, b) => a.file_name.localeCompare(b.file_name));
   const nameWidth = Math.max(8, ...rows.map((r) => r.file_name.length));
   const header = `  ${"file".padEnd(nameWidth)}  cyclo  fta    lines  assessment`;
   stdout(header);
   stdout("  " + "-".repeat(header.length - 2));
-
   for (const m of rows) {
     stdout(
       `  ${m.file_name.padEnd(nameWidth)}  ${String(m.cyclo).padStart(5)}  ${m.fta_score.toFixed(1).padStart(5)}  ${String(m.line_count).padStart(5)}  ${m.assessment}`,
     );
   }
-
   stdout("");
   if (average !== null) {
     stdout(`  ${total} files, average FTA: ${average.toFixed(1)}`);
   } else {
     stdout(`  ${total} files`);
   }
-}
-
+};
 export { metricsCommand };

@@ -3,7 +3,6 @@
  */
 import { encode } from "@toon-format/toon";
 import type { FtaResult } from "./fta.ts";
-
 export function metricsToToon(result: FtaResult): string {
   return encode({
     average: result.average,

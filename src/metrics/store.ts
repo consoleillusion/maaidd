@@ -5,10 +5,8 @@ import { execFileSync } from "node:child_process";
 import type { FtaFileMetric } from "./fta.ts";
 import type { TestRunSummary } from "./test-runner.ts";
 import type { MetricsThresholds } from "../types.ts";
-
 const DB = "maaidd.db";
 const PENDING = "__pending__";
-
 export interface HistoryEntry {
   commit: string;
   timestamp: number;
@@ -18,7 +16,6 @@ export interface HistoryEntry {
   average: number | null;
   total: number;
 }
-
 export interface SnapshotAggregate {
   commit: string;
   shortSha: string;
@@ -31,7 +28,6 @@ export interface SnapshotAggregate {
   testsPassed: number | null;
   testsFailed: number | null;
   testsSkipped: number | null;
-  /** Per-test results for this snapshot (every snapshot when collected). */
   testResults?: TestCaseResult[];
   avgCyclo: number;
   maxCyclo: number;
@@ -40,15 +36,12 @@ export interface SnapshotAggregate {
   avgHalsteadDifficulty: number;
   totalHalsteadBugs: number;
 }
-
 export interface SaveSnapshotOptions {
   force?: boolean;
 }
-
 export interface ReadHistoryOptions {
   includePending?: boolean;
 }
-
 type Row = {
   commit: string;
   status: string;
@@ -58,13 +51,11 @@ type Row = {
   fta_average: number | null;
   fta_files_json: string;
 };
-
-const isObj = (v: unknown): v is Record<string, unknown> =>
+const isObj = (v: unknown): v is null =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
-
-function normResult(r: unknown): TestCaseResult | null {
+const normResult = (r: unknown) => {
   if (!isObj(r) || typeof r.name !== "string") return null;
   const status =
     r.status === "fail" || r.status === "skip" || r.status === "todo"
@@ -83,9 +74,8 @@ function normResult(r: unknown): TestCaseResult | null {
     durationMs: num(r.durationMs),
     ...(typeof r.error === "string" && r.error ? { error: r.error } : {}),
   };
-}
-
-function normTests(v: unknown): TestRunSummary | null {
+};
+const normTests = (v: unknown) => {
   if (!isObj(v)) return null;
   const t: TestRunSummary = {
     command: typeof v.command === "string" ? v.command : "",
@@ -100,14 +90,13 @@ function normTests(v: unknown): TestRunSummary | null {
   if (Array.isArray(v.results)) {
     const results = v.results
       .map(normResult)
-      .filter((x): x is TestCaseResult => x !== null);
+      .filter((x): x is null => x !== null);
     if (results.length) t.results = results;
   }
   if (v.resultsDetail === "full" || v.resultsDetail === "counts-only")
     t.resultsDetail = v.resultsDetail;
   return t;
-}
-
+};
 const avg = (m: FtaFileMetric[]) => {
   const s = m.map((x) => x.fta_score).filter(Number.isFinite);
   return s.length ? s.reduce((a, b) => a + b, 0) / s.length : null;
@@ -120,7 +109,6 @@ const sha = (c: string) => {
     throw new Error(`Invalid git commit for metric snapshot: ${c}`);
   return n;
 };
-
 export function currentCommit(cwd = process.cwd()): string {
   try {
     return execFileSync("git", ["rev-parse", "HEAD"], {
@@ -132,33 +120,33 @@ export function currentCommit(cwd = process.cwd()): string {
     throw new Error("Cannot save metric snapshot: no git HEAD is available");
   }
 }
-
-function ensureTestSchema(db: Database) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS test_cases (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      file TEXT NOT NULL DEFAULT '',
-      suite TEXT NOT NULL DEFAULT '',
-      name TEXT NOT NULL,
-      UNIQUE(file, suite, name)
-    );
-    CREATE TABLE IF NOT EXISTS snapshot_tests (
-      snapshot_commit TEXT NOT NULL,
-      test_case_id INTEGER NOT NULL,
-      status TEXT NOT NULL,
-      duration_ms INTEGER,
-      error TEXT,
-      PRIMARY KEY (snapshot_commit, test_case_id)
-    );
-    CREATE INDEX IF NOT EXISTS idx_snapshot_tests_commit ON snapshot_tests(snapshot_commit);
-  `);
-}
-
-function saveTestResults(
+const ensureTestSchema = (db: Database) => {
+  db.exec(
+    `
+                CREATE TABLE IF NOT EXISTS test_cases (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  file TEXT NOT NULL DEFAULT '',
+                  suite TEXT NOT NULL DEFAULT '',
+                  name TEXT NOT NULL,
+                  UNIQUE(file, suite, name)
+                );
+                CREATE TABLE IF NOT EXISTS snapshot_tests (
+                  snapshot_commit TEXT NOT NULL,
+                  test_case_id INTEGER NOT NULL,
+                  status TEXT NOT NULL,
+                  duration_ms INTEGER,
+                  error TEXT,
+                  PRIMARY KEY (snapshot_commit, test_case_id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_snapshot_tests_commit ON snapshot_tests(snapshot_commit);
+              `,
+  );
+};
+const saveTestResults = (
   db: Database,
   commit: string,
   tests: TestRunSummary | null,
-) {
+) => {
   db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$c").run({
     $c: commit,
   });
@@ -178,9 +166,7 @@ function saveTestResults(
         suite = r.suite ?? "",
         name = r.name ?? "";
       putCase.run({ $f: file, $s: suite, $n: name });
-      const row = getCase.get({ $f: file, $s: suite, $n: name }) as {
-        id: number;
-      } | null;
+      const row = getCase.get({ $f: file, $s: suite, $n: name }) as null;
       if (!row) continue;
       putResult.run({
         $c: commit,
@@ -192,18 +178,14 @@ function saveTestResults(
     }
   });
   tx(tests.results);
-}
-
-function loadTestResults(
-  db: Database,
-  commit: string,
-): TestCaseResult[] | undefined {
+};
+const loadTestResults = (db: Database, commit: string) => {
   try {
     const rows = db
       .query(
         `SELECT tc.file, tc.suite, tc.name, st.status, st.duration_ms, st.error
-       FROM snapshot_tests st JOIN test_cases tc ON tc.id = st.test_case_id
-       WHERE st.snapshot_commit=$c ORDER BY tc.file, tc.suite, tc.name`,
+                                     FROM snapshot_tests st JOIN test_cases tc ON tc.id = st.test_case_id
+                                     WHERE st.snapshot_commit=$c ORDER BY tc.file, tc.suite, tc.name`,
       )
       .all({ $c: commit }) as any[];
     if (!rows.length) return undefined;
@@ -211,18 +193,18 @@ function loadTestResults(
       file: r.file ?? "",
       suite: r.suite ?? "",
       name: r.name ?? "",
-      status: (r.status === "fail" || r.status === "skip" || r.status === "todo"
-        ? r.status
-        : "pass") as any,
+      status:
+        r.status === "fail" || r.status === "skip" || r.status === "todo"
+          ? r.status
+          : ("pass" as any),
       durationMs: typeof r.duration_ms === "number" ? r.duration_ms : null,
       ...(r.error ? { error: String(r.error) } : {}),
     }));
   } catch {
     return undefined;
   }
-}
-
-function moveTestResults(db: Database, from: string, to: string) {
+};
+const moveTestResults = (db: Database, from: string, to: string) => {
   try {
     db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$to").run({
       $to: to,
@@ -231,53 +213,40 @@ function moveTestResults(db: Database, from: string, to: string) {
       "UPDATE snapshot_tests SET snapshot_commit=$to WHERE snapshot_commit=$from",
     ).run({ $from: from, $to: to });
   } catch {}
-}
-
-function open(dir: string): Database {
+};
+const open = (dir: string) => {
   mkdirSync(dir, { recursive: true });
   const db = new Database(join(dir, DB));
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS snapshots (
-      "commit" TEXT PRIMARY KEY, status TEXT NOT NULL, schema_version INTEGER NOT NULL,
-      created_at TEXT NOT NULL, tests_json TEXT, fta_total INTEGER NOT NULL,
-      fta_average REAL, fta_files_json TEXT NOT NULL
-    );
-  `);
+  db.exec(
+    `
+                CREATE TABLE IF NOT EXISTS snapshots (
+                  "commit" TEXT PRIMARY KEY, status TEXT NOT NULL, schema_version INTEGER NOT NULL,
+                  created_at TEXT NOT NULL, tests_json TEXT, fta_total INTEGER NOT NULL,
+                  fta_average REAL, fta_files_json TEXT NOT NULL
+                );
+              `,
+  );
   ensureTestSchema(db);
   // legacy import (non-destructive)
   const has = db.query('SELECT 1 FROM snapshots WHERE "commit"=$c');
-  const put = db.transaction(
-    (
-      items: {
-        c: string;
-        st: string;
-        at: string;
-        t: TestRunSummary | null;
-        m: FtaFileMetric[];
-      }[],
-    ) => {
-      for (const i of items) {
-        if (has.get({ $c: i.c })) continue;
-        db.query(`INSERT INTO snapshots ("commit",status,schema_version,created_at,tests_json,fta_total,fta_average,fta_files_json)
-        VALUES ($c,$s,1,$at,$t,$n,$a,$f)`).run({
-          $c: i.c,
-          $s: i.st,
-          $at: i.at,
-          $t: i.t ? JSON.stringify(i.t) : null,
-          $n: i.m.length,
-          $a: avg(i.m),
-          $f: JSON.stringify(i.m),
-        });
-      }
-    },
-  );
-  const items: {
-    c: string;
-    st: string;
-    at: string;
-    t: TestRunSummary | null;
-    m: FtaFileMetric[];
-  }[] = [];
+  const put = db.transaction((items: null[]) => {
+    for (const i of items) {
+      if (has.get({ $c: i.c })) continue;
+      db.query(
+        `INSERT INTO snapshots ("commit",status,schema_version,created_at,tests_json,fta_total,fta_average,fta_files_json)
+                                                  VALUES ($c,$s,1,$at,$t,$n,$a,$f)`,
+      ).run({
+        $c: i.c,
+        $s: i.st,
+        $at: i.at,
+        $t: i.t ? JSON.stringify(i.t) : null,
+        $n: i.m.length,
+        $a: avg(i.m),
+        $f: JSON.stringify(i.m),
+      });
+    }
+  });
+  const items: null[] = [];
   for (const d of [dir, join(dir, "metric")]) {
     if (!existsSync(d)) continue;
     for (const f of readdirSync(d).filter((x) => x.endsWith(".json"))) {
@@ -307,9 +276,8 @@ function open(dir: string): Database {
   }
   if (items.length) put(items);
   return db;
-}
-
-function upsert(
+};
+const upsert = (
   db: Database,
   commit: string,
   status: "final" | "pending",
@@ -317,13 +285,13 @@ function upsert(
   tests: TestRunSummary | null,
   at = new Date().toISOString(),
   force = true,
-) {
+) => {
   const q = force
     ? `INSERT INTO snapshots ("commit",status,schema_version,created_at,tests_json,fta_total,fta_average,fta_files_json)
-       VALUES ($c,$s,1,$at,$t,$n,$a,$f)
-       ON CONFLICT("commit") DO UPDATE SET status=excluded.status,created_at=excluded.created_at,tests_json=excluded.tests_json,fta_total=excluded.fta_total,fta_average=excluded.fta_average,fta_files_json=excluded.fta_files_json`
+             VALUES ($c,$s,1,$at,$t,$n,$a,$f)
+             ON CONFLICT("commit") DO UPDATE SET status=excluded.status,created_at=excluded.created_at,tests_json=excluded.tests_json,fta_total=excluded.fta_total,fta_average=excluded.fta_average,fta_files_json=excluded.fta_files_json`
     : `INSERT INTO snapshots ("commit",status,schema_version,created_at,tests_json,fta_total,fta_average,fta_files_json)
-       VALUES ($c,$s,1,$at,$t,$n,$a,$f)`;
+             VALUES ($c,$s,1,$at,$t,$n,$a,$f)`;
   db.query(q).run({
     $c: commit,
     $s: status,
@@ -334,15 +302,13 @@ function upsert(
     $f: JSON.stringify(metrics),
   });
   saveTestResults(db, commit, tests);
-}
-
-function exists(db: Database, c: string) {
+};
+const exists = (db: Database, c: string) => {
   const r = db
     .query('SELECT status FROM snapshots WHERE "commit"=$c')
-    .get({ $c: c }) as { status: string } | null;
+    .get({ $c: c }) as null;
   return r?.status === "final";
-}
-
+};
 export function saveSnapshot(
   dir: string,
   commit: string,
@@ -363,7 +329,6 @@ export function saveSnapshot(
     db.close();
   }
 }
-
 export function savePendingSnapshot(
   dir: string,
   metrics: FtaFileMetric[],
@@ -377,7 +342,6 @@ export function savePendingSnapshot(
     db.close();
   }
 }
-
 export function finalizeSnapshot(
   dir: string,
   commit: string,
@@ -409,7 +373,6 @@ export function finalizeSnapshot(
     db.close();
   }
 }
-
 export function aggregateSnapshot(
   metrics: FtaFileMetric[],
   thresholds: MetricsThresholds,
@@ -445,8 +408,7 @@ export function aggregateSnapshot(
     totalHalsteadBugs: metrics.reduce((s, m) => s + (m.halstead?.bugs ?? 0), 0),
   };
 }
-
-function tsOf(c: string): number {
+const tsOf = (c: string) => {
   try {
     const n = Number(
       execFileSync("git", ["show", "-s", "--format=%ct", c], {
@@ -458,13 +420,16 @@ function tsOf(c: string): number {
   } catch {
     return 0;
   }
-}
-
-function rowToEntry(
+};
+const rowToEntry = (
   db: Database,
   r: Row,
-  commitOverride?: { commit: string; timestamp: number; shortSha?: string },
-): HistoryEntry & { shortSha?: string } {
+  commitOverride?: {
+    commit: string;
+    timestamp: number;
+    shortSha?: string;
+  },
+) => {
   const metrics = JSON.parse(r.fta_files_json) as FtaFileMetric[];
   const tests = r.tests_json ? normTests(JSON.parse(r.tests_json)) : null;
   const results = loadTestResults(db, r.commit);
@@ -484,8 +449,7 @@ function rowToEntry(
     total: r.fta_total ?? metrics.length,
     ...(commitOverride?.shortSha ? { shortSha: commitOverride.shortSha } : {}),
   };
-}
-
+};
 export function readHistory(
   dir = ".",
   _thresholdsOrOpts?: MetricsThresholds | ReadHistoryOptions,
@@ -538,7 +502,6 @@ export function readHistory(
     db.close();
   }
 }
-
 export function readAggregatedHistory(
   dir = ".",
   thresholds: MetricsThresholds,

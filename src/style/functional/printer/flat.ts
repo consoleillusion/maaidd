@@ -2,8 +2,7 @@ import type { Ctx } from "./context.ts";
 import { printLiteral } from "./literals.ts";
 import { printJsxFlat } from "./jsx.ts";
 import { printTypeFlat } from "./typescript.ts";
-
-function hasUnprintedComments(node: any, ctx: Ctx): boolean {
+const hasUnprintedComments = (node: any, ctx: Ctx) => {
   for (const key of [
     "leadingComments",
     "trailingComments",
@@ -18,14 +17,8 @@ function hasUnprintedComments(node: any, ctx: Ctx): boolean {
     }
   }
   return false;
-}
-
-function flatList(
-  nodes: any[],
-  ctx: Ctx,
-  depth: number,
-  separator = ", ",
-): string | null {
+};
+const flatList = (nodes: any[], ctx: Ctx, depth: number, separator = ", ") => {
   const parts: string[] = [];
   for (const node of nodes) {
     if (!node) {
@@ -37,12 +30,10 @@ function flatList(
     parts.push(flat);
   }
   return parts.join(separator);
-}
-
+};
 export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
   if (!node) return "";
   if (hasUnprintedComments(node, ctx)) return null;
-
   switch (node.type) {
     case "Identifier":
       return node.name;
@@ -63,7 +54,6 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       return "super";
     case "MetaProperty":
       return `${node.meta.name}.${node.property.name}`;
-
     case "TemplateLiteral": {
       let out = "`";
       for (let i = 0; i < node.quasis.length; i++) {
@@ -82,7 +72,6 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       if (tag === null || quasi === null) return null;
       return tag + quasi;
     }
-
     case "ObjectExpression": {
       if (!node.properties.length) return "{}";
       const props: string[] = [];
@@ -142,7 +131,6 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       const argument = printFlat(node.argument, ctx, depth);
       return argument === null ? null : "..." + argument;
     }
-
     case "CallExpression":
     case "OptionalCallExpression":
     case "NewExpression": {
@@ -269,15 +257,13 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
     case "JSXElement":
     case "JSXFragment":
       return printJsxFlat(node, ctx, depth);
-
     default:
       if (node.value != null && typeof node.value !== "object")
         return String(node.value);
       return null;
   }
 }
-
-function printFlatProperty(prop: any, ctx: Ctx, depth: number): string | null {
+const printFlatProperty = (prop: any, ctx: Ctx, depth: number) => {
   if (prop.type === "SpreadElement" || prop.type === "RestElement") {
     const argument = printFlat(prop.argument, ctx, depth);
     return argument === null ? null : "..." + argument;
@@ -298,13 +284,12 @@ function printFlatProperty(prop: any, ctx: Ctx, depth: number): string | null {
   const value = printFlat(prop.value, ctx, depth);
   if (value === null) return null;
   return `${key}: ${value}`;
-}
-
-function printFlatKey(prop: any, ctx: Ctx, depth: number): string | null {
+};
+const printFlatKey = (prop: any, ctx: Ctx, depth: number) => {
   if (prop.computed) {
     const key = printFlat(prop.key, ctx, depth);
     return key === null ? null : `[${key}]`;
   }
   if (prop.key?.type === "Identifier") return prop.key.name;
   return printFlat(prop.key, ctx, depth);
-}
+};
