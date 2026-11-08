@@ -13,7 +13,7 @@ USAGE
   maaidd report [--output path]
   maaidd mcp
   maaidd graph <args>...
-  maaidd init [--hooks]
+  maaidd init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
   maaidd completion install|uninstall ...
 
 Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.
@@ -29,7 +29,7 @@ COMMANDS
   report      Generate uPlot HTML history dashboard from metric snapshots
   mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
   graph       Query the code-graph index
-  init        Write maaidd.config.json and biome.json if they do not exist; optionally install git hooks
+  init        Initialize MAAIDD (maaidd.config.json, biome.json, git hooks, optional formatting)
   completion  Install or uninstall shell completion for maaidd
 ```
 
@@ -174,14 +174,42 @@ ARGUMENTS
 
 ```text
 USAGE
-  maaidd init [--hooks]
+  maaidd init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
   maaidd init --help
 
-Write maaidd.config.json and biome.json if they do not exist; optionally install git hooks
+Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maaidd.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.
 
 FLAGS
-     [--hooks/--no-hooks]  Install tracked git hooks (sets core.hooksPath=scripts/hooks)
-  -h  --help               Print help information and exit
+  -y [--yes/--no-yes]                                                    Accept safe defaults non-interactively (does not format or force overwrite)
+     [--non-interactive/--no-non-interactive]                            Disable prompts; requires explicit flags for hooks/destructive actions
+     [--force/--no-force]                                                Overwrite existing config files when writing
+     [--write-config/--no-write-config]                                  Write maaidd.config.json and biome.json
+     [--format/--no-format]                                              Run initial formatting (destructive; explicit opt-in)
+     [--format-path]                                                     Path to format when --format is set (default: .)
+     [--accept-git-hooks/--no-accept-git-hooks]                          Install git pre/post commit hooks without prompting
+     [--hooks/--no-hooks]                                                Install git hooks (alias for --accept-git-hooks; use --no-hooks to decline)
+     [--reject-git-hooks/--no-reject-git-hooks]                          Do not install git hooks without prompting
+     [--style]                                                           Formatting style (default: biome)                                           [biome|functional]
+     [--indent]                                                          Indent width (2|4|8|tab)
+     [--line-width]                                                      Maximum line width
+     [--semicolons/--no-semicolons]                                      Emit semicolons
+     [--quote-style]                                                     Quote style                                                                 [double|single]
+     [--trailing-comma]                                                  Trailing comma style                                                        [all|es5|none]
+     [--to-arrow/--no-to-arrow]                                          Convert to const arrows in functional pipeline
+     [--biome/--no-biome]                                                Enable Biome pass
+     [--functional-comma-style]                                          Functional comma style                                                      [leading|trailing]
+     [--functional-object-value-indent]                                  Functional object value indent
+     [--functional-array-value-indent]                                   Functional array value indent
+     [--functional-force-blank-lines/--no-functional-force-blank-lines]  Functional force blank lines
+     [--functional-semicolons/--no-functional-semicolons]                Functional semicolons
+     [--functional-max-inline-array-items]                               Functional max inline array items
+     [--metrics-exclude-under]                                           Metrics exclude-under threshold
+     [--metrics-test-command]                                            Test command for metrics snapshots
+     [--metrics-max-cyclomatic]                                          Gate max cyclomatic complexity
+     [--metrics-min-fta-score]                                           Gate minimum FTA score
+     [--mcp-codegraph/--no-mcp-codegraph]                                Enable MCP codegraph tool/config flag
+     [--mcp-metrics/--no-mcp-metrics]                                    Enable MCP metrics tool/config flag
+  -h  --help                                                             Print help information and exit
 ```
 
 ## `maaidd maaidd completion install`
