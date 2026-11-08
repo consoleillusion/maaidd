@@ -38,11 +38,15 @@ describe("report generation", () => {
   it("generates HTML with chart and series", () => {
     const html = generateReport();
     expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("uPlot");
-    // The report may be empty if metric/ has no snapshots, but should still be valid HTML.
-    if (html.includes("payload")) {
-      expect(html).toContain("labels");
-      expect(html).toContain("series");
+    // If history exists, verify chart payload; empty history is valid HTML too.
+    if (html.includes("uPlot") || html.includes("payload")) {
+      expect(html).toContain("uPlot");
+      if (html.includes("payload")) {
+        expect(html).toContain("labels");
+        expect(html).toContain("series");
+      }
+    } else {
+      expect(html).toContain("No metric history found");
     }
   });
 
