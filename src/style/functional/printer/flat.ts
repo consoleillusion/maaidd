@@ -149,9 +149,12 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       const callee = printFlat(node.callee, ctx, depth);
       const args = flatList(node.arguments, ctx, depth);
       if (callee === null || args === null) return null;
+      const taNode = node.typeArguments ?? node.typeParameters;
+      const ta = taNode ? printTypeFlat(taNode, ctx, depth) : "";
+      if (taNode && ta === null) return null;
       const prefix = node.type === "NewExpression" ? "new " : "";
       const optional = node.optional ? "?." : "";
-      return `${prefix}${callee}${optional}(${args})`;
+      return `${prefix}${callee}${ta}${optional}(${args})`;
     }
     case "MemberExpression":
     case "OptionalMemberExpression": {

@@ -8,14 +8,16 @@ export function printCall(node: any, ctx: any, depth: number): string {
   const callee = printNode(node.callee, ctx, depth);
   const neu = node.type === "NewExpression" ? "new " : "";
   const opt = node.optional ? "?." : "";
+  const typeArgs = node.typeArguments ?? node.typeParameters;
+  const typeArgsText = typeArgs ? printNode(typeArgs, ctx, depth) : "";
 
   if (node.type === "NewExpression" && !node.arguments.length) {
-    return neu + callee + "()";
+    return neu + callee + typeArgsText + "()";
   }
 
   const printedArgs = node.arguments.map((a: any) => printNode(a, ctx, depth));
   const anyMulti = printedArgs.some((a: string) => a.includes("\n"));
-  const flat = neu + callee + opt + "(" + printedArgs.join(", ") + ")";
+  const flat = neu + callee + typeArgsText + opt + "(" + printedArgs.join(", ") + ")";
 
   if (!anyMulti && !flat.includes("\n") && flat.length <= ctx.opts.lineWidth) {
     return flat;
@@ -26,18 +28,12 @@ export function printCall(node: any, ctx: any, depth: number): string {
   for (let i = 0; i < printedArgs.length; i++) {
     const a = printedArgs[i];
     if (i === 0) {
-      if (a.includes("\n")) {
-        lines.push(pad + shiftContinuations(a, pad));
-      } else {
-        lines.push(pad + a);
-      }
+      lines.push(pad + (a.includes("\n") ? shiftContinuations(a, pad) : a));
     } else {
       lines.push(pad + ", " + shiftContinuations(a, pad));
     }
   }
-  return (
-    neu + callee + opt + "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")"
-  );
+  return neu + callee + typeArgsText + opt + "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")";
 }
 
 export function printMember(node: any, ctx: any, depth: number): string {

@@ -60,16 +60,27 @@ export function printTypeFlat(
           ? node.typeName.name
           : printTypeFlat(node.typeName, ctx, depth);
       if (name === null) return null;
-      const args = printTypeArgsFlat(node.typeParameters, ctx, depth);
+      const args = printTypeArgsFlat(
+        node.typeArguments ?? node.typeParameters,
+        ctx,
+        depth,
+      );
       return args === null ? null : name + args;
     }
     case "TSExpressionWithTypeArguments": {
       const expression = printTypeFlat(node.expression, ctx, depth);
-      const args = printTypeArgsFlat(node.typeParameters, ctx, depth);
+      const args = printTypeArgsFlat(
+        node.typeArguments ?? node.typeParameters,
+        ctx,
+        depth,
+      );
       return expression === null || args === null ? null : expression + args;
     }
     case "TSQualifiedName":
       return printTypeFlat(node.left, ctx, depth) + "." + node.right.name;
+    case "TSTypeParameterInstantiation":
+    case "TSTypeParameterDeclaration":
+      return printTypeParams(node, ctx, depth);
     case "TSTypeLiteral":
       return null; // always expand
     case "TSIntersectionType":
@@ -309,12 +320,28 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
   return `/* ${node.type} */`;
 }
 
+function printTypeParam(p: any, ctx: Ctx, depth: number): string {
+  const name = typeof p.name === "string" ? p.name : p.name?.name ?? "";
+  const c = p.constraint ? " extends " + (printTypeFlat(p.constraint, ctx, depth) ?? printTypeBody(p.constraint, ctx, depth)) : "";
+  const d = p.default ? " = " + (printTypeFlat(p.default, ctx, depth) ?? printTypeBody(p.default, ctx, depth)) : "";
+  return name + c + d;
+}
+
+function printTypeParams(node: any, ctx: Ctx, depth: number): string {
+  const params = node?.params ?? [];
+  if (!params.length) return "";
+  return "<" + params.map((p: any) => (p.type === "TSTypeParameter" ? printTypeParam(p, ctx, depth) : printTypeFlat(p, ctx, depth) ?? printTypeBody(p, ctx, depth))).join(", ") + ">";
+}
+
 export function printTypeAnnotation(
   node: any,
   ctx: Ctx,
   depth: number,
 ): string {
-  const inner = node.typeAnnotation;
+  if (node?.type === "TSTypeParameterDeclaration" || node?.type === "TSTypeParameterInstantiation") {
+    return printTypeParams(node, ctx, depth);
+  }
+  const inner = node?.typeAnnotation;
   if (!inner) return "";
   return ": " + printTypeBody(inner, ctx, depth);
 }

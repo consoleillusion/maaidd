@@ -187,8 +187,10 @@ export function printNode(
         .map((e: any) => printNode(e, ctx, depth))
         .join(", ");
 
-    case "Identifier":
-      return node.name;
+    case "Identifier": {
+      const ann = node.typeAnnotation ? printTypeAnnotation(node.typeAnnotation, ctx, depth) : "";
+      return node.name + (node.optional ? "?" : "") + ann;
+    }
     case "PrivateName":
       return "#" + node.id.name;
     case "StringLiteral":
