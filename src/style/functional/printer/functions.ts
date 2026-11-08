@@ -48,7 +48,12 @@ export function printArrow(node: any, ctx: Ctx, depth: number): string {
     return head + " " + printNode(node.body, ctx, depth).trimStart();
   }
 
+  const needsParens = node.body?.type === "ObjectExpression";
   const body = printNode(node.body, ctx, depth, depth * ctx.indentWidth + head.length + 1);
-  if (!body.includes("\n")) return head + " " + body;
-  return head + "\n" + ctx.ind(depth + 1) + printNode(node.body, ctx, depth + 1);
+  if (!body.includes("\n")) {
+    return head + " " + (needsParens ? "(" + body + ")" : body);
+  }
+  const multi = printNode(node.body, ctx, depth + 1);
+  if (needsParens) return head + "\n" + ctx.ind(depth + 1) + "(" + multi + ")";
+  return head + "\n" + ctx.ind(depth + 1) + multi;
 }
