@@ -42,9 +42,8 @@ export function printCall(node: any, ctx: any, depth: number): string {
 
 export function printMember(node: any, ctx: any, depth: number): string {
   const obj = printNode(node.object, ctx, depth);
-  const opt = node.optional ? "?." : "";
   if (node.computed) {
-    return obj + opt + "[" + printNode(node.property, ctx, depth) + "]";
+    return obj + (node.optional ? "?." : "") + "[" + printNode(node.property, ctx, depth) + "]";
   }
-  return obj + opt + "." + printNode(node.property, ctx, depth);
+  return obj + (node.optional ? "?." : ".") + printNode(node.property, ctx, depth);
 }

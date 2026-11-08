@@ -144,6 +144,7 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
     }
 
     case "CallExpression":
+    case "OptionalCallExpression":
     case "NewExpression": {
       const callee = printFlat(node.callee, ctx, depth);
       const args = flatList(node.arguments, ctx, depth);

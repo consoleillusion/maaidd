@@ -137,6 +137,7 @@ export function printNode(
       return printLabeled(node, ctx, depth);
 
     case "CallExpression":
+    case "OptionalCallExpression":
     case "NewExpression":
       return printCall(node, ctx, depth);
     case "MemberExpression":
