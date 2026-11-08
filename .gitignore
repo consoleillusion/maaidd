@@ -34,7 +34,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 # MAAIDD metrics database (project root or legacy locations)
-maaidd.db
 maaidd.db-wal
 maaidd.db-shm
 /metric/
