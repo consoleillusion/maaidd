@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# maaidd pre-commit: format, capture pending analytics (FTA + tests), stage results.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Format and stage formatted source (best-effort paths; adjust if needed)
+if [ -d src ] || [ -d spec ] || [ -d scripts ]; then
+  bun "$ROOT/src/cli/index.ts" format src spec scripts >/dev/null 2>&1 || true
+  git add -- src spec scripts 2>/dev/null || true
+fi
+
+# Capture pending metrics (FTA + test results, including per-test details)
+bun "$ROOT/src/cli/index.ts" metrics --pending src >/dev/null
+
+# Stage analytics DB (and WAL/SHM ignored; main DB may be tracked)
+git add -- maaidd.db 2>/dev/null || true

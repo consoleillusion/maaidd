@@ -10,6 +10,7 @@ import { createRequire } from "node:module";
 import { join, dirname } from "node:path";
 import { loadConfig } from "../config.ts";
 import { readAggregatedHistory, type SnapshotAggregate } from "./history.ts";
+import type { TestCaseResult } from "./test-runner.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -114,9 +115,33 @@ function chartValue(
   return value === null ? null : Number(value ?? 0);
 }
 
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
+  const blocks = snapshots.map((s) => {
+    const results = s.testResults ?? [];
+    if (!results.length)
+      return `<details><summary><span class="code">${esc(s.shortSha)}</span> — no per-test details</summary></details>`;
+    const failed = results.filter((r) => r.status === "fail");
+    const passed = results.filter((r) => r.status === "pass");
+    const skipped = results.filter((r) => r.status === "skip" || r.status === "todo");
+    const row = (r: TestCaseResult) => {
+      const id = [r.file, r.suite, r.name].filter(Boolean).join(" › ");
+      const err = r.error ? `<div class="err">${esc(r.error.slice(0, 500))}</div>` : "";
+      return `<li class="st-${r.status}"><code>${esc(id)}</code>${err}</li>`;
+    };
+    const section = (title: string, items: TestCaseResult[]) =>
+      items.length ? `<h4>${title} (${items.length})</h4><ul>${items.map(row).join("")}</ul>` : "";
+    return `<details${failed.length ? " open" : ""}><summary><span class="code">${esc(s.shortSha)}</span> — ${passed.length} passed, ${failed.length} failed, ${skipped.length} skipped/todo (${results.length} total)</summary>${section("Failed", failed)}${section("Skipped/Todo", skipped)}${section("Passed", passed)}</details>`;
+  });
+  return blocks.join("\n");
+}
+
 export function generateReport(metricDir = "."): string {
   const config = loadConfig();
-  const snapshots = readAggregatedHistory(metricDir, config.metrics.thresholds);
+  const snapshots = readAggregatedHistory(metricDir, config.metrics.thresholds, { includePending: true });
 
   if (snapshots.length === 0) {
     return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maaidd.db</code>).</p></body></html>";
@@ -130,6 +155,7 @@ export function generateReport(metricDir = "."): string {
   const uplotJs = loadUplotJs();
   const uplotCss = loadUplotCss();
   const tableRows = buildTableRows(snapshots);
+  const details = testDetailsHtml(snapshots);
 
   const dataJson = JSON.stringify({
     labels,
@@ -161,6 +187,15 @@ th { font-weight: 600; }
 .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
 .legend span { display: inline-flex; align-items: center; gap: 0.3rem; }
 .legend i { display: inline-block; width: 1rem; height: 0.25rem; border-radius: 2px; }
+details { margin: 0.4rem 0; padding: 0.2rem 0.4rem; border: 1px solid #ddd; border-radius: 4px; max-width: 1100px; }
+details[open] { background: #fff; }
+summary { cursor: pointer; }
+ul { margin: 0.2rem 0 0.6rem 1.2rem; padding: 0; }
+li { margin: 0.15rem 0; }
+.st-fail { color: #b91c1c; }
+.st-pass { color: #166534; }
+.st-skip, .st-todo { color: #555; }
+.err { white-space: pre-wrap; font-family: monospace; font-size: 0.85em; color: #7f1d1d; margin-left: 1rem; }
 </style>
 </head>
 <body>
@@ -177,6 +212,9 @@ th { font-weight: 600; }
 ${tableRows}
 </tbody>
 </table>
+
+<h2>Test results (per snapshot)</h2>
+${details}
 
 <script>
 ${uplotJs}
