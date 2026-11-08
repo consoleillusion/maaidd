@@ -13,7 +13,7 @@ USAGE
   maaidd report [--output path]
   maaidd mcp
   maaidd graph <args>...
-  maaidd init
+  maaidd init [--hooks]
   maaidd completion install|uninstall ...
 
 Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.
@@ -29,7 +29,7 @@ COMMANDS
   report      Generate uPlot HTML history dashboard from metric snapshots
   mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
   graph       Query the code-graph index
-  init        Write maaidd.config.json and biome.json if they do not exist
+  init        Write maaidd.config.json and biome.json if they do not exist; optionally install git hooks
   completion  Install or uninstall shell completion for maaidd
 ```
 
@@ -174,13 +174,14 @@ ARGUMENTS
 
 ```text
 USAGE
-  maaidd init
+  maaidd init [--hooks]
   maaidd init --help
 
-Write maaidd.config.json and biome.json if they do not exist
+Write maaidd.config.json and biome.json if they do not exist; optionally install git hooks
 
 FLAGS
-  -h --help  Print help information and exit
+     [--hooks/--no-hooks]  Install tracked git hooks (sets core.hooksPath=scripts/hooks)
+  -h  --help               Print help information and exit
 ```
 
 ## `maaidd maaidd completion install`
