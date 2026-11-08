@@ -1,2 +1,2 @@
-mkdir -p metrics
+mkdir -p metric
 

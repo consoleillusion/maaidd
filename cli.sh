@@ -1,6 +1,8 @@
-SRD_DIR="./src"
+SRC_DIR="./src"
 METRIC_DIR="./metric"
 mkdir -p "${METRIC_DIR}"
+
+MAAIDD_CLI="bun ./src/cli/index.ts"
 
 init(){
     # codegraph
@@ -23,13 +25,13 @@ init(){
 }
 
 precommit(){
-    format
+    ${MAAIDD_CLI} format "${SRC_DIR}"
     mkdir -p "${METRIC_DIR}"
-    bunx fta "$SRC_DIR" --json > "${METRIC_DIR}/x.json"
+    ${MAAIDD_CLI} metrics "${SRC_DIR}" --pending
 }
 postcommit(){
     mkdir -p "${METRIC_DIR}"
-    mv "${METRIC_DIR}/x.json" "${METRIC_DIR}/$(git rev-parse HEAD).json"
+    ${MAAIDD_CLI} metrics --finalize
 }
 
 commit(){

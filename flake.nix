@@ -1,5 +1,5 @@
 {
-  description = "Wider-style JavaScript/TypeScript formatter";
+  description = "MAAIDD — Metric Assisted AI Driven Development";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -18,18 +18,18 @@
       apps = forAllSystems (system:
         let
           pkgs = import nixpkgs { inherit system; };
-          formatter = pkgs.writeShellApplication {
-            name = "wider-format";
+          maaidd = pkgs.writeShellApplication {
+            name = "maaidd";
             runtimeInputs = [ pkgs.bun ];
             text = ''
-              exec bun ${self}/src/cli.js "$@"
+              exec bun ${self}/src/cli/index.ts "$@"
             '';
           };
         in
         {
           default = {
             type = "app";
-            program = "${formatter}/bin/wider-format";
+            program = "${maaidd}/bin/maaidd";
           };
         });
     };

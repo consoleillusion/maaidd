@@ -1,17 +1,25 @@
 {
-  "name": "measuredstep",
+  "name": "maaidd",
   "version": "0.1.0",
-  "description": "Comma-first, Haskell style JavaScript/TypeScript formatter (Babel-based)",
+  "description": "MAAIDD — Metric Assisted AI Driven Development: Biome-first formatting, FTA metrics, gates, reports, and MCP tooling",
   "type": "module",
   "bin": {
-    "formatter-ts": "./src/cli.js"
+    "maaidd": "./src/cli/index.ts"
   },
-  "main": "./src/index.js",
+  "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "format": "./src/cli.js"
+    "format": "bun src/cli/index.ts format",
+    "check": "bun src/cli/index.ts check",
+    "metrics": "bun src/cli/index.ts metrics",
+    "gate": "bun src/cli/index.ts gate",
+    "report": "bun src/cli/index.ts report",
+    "mcp": "bun src/cli/index.ts mcp",
+    "docs:cli": "bun scripts/generate-cli-docs.ts",
+    "docs": "bun run docs:cli",
+    "test": "bun test"
   },
   "dependencies": {
     "@babel/parser": "^8.1.0",

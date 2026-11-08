@@ -3,7 +3,8 @@ import { print } from "./printer/index.js";
 import { applyToArrow } from "./transforms/toArrow.js";
 
 /**
- * Format source into Wider comma-first style.
+ * Legacy JS formatter API — MAAIDD comma-first style (Babel printer).
+ * Prefer the TypeScript API from "./index.ts" for Biome-first/functional modes.
  */
 export function format(source, options = {}) {
   const {
