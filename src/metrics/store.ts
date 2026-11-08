@@ -31,6 +31,8 @@ export interface SnapshotAggregate {
   testsPassed: number | null;
   testsFailed: number | null;
   testsSkipped: number | null;
+  /** Per-test results for this snapshot (every snapshot when collected). */
+  testResults?: TestCaseResult[];
   avgCyclo: number;
   maxCyclo: number;
   avgFtaScore: number;
@@ -41,6 +43,10 @@ export interface SnapshotAggregate {
 
 export interface SaveSnapshotOptions {
   force?: boolean;
+}
+
+export interface ReadHistoryOptions {
+  includePending?: boolean;
 }
 
 type Row = {
@@ -58,6 +64,19 @@ const isObj = (v: unknown): v is Record<string, unknown> =>
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
+function normResult(r: unknown): TestCaseResult | null {
+  if (!isObj(r) || typeof r.name !== "string") return null;
+  const status = r.status === "fail" || r.status === "skip" || r.status === "todo" ? r.status : "pass";
+  return {
+    suite: typeof r.suite === "string" ? r.suite : typeof r.classname === "string" ? r.classname : "",
+    name: r.name,
+    file: typeof r.file === "string" ? r.file : "",
+    status,
+    durationMs: num(r.durationMs),
+    ...(typeof r.error === "string" && r.error ? { error: r.error } : {}),
+  };
+}
+
 function normTests(v: unknown): TestRunSummary | null {
   if (!isObj(v)) return null;
   const t: TestRunSummary = {
@@ -70,6 +89,11 @@ function normTests(v: unknown): TestRunSummary | null {
     exitCode: num(v.exitCode) ?? 1,
   };
   if (typeof v.error === "string") t.error = v.error;
+  if (Array.isArray(v.results)) {
+    const results = v.results.map(normResult).filter((x): x is TestCaseResult => x !== null);
+    if (results.length) t.results = results;
+  }
+  if (v.resultsDetail === "full" || v.resultsDetail === "counts-only") t.resultsDetail = v.resultsDetail;
   return t;
 }
 
@@ -98,6 +122,73 @@ export function currentCommit(cwd = process.cwd()): string {
   }
 }
 
+function ensureTestSchema(db: Database) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS test_cases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      file TEXT NOT NULL DEFAULT '',
+      suite TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL,
+      UNIQUE(file, suite, name)
+    );
+    CREATE TABLE IF NOT EXISTS snapshot_tests (
+      snapshot_commit TEXT NOT NULL,
+      test_case_id INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      duration_ms INTEGER,
+      error TEXT,
+      PRIMARY KEY (snapshot_commit, test_case_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_snapshot_tests_commit ON snapshot_tests(snapshot_commit);
+  `);
+}
+
+function saveTestResults(db: Database, commit: string, tests: TestRunSummary | null) {
+  db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$c").run({ $c: commit });
+  if (!tests?.results?.length) return;
+  const getCase = db.query("SELECT id FROM test_cases WHERE file=$f AND suite=$s AND name=$n");
+  const putCase = db.query("INSERT OR IGNORE INTO test_cases (file,suite,name) VALUES ($f,$s,$n)");
+  const putResult = db.query("INSERT OR REPLACE INTO snapshot_tests (snapshot_commit,test_case_id,status,duration_ms,error) VALUES ($c,$id,$st,$d,$e)");
+  const tx = db.transaction((results: TestCaseResult[]) => {
+    for (const r of results) {
+      const file = r.file ?? "", suite = r.suite ?? "", name = r.name ?? "";
+      putCase.run({ $f: file, $s: suite, $n: name });
+      const row = getCase.get({ $f: file, $s: suite, $n: name }) as { id: number } | null;
+      if (!row) continue;
+      putResult.run({ $c: commit, $id: row.id, $st: r.status, $d: r.durationMs ?? null, $e: r.error ?? null });
+    }
+  });
+  tx(tests.results);
+}
+
+function loadTestResults(db: Database, commit: string): TestCaseResult[] | undefined {
+  try {
+    const rows = db.query(
+      `SELECT tc.file, tc.suite, tc.name, st.status, st.duration_ms, st.error
+       FROM snapshot_tests st JOIN test_cases tc ON tc.id = st.test_case_id
+       WHERE st.snapshot_commit=$c ORDER BY tc.file, tc.suite, tc.name`,
+    ).all({ $c: commit }) as any[];
+    if (!rows.length) return undefined;
+    return rows.map((r) => ({
+      file: r.file ?? "",
+      suite: r.suite ?? "",
+      name: r.name ?? "",
+      status: (r.status === "fail" || r.status === "skip" || r.status === "todo" ? r.status : "pass") as any,
+      durationMs: typeof r.duration_ms === "number" ? r.duration_ms : null,
+      ...(r.error ? { error: String(r.error) } : {}),
+    }));
+  } catch {
+    return undefined;
+  }
+}
+
+function moveTestResults(db: Database, from: string, to: string) {
+  try {
+    db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$to").run({ $to: to });
+    db.query("UPDATE snapshot_tests SET snapshot_commit=$to WHERE snapshot_commit=$from").run({ $from: from, $to: to });
+  } catch {}
+}
+
 function open(dir: string): Database {
   mkdirSync(dir, { recursive: true });
   const db = new Database(join(dir, DB));
@@ -108,6 +199,7 @@ function open(dir: string): Database {
       fta_average REAL, fta_files_json TEXT NOT NULL
     );
   `);
+  ensureTestSchema(db);
   // legacy import (non-destructive)
   const has = db.query('SELECT 1 FROM snapshots WHERE "commit"=$c');
   const put = db.transaction(
@@ -197,6 +289,7 @@ function upsert(
     $a: avg(metrics),
     $f: JSON.stringify(metrics),
   });
+  saveTestResults(db, commit, tests);
 }
 
 function exists(db: Database, c: string) {
@@ -260,8 +353,11 @@ export function finalizeSnapshot(
       );
     const metrics = JSON.parse(p.fta_files_json) as FtaFileMetric[];
     const tests = p.tests_json ? normTests(JSON.parse(p.tests_json)) : null;
+    const pendingResults = loadTestResults(db, PENDING);
+    if (pendingResults?.length && tests) tests.results = pendingResults;
     db.transaction(() => {
       upsert(db, c, "final", metrics, tests, p.created_at);
+      moveTestResults(db, PENDING, c);
       db.query('DELETE FROM snapshots WHERE "commit"=$c').run({ $c: PENDING });
     })();
     return `${join(dir, DB)}#${c}`;
@@ -320,10 +416,31 @@ function tsOf(c: string): number {
   }
 }
 
+function rowToEntry(db: Database, r: Row, commitOverride?: {commit:string,timestamp:number,shortSha?:string}): HistoryEntry & {shortSha?:string} {
+  const metrics = JSON.parse(r.fta_files_json) as FtaFileMetric[];
+  const tests = r.tests_json ? normTests(JSON.parse(r.tests_json)) : null;
+  const results = loadTestResults(db, r.commit);
+  if (results?.length && tests) { tests.results = results; tests.resultsDetail = "full"; }
+  const commit = commitOverride?.commit ?? r.commit;
+  const timestamp = commitOverride?.timestamp ?? tsOf(r.commit);
+  return {
+    commit,
+    timestamp,
+    createdAt: r.created_at ?? null,
+    tests,
+    metrics,
+    average: r.fta_average ?? avg(metrics),
+    total: r.fta_total ?? metrics.length,
+    ...(commitOverride?.shortSha ? { shortSha: commitOverride.shortSha } : {}),
+  };
+}
+
 export function readHistory(
   dir = ".",
-  _thresholds?: MetricsThresholds,
+  _thresholdsOrOpts?: MetricsThresholds | ReadHistoryOptions,
+  opts?: ReadHistoryOptions,
 ): HistoryEntry[] {
+  const includePending = (opts ?? (isObj(_thresholdsOrOpts) && ("includePending" in (_thresholdsOrOpts as any)) ? (_thresholdsOrOpts as ReadHistoryOptions) : undefined))?.includePending === true;
   if (!existsSync(dir)) return [];
   const db = open(dir);
   try {
@@ -332,18 +449,7 @@ export function readHistory(
       .all({ $p: PENDING }) as Row[];
     const entries = rows
       .filter((r) => /^[0-9a-f]{7,40}$/.test(r.commit))
-      .map((r) => {
-        const metrics = JSON.parse(r.fta_files_json) as FtaFileMetric[];
-        return {
-          commit: r.commit,
-          timestamp: tsOf(r.commit),
-          createdAt: r.created_at ?? null,
-          tests: r.tests_json ? normTests(JSON.parse(r.tests_json)) : null,
-          metrics,
-          average: r.fta_average ?? avg(metrics),
-          total: r.fta_total ?? metrics.length,
-        };
-      });
+      .map((r) => rowToEntry(db, r));
     entries.sort((a, b) =>
       a.timestamp && b.timestamp
         ? a.timestamp - b.timestamp
@@ -353,6 +459,14 @@ export function readHistory(
             ? 1
             : a.commit.localeCompare(b.commit),
     );
+    if (includePending) {
+      const p = db.query('SELECT * FROM snapshots WHERE "commit"=$c').get({ $c: PENDING }) as Row | null;
+      if (p) {
+        const pt = Date.parse(p.created_at);
+        const timestamp = Number.isFinite(pt) ? pt : Date.now();
+        entries.push(rowToEntry(db, p, { commit: PENDING, timestamp, shortSha: "current" }));
+      }
+    }
     return entries;
   } finally {
     db.close();
@@ -362,11 +476,13 @@ export function readHistory(
 export function readAggregatedHistory(
   dir = ".",
   thresholds: MetricsThresholds,
+  opts?: ReadHistoryOptions,
 ): SnapshotAggregate[] {
-  return readHistory(dir).map((e) => ({
+  return readHistory(dir, thresholds, opts).map((e: any) => ({
     ...aggregateSnapshot(e.metrics, thresholds, e.tests),
     commit: e.commit,
-    shortSha: e.commit.slice(0, 8),
+    shortSha: e.shortSha ?? e.commit.slice(0, 8),
     timestamp: e.timestamp,
+    ...(e.tests?.results?.length ? { testResults: e.tests.results } : {}),
   }));
 }

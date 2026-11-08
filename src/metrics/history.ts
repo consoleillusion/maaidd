@@ -9,6 +9,7 @@ export {
 } from "./store.ts";
 export type {
   HistoryEntry,
+  ReadHistoryOptions,
   SaveSnapshotOptions,
   SnapshotAggregate,
 } from "./store.ts";
