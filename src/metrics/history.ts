@@ -1,7 +1,7 @@
 /**
- * Metrics history — per-commit snapshots backed by embedded SQLite (`metric/maaidd.db`).
+ * Metrics history — per-commit snapshots in embedded SQLite (`maaidd.db`, project root).
  *
- * Legacy `metric/<commit>.json` snapshots are imported automatically (non-destructive).
+ * Legacy JSON snapshots are imported automatically (non-destructive).
  * Pending snapshots are stored in the DB and finalized to the commit SHA.
  */
 export {

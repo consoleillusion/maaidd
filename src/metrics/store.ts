@@ -154,8 +154,8 @@ export function currentCommit(cwd = process.cwd()): string {
   }
 }
 
-function dbPath(metricDir: string): string {
-  return join(metricDir, DB_FILENAME);
+function dbPath(dir: string): string {
+  return join(dir, DB_FILENAME);
 }
 
 function ensureSchema(db: Database): void {
@@ -226,24 +226,27 @@ function insertSnapshot(
   });
 }
 
-function importLegacyFiles(db: Database, metricDir: string): void {
-  if (!existsSync(metricDir)) return;
-  let files: string[];
-  try {
-    files = readdirSync(metricDir).filter((f) => f.endsWith(".json"));
-  } catch {
-    return;
+function importLegacyFiles(db: Database, dir: string): void {
+  const dirs = [dir, join(dir, "metric")].filter((d) => existsSync(d));
+  let files: { path: string; name: string }[] = [];
+  for (const d of dirs) {
+    try {
+      for (const f of readdirSync(d).filter((x) => x.endsWith(".json"))) {
+        files.push({ path: join(d, f), name: basename(f, ".json") });
+      }
+    } catch {}
   }
+  if (!files.length) return;
 
   const has = db.query(
     'SELECT 1 AS ok FROM snapshots WHERE "commit" = $commit',
   );
   const tx = db.transaction(() => {
     for (const file of files) {
-      const name = basename(file, ".json");
+      const name = file.name;
       let raw: unknown;
       try {
-        raw = JSON.parse(readFileSync(join(metricDir, file), "utf8"));
+        raw = JSON.parse(readFileSync(file.path, "utf8"));
       } catch {
         continue;
       }
@@ -278,12 +281,12 @@ function importLegacyFiles(db: Database, metricDir: string): void {
   tx();
 }
 
-function withDb<T>(metricDir: string, fn: (db: Database) => T): T {
-  mkdirSync(metricDir, { recursive: true });
-  const db = new Database(dbPath(metricDir));
+function withDb<T>(dir: string, fn: (db: Database) => T): T {
+  mkdirSync(dir, { recursive: true });
+  const db = new Database(dbPath(dir));
   try {
     ensureSchema(db);
-    importLegacyFiles(db, metricDir);
+    importLegacyFiles(db, dir);
     return fn(db);
   } finally {
     db.close();
@@ -299,31 +302,31 @@ function snapshotExists(db: Database, commit: string): boolean {
 
 /** Save an immediately finalized snapshot for a known commit. */
 export function saveSnapshot(
-  metricDir: string,
+  dir: string,
   commit: string,
   metrics: FtaFileMetric[],
   tests: TestRunSummary | null = null,
   options: SaveSnapshotOptions = {},
 ): string {
   const sha = validateCommit(commit);
-  withDb(metricDir, (db) => {
+  withDb(dir, (db) => {
     if (!options.force && snapshotExists(db, sha)) {
       throw new Error(
-        `Metric snapshot already exists for commit ${sha} (${dbPath(metricDir)})`,
+        `Metric snapshot already exists for commit ${sha} (${dbPath(dir)})`,
       );
     }
     insertSnapshot(db, sha, "final", makeSnapshot(sha, metrics, tests), true);
   });
-  return `${dbPath(metricDir)}#${sha}`;
+  return `${dbPath(dir)}#${sha}`;
 }
 
 /** Capture metrics before a commit, when its new SHA is not known yet. */
 export function savePendingSnapshot(
-  metricDir: string,
+  dir: string,
   metrics: FtaFileMetric[],
   tests: TestRunSummary | null = null,
 ): string {
-  withDb(metricDir, (db) => {
+  withDb(dir, (db) => {
     insertSnapshot(
       db,
       PENDING_COMMIT,
@@ -332,26 +335,26 @@ export function savePendingSnapshot(
       true,
     );
   });
-  return `${dbPath(metricDir)}#pending`;
+  return `${dbPath(dir)}#pending`;
 }
 
 /** Finalize a pending snapshot to the new commit's full SHA. */
 export function finalizeSnapshot(
-  metricDir: string,
+  dir: string,
   commit: string,
   options: SaveSnapshotOptions = {},
 ): string {
   const sha = validateCommit(commit);
-  withDb(metricDir, (db) => {
+  withDb(dir, (db) => {
     const pending = db
       .query('SELECT * FROM snapshots WHERE "commit" = $commit')
       .get({ $commit: PENDING_COMMIT }) as SnapshotRow | null;
     if (!pending) {
-      throw new Error(`No pending metric snapshot found in ${dbPath(metricDir)}`);
+      throw new Error(`No pending metric snapshot found in ${dbPath(dir)}`);
     }
     if (!options.force && snapshotExists(db, sha)) {
       throw new Error(
-        `Metric snapshot already exists for commit ${sha} (${dbPath(metricDir)})`,
+        `Metric snapshot already exists for commit ${sha} (${dbPath(dir)})`,
       );
     }
 
@@ -369,7 +372,7 @@ export function finalizeSnapshot(
     });
     tx();
   });
-  return `${dbPath(metricDir)}#${sha}`;
+  return `${dbPath(dir)}#${sha}`;
 }
 
 function mean(nums: number[]): number {
@@ -451,11 +454,11 @@ function rowToEntry(row: SnapshotRow): HistoryEntry {
 }
 
 export function readHistory(
-  metricDir: string = "metric",
+  dir: string = ".",
   _thresholds?: MetricsThresholds,
 ): HistoryEntry[] {
-  if (!existsSync(metricDir)) return [];
-  const entries = withDb(metricDir, (db) => {
+  if (!existsSync(dir)) return [];
+  const entries = withDb(dir, (db) => {
     const rows = db
       .query(
         'SELECT * FROM snapshots WHERE status = \'final\' AND "commit" != $pending',
@@ -475,10 +478,10 @@ export function readHistory(
 
 /** Aggregate all snapshots, ordered chronologically by commit. */
 export function readAggregatedHistory(
-  metricDir: string = "metric",
+  dir: string = ".",
   thresholds: MetricsThresholds,
 ): SnapshotAggregate[] {
-  return readHistory(metricDir, thresholds).map((entry) => ({
+  return readHistory(dir, thresholds).map((entry) => ({
     ...aggregateSnapshot(entry.metrics, thresholds, entry.tests),
     commit: entry.commit,
     shortSha: entry.commit.slice(0, 8),

@@ -29,7 +29,7 @@ const metricsCommand = buildCommand({
       save: {
         kind: "boolean",
         optional: true,
-        brief: "Save tests + FTA metrics for current HEAD (metric/maaidd.db)",
+        brief: "Save tests + FTA metrics for current HEAD (maaidd.db)",
       },
       pending: {
         kind: "boolean",
@@ -87,8 +87,9 @@ const metricsCommand = buildCommand({
     const stderr = (s: string) => process.stderr.write(s + "\n");
 
     const config = flags.config ? loadConfig(flags.config) : loadConfig();
+    const dbDir = ".";
     if (flags.finalize) {
-      const path = finalizeSnapshot("metric", currentCommit(), {
+      const path = finalizeSnapshot(dbDir, currentCommit(), {
         force: flags.force === true,
       });
       stderr(`Saved: ${path}`);
@@ -131,8 +132,8 @@ const metricsCommand = buildCommand({
       }
 
       const saved = flags.pending
-        ? savePendingSnapshot("metric", result.metrics, tests)
-        : saveSnapshot("metric", currentCommit(), result.metrics, tests, {
+        ? savePendingSnapshot(dbDir, result.metrics, tests)
+        : saveSnapshot(dbDir, currentCommit(), result.metrics, tests, {
             force: flags.force === true,
           });
       stderr(`Saved: ${saved}`);

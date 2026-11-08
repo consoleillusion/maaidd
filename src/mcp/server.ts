@@ -106,14 +106,14 @@ export function createMcpServer(): McpServer {
   // history tool — read metric snapshots with aggregated trend values
   server.tool(
     "history",
-    "Read aggregated metric history snapshots from metric/maaidd.db (per-commit trend: tests, lines of code, cyclo, FTA score, Halstead)",
+    "Read aggregated metric history snapshots from maaidd.db (per-commit trend: tests, lines of code, cyclo, FTA score, Halstead)",
     {},
     async () => {
       const config = loadConfig();
-      const history = readAggregatedHistory("metric", config.metrics.thresholds);
+      const history = readAggregatedHistory(".", config.metrics.thresholds);
       if (!history.length) {
         return {
-          content: [{ type: "text" as const, text: "No metric history found in metric/." }],
+          content: [{ type: "text" as const, text: "No metric history found (maaidd.db)." }],
         };
       }
       const text = history

@@ -71,12 +71,12 @@ function chartValue(snapshot: SnapshotAggregate, key: SeriesKey): number | null 
   return value === null ? null : Number(value ?? 0);
 }
 
-export function generateReport(metricDir = "metric"): string {
+export function generateReport(metricDir = "."): string {
   const config = loadConfig();
   const snapshots = readAggregatedHistory(metricDir, config.metrics.thresholds);
 
   if (snapshots.length === 0) {
-    return "<!DOCTYPE html>\n<html><body><p>No metric history found in <code>metric/</code> (maaidd.db).</p></body></html>";
+    return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maaidd.db</code>).</p></body></html>";
   }
 
   const labels = snapshots.map((s) => s.shortSha);
@@ -116,7 +116,7 @@ th { font-weight: 600; }
 </head>
 <body>
 <h1>MAAIDD — Metric History</h1>
-<p>${snapshots.length} snapshots from <code>metric/maaidd.db</code> · x-axis: git commits in chronological order</p>
+<p>${snapshots.length} snapshots from <code>maaidd.db</code> · x-axis: git commits in chronological order</p>
 
 <div class="legend" id="legend"></div>
 <div id="chart"></div>

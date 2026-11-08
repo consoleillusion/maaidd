@@ -97,9 +97,9 @@ describe("metrics and gate commands", () => {
     );
     expect(result.status).toBe(0);
     expect(result.stderr).toContain("Tests: 7/8 passed, 1 failed");
-    expect(existsSync(join(dir, "metric", "maaidd.db"))).toBe(true);
+    expect(existsSync(join(dir, "maaidd.db"))).toBe(true);
 
-    const [snapshot] = readHistory(join(dir, "metric"));
+    const [snapshot] = readHistory(dir);
     expect(snapshot.commit).toBe(currentHead());
     expect(snapshot.tests).toMatchObject({
       command: testCommand,
@@ -119,13 +119,13 @@ describe("metrics and gate commands", () => {
       { cwd: dir },
     );
     expect(pending.status).toBe(0);
-    expect(readHistory(join(dir, "metric"))).toHaveLength(0);
-    expect(existsSync(join(dir, "metric", "maaidd.db"))).toBe(true);
+    expect(readHistory(dir)).toHaveLength(0);
+    expect(existsSync(join(dir, "maaidd.db"))).toBe(true);
 
     const finalized = runCli(["metrics", "--finalize"], { cwd: dir });
     expect(finalized.status).toBe(0);
-    expect(readHistory(join(dir, "metric"))).toHaveLength(1);
-    expect(readHistory(join(dir, "metric"))[0].commit).toBe(currentHead());
+    expect(readHistory(dir)).toHaveLength(1);
+    expect(readHistory(dir)[0].commit).toBe(currentHead());
   });
 
   it("can omit test collection explicitly", () => {
@@ -137,14 +137,13 @@ describe("metrics and gate commands", () => {
 
     const finalized = runCli(["metrics", "--finalize"], { cwd: dir });
     expect(finalized.status).toBe(0);
-    const [snapshot] = readHistory(join(dir, "metric"));
+    const [snapshot] = readHistory(dir);
     expect(snapshot.tests).toBeNull();
     expect(snapshot.metrics).toHaveLength(1);
   });
 
   it("fails cleanly when trying to finalize without pending metrics", () => {
     const { dir } = project();
-    mkdirSync(join(dir, "metric"), { recursive: true });
     const result = runCli(["metrics", "--finalize"], { cwd: dir });
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("No pending metric snapshot");

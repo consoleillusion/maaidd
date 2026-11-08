@@ -81,8 +81,7 @@ describe("format and check commands", () => {
 describe("project commands", () => {
   it("writes a uPlot report to an output file", () => {
     const dir = project();
-    const metricDir = join(dir, "metric");
-    saveSnapshot(metricDir, "a".repeat(40), [
+    saveSnapshot(dir, "a".repeat(40), [
       { file_name: "a.ts", cyclo: 2, fta_score: 90, assessment: "OK", line_count: 20 },
     ]);
     const output = join(dir, "dashboard.html");

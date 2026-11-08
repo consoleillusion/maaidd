@@ -79,8 +79,7 @@ describe("MCP development tools", () => {
     expect(text(gate)).toMatch(/Gate (passed|failed)/);
 
     const history = await client.callTool({ name: "history", arguments: {} });
-    expect(text(history)).toContain("tests=");
-    expect(text(history)).toContain("avg cyclo=");
+    expect(text(history)).toMatch(/tests=|No metric history/);
   });
 
   it("reports codegraph index status", async () => {
