@@ -116,7 +116,11 @@ function chartValue(
 }
 
 function esc(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
@@ -126,14 +130,20 @@ function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
       return `<details><summary><span class="code">${esc(s.shortSha)}</span> — no per-test details</summary></details>`;
     const failed = results.filter((r) => r.status === "fail");
     const passed = results.filter((r) => r.status === "pass");
-    const skipped = results.filter((r) => r.status === "skip" || r.status === "todo");
+    const skipped = results.filter(
+      (r) => r.status === "skip" || r.status === "todo",
+    );
     const row = (r: TestCaseResult) => {
       const id = [r.file, r.suite, r.name].filter(Boolean).join(" › ");
-      const err = r.error ? `<div class="err">${esc(r.error.slice(0, 500))}</div>` : "";
+      const err = r.error
+        ? `<div class="err">${esc(r.error.slice(0, 500))}</div>`
+        : "";
       return `<li class="st-${r.status}"><code>${esc(id)}</code>${err}</li>`;
     };
     const section = (title: string, items: TestCaseResult[]) =>
-      items.length ? `<h4>${title} (${items.length})</h4><ul>${items.map(row).join("")}</ul>` : "";
+      items.length
+        ? `<h4>${title} (${items.length})</h4><ul>${items.map(row).join("")}</ul>`
+        : "";
     return `<details${failed.length ? " open" : ""}><summary><span class="code">${esc(s.shortSha)}</span> — ${passed.length} passed, ${failed.length} failed, ${skipped.length} skipped/todo (${results.length} total)</summary>${section("Failed", failed)}${section("Skipped/Todo", skipped)}${section("Passed", passed)}</details>`;
   });
   return blocks.join("\n");
@@ -141,7 +151,11 @@ function testDetailsHtml(snapshots: SnapshotAggregate[]): string {
 
 export function generateReport(metricDir = "."): string {
   const config = loadConfig();
-  const snapshots = readAggregatedHistory(metricDir, config.metrics.thresholds, { includePending: true });
+  const snapshots = readAggregatedHistory(
+    metricDir,
+    config.metrics.thresholds,
+    { includePending: true },
+  );
 
   if (snapshots.length === 0) {
     return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maaidd.db</code>).</p></body></html>";

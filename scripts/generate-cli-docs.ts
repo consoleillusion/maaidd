@@ -43,7 +43,14 @@ function render(): string {
     "",
   ];
   for (const [route, helpText] of commands) {
-    lines.push(`## \`maaidd ${route}\``, "", "```text", helpText.trimEnd(), "```", "");
+    lines.push(
+      `## \`maaidd ${route}\``,
+      "",
+      "```text",
+      helpText.trimEnd(),
+      "```",
+      "",
+    );
   }
   return lines.join("\n");
 }
@@ -55,7 +62,9 @@ if (process.argv.includes("--check")) {
     current = readFileSync(OUT, "utf8");
   } catch {}
   if (current !== next) {
-    process.stderr.write("docs/cli.md is stale. Run: bun scripts/generate-cli-docs.ts\n");
+    process.stderr.write(
+      "docs/cli.md is stale. Run: bun scripts/generate-cli-docs.ts\n",
+    );
     process.exit(1);
   }
   process.stdout.write("docs/cli.md is up to date.\n");

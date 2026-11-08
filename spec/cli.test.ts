@@ -5,7 +5,11 @@ import { resolve } from "node:path";
 
 const CLI = resolve("src/cli/index.ts");
 
-function runCli(...args: string[]): { stdout: string; stderr: string; status: number | null } {
+function runCli(...args: string[]): {
+  stdout: string;
+  stderr: string;
+  status: number | null;
+} {
   const result = spawnSync("bun", ["run", CLI, ...args], {
     encoding: "utf8",
     cwd: process.cwd(),

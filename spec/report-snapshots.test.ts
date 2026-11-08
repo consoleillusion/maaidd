@@ -21,8 +21,20 @@ afterEach(() => {
 });
 
 const fta = [
-  { file_name: "a.ts", cyclo: 4, fta_score: 80, assessment: "OK", line_count: 120 },
-  { file_name: "b.ts", cyclo: 8, fta_score: 60, assessment: "OK", line_count: 80 },
+  {
+    file_name: "a.ts",
+    cyclo: 4,
+    fta_score: 80,
+    assessment: "OK",
+    line_count: 120,
+  },
+  {
+    file_name: "b.ts",
+    cyclo: 8,
+    fta_score: 60,
+    assessment: "OK",
+    line_count: 80,
+  },
 ];
 const firstTests: TestRunSummary = {
   command: "bun run test",
@@ -42,7 +54,9 @@ const secondTests: TestRunSummary = {
 };
 
 function payload(html: string): any {
-  const match = /const payload = (.*);\nconst labels = payload\.labels;/.exec(html);
+  const match = /const payload = (.*);\nconst labels = payload\.labels;/.exec(
+    html,
+  );
   expect(match).not.toBeNull();
   return JSON.parse(match![1]);
 }
@@ -97,7 +111,9 @@ describe("uPlot commit history", () => {
     writeFileSync(join(dir, `${"c".repeat(40)}.json`), JSON.stringify(fta));
 
     const data = payload(generateReport(dir));
-    const index = data.series.findIndex((s: any) => s.label === "Passing tests");
+    const index = data.series.findIndex(
+      (s: any) => s.label === "Passing tests",
+    );
     expect(data.values[index]).toEqual([null]);
   });
 

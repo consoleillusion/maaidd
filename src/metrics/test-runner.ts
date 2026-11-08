@@ -48,11 +48,22 @@ function count(output: string, bun: RegExp, node: RegExp): number | null {
 
 function attr(tag: string, name: string): string {
   const m = new RegExp(`${name}="([^"]*)"`).exec(tag);
-  return m ? m[1].replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">") : "";
+  return m
+    ? m[1]
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+    : "";
 }
 
 function unesc(s: string): string {
-  return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
 }
 
 /** Parse Bun/JUnit XML into per-test results (best-effort). */
@@ -73,7 +84,10 @@ export function parseJunitResults(xml: string): TestCaseResult[] {
     else if (/<failure\b|<error\b/i.test(body)) {
       status = "fail";
       const msg = /<(?:failure|error)\b[^>]*message="([^"]*)"/i.exec(body)?.[1];
-      const text = /<(?:failure|error)\b[^>]*>([\s\S]*?)<\/(?:failure|error)>/i.exec(body)?.[1];
+      const text =
+        /<(?:failure|error)\b[^>]*>([\s\S]*?)<\/(?:failure|error)>/i.exec(
+          body,
+        )?.[1];
       error = unesc((msg ?? text ?? "").trim()).slice(0, 4000) || undefined;
     }
     results.push({
@@ -90,7 +104,9 @@ export function parseJunitResults(xml: string): TestCaseResult[] {
 
 function isBunTestCommand(command: string): boolean {
   // default "bun run test" and direct "bun test" forms
-  return /^\s*bun\s+run\s+test\b/.test(command) || /^\s*bun\s+test\b/.test(command);
+  return (
+    /^\s*bun\s+run\s+test\b/.test(command) || /^\s*bun\s+test\b/.test(command)
+  );
 }
 
 function withJunit(command: string, outfile: string): string {
@@ -183,10 +199,14 @@ export function runTestSuite(
       summary.resultsDetail = "counts-only";
     }
     if (summary.total === null) {
-      summary.error = summary.error ?? "Could not find test counts in the test runner output";
+      summary.error =
+        summary.error ?? "Could not find test counts in the test runner output";
     }
     return summary;
   } finally {
-    if (tmp) try { rmSync(tmp, { recursive: true, force: true }); } catch {}
+    if (tmp)
+      try {
+        rmSync(tmp, { recursive: true, force: true });
+      } catch {}
   }
 }

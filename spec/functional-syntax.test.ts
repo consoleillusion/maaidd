@@ -31,7 +31,8 @@ const App = () => <div className="app"><span>Hello</span></div>;`;
   });
 
   it("normalizes quotes through Biome before applying functional layout", () => {
-    const source = "const value = { message: 'hello', description: 'long enough to expand this object with another property' };";
+    const source =
+      "const value = { message: 'hello', description: 'long enough to expand this object with another property' };";
     const output = format(source, {
       ...functional,
       filename: "value.ts",
@@ -51,7 +52,8 @@ const App = () => <div className="app"><span>Hello</span></div>;`;
   });
 
   it("keeps operator chains and nested arrays idempotent", () => {
-    const source = "const result = firstValue + secondValue + thirdValue + fourthValue + fifthValue; const values = [[1, 2, 3, 4], [5, 6, 7, 8]];";
+    const source =
+      "const result = firstValue + secondValue + thirdValue + fourthValue + fifthValue; const values = [[1, 2, 3, 4], [5, 6, 7, 8]];";
     const options = { ...functional, filename: "math.ts", lineWidth: 40 };
     const once = format(source, options);
     expect(format(once, options)).toBe(once);

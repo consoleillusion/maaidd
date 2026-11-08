@@ -66,9 +66,17 @@ const num = (v: unknown): number | null =>
 
 function normResult(r: unknown): TestCaseResult | null {
   if (!isObj(r) || typeof r.name !== "string") return null;
-  const status = r.status === "fail" || r.status === "skip" || r.status === "todo" ? r.status : "pass";
+  const status =
+    r.status === "fail" || r.status === "skip" || r.status === "todo"
+      ? r.status
+      : "pass";
   return {
-    suite: typeof r.suite === "string" ? r.suite : typeof r.classname === "string" ? r.classname : "",
+    suite:
+      typeof r.suite === "string"
+        ? r.suite
+        : typeof r.classname === "string"
+          ? r.classname
+          : "",
     name: r.name,
     file: typeof r.file === "string" ? r.file : "",
     status,
@@ -90,10 +98,13 @@ function normTests(v: unknown): TestRunSummary | null {
   };
   if (typeof v.error === "string") t.error = v.error;
   if (Array.isArray(v.results)) {
-    const results = v.results.map(normResult).filter((x): x is TestCaseResult => x !== null);
+    const results = v.results
+      .map(normResult)
+      .filter((x): x is TestCaseResult => x !== null);
     if (results.length) t.results = results;
   }
-  if (v.resultsDetail === "full" || v.resultsDetail === "counts-only") t.resultsDetail = v.resultsDetail;
+  if (v.resultsDetail === "full" || v.resultsDetail === "counts-only")
+    t.resultsDetail = v.resultsDetail;
   return t;
 }
 
@@ -143,37 +154,66 @@ function ensureTestSchema(db: Database) {
   `);
 }
 
-function saveTestResults(db: Database, commit: string, tests: TestRunSummary | null) {
-  db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$c").run({ $c: commit });
+function saveTestResults(
+  db: Database,
+  commit: string,
+  tests: TestRunSummary | null,
+) {
+  db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$c").run({
+    $c: commit,
+  });
   if (!tests?.results?.length) return;
-  const getCase = db.query("SELECT id FROM test_cases WHERE file=$f AND suite=$s AND name=$n");
-  const putCase = db.query("INSERT OR IGNORE INTO test_cases (file,suite,name) VALUES ($f,$s,$n)");
-  const putResult = db.query("INSERT OR REPLACE INTO snapshot_tests (snapshot_commit,test_case_id,status,duration_ms,error) VALUES ($c,$id,$st,$d,$e)");
+  const getCase = db.query(
+    "SELECT id FROM test_cases WHERE file=$f AND suite=$s AND name=$n",
+  );
+  const putCase = db.query(
+    "INSERT OR IGNORE INTO test_cases (file,suite,name) VALUES ($f,$s,$n)",
+  );
+  const putResult = db.query(
+    "INSERT OR REPLACE INTO snapshot_tests (snapshot_commit,test_case_id,status,duration_ms,error) VALUES ($c,$id,$st,$d,$e)",
+  );
   const tx = db.transaction((results: TestCaseResult[]) => {
     for (const r of results) {
-      const file = r.file ?? "", suite = r.suite ?? "", name = r.name ?? "";
+      const file = r.file ?? "",
+        suite = r.suite ?? "",
+        name = r.name ?? "";
       putCase.run({ $f: file, $s: suite, $n: name });
-      const row = getCase.get({ $f: file, $s: suite, $n: name }) as { id: number } | null;
+      const row = getCase.get({ $f: file, $s: suite, $n: name }) as {
+        id: number;
+      } | null;
       if (!row) continue;
-      putResult.run({ $c: commit, $id: row.id, $st: r.status, $d: r.durationMs ?? null, $e: r.error ?? null });
+      putResult.run({
+        $c: commit,
+        $id: row.id,
+        $st: r.status,
+        $d: r.durationMs ?? null,
+        $e: r.error ?? null,
+      });
     }
   });
   tx(tests.results);
 }
 
-function loadTestResults(db: Database, commit: string): TestCaseResult[] | undefined {
+function loadTestResults(
+  db: Database,
+  commit: string,
+): TestCaseResult[] | undefined {
   try {
-    const rows = db.query(
-      `SELECT tc.file, tc.suite, tc.name, st.status, st.duration_ms, st.error
+    const rows = db
+      .query(
+        `SELECT tc.file, tc.suite, tc.name, st.status, st.duration_ms, st.error
        FROM snapshot_tests st JOIN test_cases tc ON tc.id = st.test_case_id
        WHERE st.snapshot_commit=$c ORDER BY tc.file, tc.suite, tc.name`,
-    ).all({ $c: commit }) as any[];
+      )
+      .all({ $c: commit }) as any[];
     if (!rows.length) return undefined;
     return rows.map((r) => ({
       file: r.file ?? "",
       suite: r.suite ?? "",
       name: r.name ?? "",
-      status: (r.status === "fail" || r.status === "skip" || r.status === "todo" ? r.status : "pass") as any,
+      status: (r.status === "fail" || r.status === "skip" || r.status === "todo"
+        ? r.status
+        : "pass") as any,
       durationMs: typeof r.duration_ms === "number" ? r.duration_ms : null,
       ...(r.error ? { error: String(r.error) } : {}),
     }));
@@ -184,8 +224,12 @@ function loadTestResults(db: Database, commit: string): TestCaseResult[] | undef
 
 function moveTestResults(db: Database, from: string, to: string) {
   try {
-    db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$to").run({ $to: to });
-    db.query("UPDATE snapshot_tests SET snapshot_commit=$to WHERE snapshot_commit=$from").run({ $from: from, $to: to });
+    db.query("DELETE FROM snapshot_tests WHERE snapshot_commit=$to").run({
+      $to: to,
+    });
+    db.query(
+      "UPDATE snapshot_tests SET snapshot_commit=$to WHERE snapshot_commit=$from",
+    ).run({ $from: from, $to: to });
   } catch {}
 }
 
@@ -416,11 +460,18 @@ function tsOf(c: string): number {
   }
 }
 
-function rowToEntry(db: Database, r: Row, commitOverride?: {commit:string,timestamp:number,shortSha?:string}): HistoryEntry & {shortSha?:string} {
+function rowToEntry(
+  db: Database,
+  r: Row,
+  commitOverride?: { commit: string; timestamp: number; shortSha?: string },
+): HistoryEntry & { shortSha?: string } {
   const metrics = JSON.parse(r.fta_files_json) as FtaFileMetric[];
   const tests = r.tests_json ? normTests(JSON.parse(r.tests_json)) : null;
   const results = loadTestResults(db, r.commit);
-  if (results?.length && tests) { tests.results = results; tests.resultsDetail = "full"; }
+  if (results?.length && tests) {
+    tests.results = results;
+    tests.resultsDetail = "full";
+  }
   const commit = commitOverride?.commit ?? r.commit;
   const timestamp = commitOverride?.timestamp ?? tsOf(r.commit);
   return {
@@ -440,7 +491,14 @@ export function readHistory(
   _thresholdsOrOpts?: MetricsThresholds | ReadHistoryOptions,
   opts?: ReadHistoryOptions,
 ): HistoryEntry[] {
-  const includePending = (opts ?? (isObj(_thresholdsOrOpts) && ("includePending" in (_thresholdsOrOpts as any)) ? (_thresholdsOrOpts as ReadHistoryOptions) : undefined))?.includePending === true;
+  const includePending =
+    (
+      opts ??
+      (isObj(_thresholdsOrOpts) &&
+      "includePending" in (_thresholdsOrOpts as any)
+        ? (_thresholdsOrOpts as ReadHistoryOptions)
+        : undefined)
+    )?.includePending === true;
   if (!existsSync(dir)) return [];
   const db = open(dir);
   try {
@@ -460,11 +518,19 @@ export function readHistory(
             : a.commit.localeCompare(b.commit),
     );
     if (includePending) {
-      const p = db.query('SELECT * FROM snapshots WHERE "commit"=$c').get({ $c: PENDING }) as Row | null;
+      const p = db
+        .query('SELECT * FROM snapshots WHERE "commit"=$c')
+        .get({ $c: PENDING }) as Row | null;
       if (p) {
         const pt = Date.parse(p.created_at);
         const timestamp = Number.isFinite(pt) ? pt : Date.now();
-        entries.push(rowToEntry(db, p, { commit: PENDING, timestamp, shortSha: "current" }));
+        entries.push(
+          rowToEntry(db, p, {
+            commit: PENDING,
+            timestamp,
+            shortSha: "current",
+          }),
+        );
       }
     }
     return entries;

@@ -11,10 +11,10 @@ describe("biome formatter", () => {
   });
 
   it("adds trailing commas", () => {
-    const out = format(
-      "const x = { a: 1, b: 2, c: 3 };",
-      { style: "biome", filename: "test.ts" },
-    );
+    const out = format("const x = { a: 1, b: 2, c: 3 };", {
+      style: "biome",
+      filename: "test.ts",
+    });
     expect(out).toContain(",");
   });
 
@@ -27,10 +27,10 @@ describe("biome formatter", () => {
   });
 
   it("normalizes indentation to 2 spaces", () => {
-    const out = format(
-      "function foo() {\n  return 1;\n}",
-      { style: "biome", filename: "test.ts" },
-    );
+    const out = format("function foo() {\n  return 1;\n}", {
+      style: "biome",
+      filename: "test.ts",
+    });
     expect(out).toContain("  return");
   });
 

@@ -101,7 +101,9 @@ const initCommand = buildCommand({
       for (const name of ["pre-commit", "post-commit"]) {
         const hp = join(dir, "scripts", "hooks", name);
         if (existsSync(hp)) {
-          try { chmodSync(hp, 0o755); } catch {}
+          try {
+            chmodSync(hp, 0o755);
+          } catch {}
         }
       }
       try {
@@ -111,7 +113,9 @@ const initCommand = buildCommand({
         });
         stdout("Installed git hooks (core.hooksPath=scripts/hooks)");
       } catch (e) {
-        stdout(`Could not set core.hooksPath (install manually: git config core.hooksPath scripts/hooks): ${e instanceof Error ? e.message : String(e)}`);
+        stdout(
+          `Could not set core.hooksPath (install manually: git config core.hooksPath scripts/hooks): ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
   },

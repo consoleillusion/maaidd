@@ -4,8 +4,20 @@ import { aggregateSnapshot } from "../src/metrics/history.ts";
 import type { FtaFileMetric } from "../src/metrics/fta.ts";
 
 const sampleMetrics: FtaFileMetric[] = [
-  { file_name: "a.ts", cyclo: 5, fta_score: 70, assessment: "OK", line_count: 100 },
-  { file_name: "b.ts", cyclo: 25, fta_score: 30, assessment: "Needs improvement", line_count: 50 },
+  {
+    file_name: "a.ts",
+    cyclo: 5,
+    fta_score: 70,
+    assessment: "OK",
+    line_count: 100,
+  },
+  {
+    file_name: "b.ts",
+    cyclo: 25,
+    fta_score: 30,
+    assessment: "Needs improvement",
+    line_count: 50,
+  },
 ];
 
 describe("report aggregation", () => {

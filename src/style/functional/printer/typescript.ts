@@ -316,16 +316,34 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
 }
 
 function printTypeParam(p: any, ctx: Ctx, depth: number): string {
-  const name = typeof p.name === "string" ? p.name : p.name?.name ?? "";
-  const c = p.constraint ? " extends " + (printTypeFlat(p.constraint, ctx, depth) ?? printTypeBody(p.constraint, ctx, depth)) : "";
-  const d = p.default ? " = " + (printTypeFlat(p.default, ctx, depth) ?? printTypeBody(p.default, ctx, depth)) : "";
+  const name = typeof p.name === "string" ? p.name : (p.name?.name ?? "");
+  const c = p.constraint
+    ? " extends " +
+      (printTypeFlat(p.constraint, ctx, depth) ??
+        printTypeBody(p.constraint, ctx, depth))
+    : "";
+  const d = p.default
+    ? " = " +
+      (printTypeFlat(p.default, ctx, depth) ??
+        printTypeBody(p.default, ctx, depth))
+    : "";
   return name + c + d;
 }
 
 function printTypeParams(node: any, ctx: Ctx, depth: number): string {
   const params = node?.params ?? [];
   if (!params.length) return "";
-  return "<" + params.map((p: any) => (p.type === "TSTypeParameter" ? printTypeParam(p, ctx, depth) : printTypeFlat(p, ctx, depth) ?? printTypeBody(p, ctx, depth))).join(", ") + ">";
+  return (
+    "<" +
+    params
+      .map((p: any) =>
+        p.type === "TSTypeParameter"
+          ? printTypeParam(p, ctx, depth)
+          : (printTypeFlat(p, ctx, depth) ?? printTypeBody(p, ctx, depth)),
+      )
+      .join(", ") +
+    ">"
+  );
 }
 
 export function printTypeAnnotation(
@@ -333,7 +351,10 @@ export function printTypeAnnotation(
   ctx: Ctx,
   depth: number,
 ): string {
-  if (node?.type === "TSTypeParameterDeclaration" || node?.type === "TSTypeParameterInstantiation") {
+  if (
+    node?.type === "TSTypeParameterDeclaration" ||
+    node?.type === "TSTypeParameterInstantiation"
+  ) {
     return printTypeParams(node, ctx, depth);
   }
   const inner = node?.typeAnnotation;

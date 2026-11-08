@@ -13,7 +13,10 @@ describe("functional formatter — golden fixtures", () => {
   it("formats keySchema to leading-comma style", () => {
     const input = readFileSync("fixtures/keyschema-input.js", "utf8");
     const expected = readFileSync("fixtures/keyschema-expected.js", "utf8");
-    const out = format(input, { style: "functional", filename: "keyschema.js" });
+    const out = format(input, {
+      style: "functional",
+      filename: "keyschema.js",
+    });
     expect(out.trim()).toBe(expected.trim());
   });
 });
@@ -28,8 +31,14 @@ describe("functional formatter — idempotency", () => {
 
   it("format(format(keySchema)) === format(keySchema)", () => {
     const input = readFileSync("fixtures/keyschema-input.js", "utf8");
-    const out1 = format(input, { style: "functional", filename: "keyschema.js" });
-    const out2 = format(out1, { style: "functional", filename: "keyschema.js" });
+    const out1 = format(input, {
+      style: "functional",
+      filename: "keyschema.js",
+    });
+    const out2 = format(out1, {
+      style: "functional",
+      filename: "keyschema.js",
+    });
     expect(out2).toBe(out1);
   });
 

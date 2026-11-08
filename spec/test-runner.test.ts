@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  parseTestOutput,
-  runTestSuite,
-} from "../src/metrics/test-runner.ts";
+import { parseTestOutput, runTestSuite } from "../src/metrics/test-runner.ts";
 import { makeTempDir, ROOT } from "./test-utils.ts";
 
 const temporaryDirs: string[] = [];

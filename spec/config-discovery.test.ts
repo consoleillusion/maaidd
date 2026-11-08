@@ -24,12 +24,17 @@ describe("config discovery and normalization", () => {
     const nested = join(dir, "a", "b");
     mkdirSync(nested, { recursive: true });
     const path = join(dir, "maaidd.config.json");
-    writeFileSync(path, JSON.stringify({ metrics: { testCommand: "node --test" } }));
+    writeFileSync(
+      path,
+      JSON.stringify({ metrics: { testCommand: "node --test" } }),
+    );
 
     expect(findConfigPath(nested)).toBe(path);
     const config = loadConfig(path);
     expect(config.metrics.testCommand).toBe("node --test");
-    expect(config.metrics.thresholds).toEqual(DEFAULT_CONFIG.metrics.thresholds);
+    expect(config.metrics.thresholds).toEqual(
+      DEFAULT_CONFIG.metrics.thresholds,
+    );
   });
 
   it("reports malformed config files with their path", () => {

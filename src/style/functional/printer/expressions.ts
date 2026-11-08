@@ -35,7 +35,8 @@ export function printCall(node: any, ctx: any, depth: number): string {
 
   const printedArgs = node.arguments.map((a: any) => printNode(a, ctx, depth));
   const anyMulti = printedArgs.some((a: string) => a.includes("\n"));
-  const flat = neu + callee + typeArgsText + opt + "(" + printedArgs.join(", ") + ")";
+  const flat =
+    neu + callee + typeArgsText + opt + "(" + printedArgs.join(", ") + ")";
 
   if (!anyMulti && !flat.includes("\n") && flat.length <= ctx.opts.lineWidth) {
     return flat;
@@ -51,14 +52,32 @@ export function printCall(node: any, ctx: any, depth: number): string {
       lines.push(pad + ", " + shiftContinuations(a, pad));
     }
   }
-  return neu + callee + typeArgsText + opt + "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")";
+  return (
+    neu +
+    callee +
+    typeArgsText +
+    opt +
+    "(\n" +
+    lines.join("\n") +
+    "\n" +
+    ctx.ind(depth) +
+    ")"
+  );
 }
 
 export function printMember(node: any, ctx: any, depth: number): string {
   let obj = printNode(node.object, ctx, depth);
   if (needsParens(node.object)) obj = "(" + obj + ")";
   if (node.computed) {
-    return obj + (node.optional ? "?." : "") + "[" + printNode(node.property, ctx, depth) + "]";
+    return (
+      obj +
+      (node.optional ? "?." : "") +
+      "[" +
+      printNode(node.property, ctx, depth) +
+      "]"
+    );
   }
-  return obj + (node.optional ? "?." : ".") + printNode(node.property, ctx, depth);
+  return (
+    obj + (node.optional ? "?." : ".") + printNode(node.property, ctx, depth)
+  );
 }

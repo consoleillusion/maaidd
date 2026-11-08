@@ -49,7 +49,10 @@ describe("format and check commands", () => {
     mkdirSync(join(source, "node_modules"), { recursive: true });
     mkdirSync(output);
     writeFileSync(join(source, "a.ts"), "const value = {'a':1};");
-    writeFileSync(join(source, "node_modules", "ignored.ts"), "const no = {'b':2};");
+    writeFileSync(
+      join(source, "node_modules", "ignored.ts"),
+      "const no = {'b':2};",
+    );
 
     const result = runCli(["format", source, "--output", output], { cwd: dir });
     expect(result.status).toBe(0);
@@ -82,7 +85,13 @@ describe("project commands", () => {
   it("writes a uPlot report to an output file", () => {
     const dir = project();
     saveSnapshot(dir, "a".repeat(40), [
-      { file_name: "a.ts", cyclo: 2, fta_score: 90, assessment: "OK", line_count: 20 },
+      {
+        file_name: "a.ts",
+        cyclo: 2,
+        fta_score: 90,
+        assessment: "OK",
+        line_count: 20,
+      },
     ]);
     const output = join(dir, "dashboard.html");
 
@@ -118,7 +127,10 @@ describe("project commands", () => {
     const dir = project();
     mkdirSync(join(dir, ".code-graph"), { recursive: true });
     writeFileSync(join(dir, ".code-graph", "index.db"), "");
-    writeFileSync(join(dir, ".code-graph", "source-roots.json"), '{"roots":["src"]}');
+    writeFileSync(
+      join(dir, ".code-graph", "source-roots.json"),
+      '{"roots":["src"]}',
+    );
 
     const status = runCli(["graph"], { cwd: dir });
     expect(status.status).toBe(0);
