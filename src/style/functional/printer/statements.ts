@@ -32,11 +32,10 @@ export function printVariableDeclarator(
   ctx: any,
   depth: number,
 ): string {
-  const id =
-    printNode(node.id, ctx, depth) +
-    (node.id.typeAnnotation
-      ? printNode(node.id.typeAnnotation, ctx, depth)
-      : "");
+  let id = printNode(node.id, ctx, depth);
+  if (node.id.type !== "Identifier" && node.id.typeAnnotation) {
+    id += printNode(node.id.typeAnnotation, ctx, depth);
+  }
   if (!node.init) return id;
 
   const init = printNode(node.init, ctx, depth);
