@@ -1,6 +1,7 @@
 # MAAIDD documentation
 
 - [Overview](./overview.md) — goals, architecture, and design rationale
+- [Roadmap](./roadmap.md) — planned agent/MCP, scoring, benchmarking, and commit/library guidance work
 - [Getting started](./getting-started.md) — install, init, and common workflows
 - [CLI reference](./cli.md) — **generated** command/flag reference (`bun run docs:cli`)
 - [Configuration](./configuration.md) — `maaidd.config.json` and formatting options

@@ -20,9 +20,9 @@ formatted output
 
 src/ path
   ├─ FTA → metrics + gate
-  ├─ test runner → pass/fail/total counts
-  ├─ snapshot store → metric/maaidd.db (SQLite, embedded via bun:sqlite)
-  └─ report → uPlot HTML (commit-ordered trends)
+  ├─ test runner → pass/fail/total counts and per-test results
+  ├─ snapshot store → ./maaidd.db (SQLite, embedded via bun:sqlite)
+  └─ report → uPlot HTML (commit-ordered trends, pending as `current`)
 
 MCP server (stdio)
   └─ tools: metrics, gate, history, codegraph
@@ -31,6 +31,11 @@ MCP server (stdio)
 ## Key design choices
 
 - **Biome-first:** Biome provides the baseline normalization. The functional style is a *layout diff* applied after normalization, which keeps formatting stable and diff-friendly rather than inventing an independent formatter.
-- **Tests vs FTA gate:** test pass/fail counts come from the configured test runner. FTA gate results (files passing/failing thresholds) are separate measurements and are not mislabeled as test results.
-- **Embedded SQLite:** metric snapshots are stored in `metric/maaidd.db` for reliable local storage and querying. Legacy `metric/*.json` snapshots are imported automatically (non-destructive).
+- **Tests vs FTA gate:** test pass/fail counts come from the configured test runner (including per-test results). FTA gate results (files passing/failing thresholds) are separate measurements and are not mislabeled as test results.
+- **Embedded SQLite:** metric snapshots are stored in `./maaidd.db` for reliable local storage and querying (including normalized per-test results). Legacy `metric/*.json` and legacy `./metric/*.json` snapshots are imported automatically (non-destructive).
+- **Current vs finalized snapshots:** pending snapshots are visible as `current` in history/report; post-commit finalization binds them to `HEAD` (no amend by default).
 - **Deterministic CLI docs:** `docs/cli.md` is generated from the real CLI (`bun run docs:cli`) to avoid drift.
+
+## Roadmap
+
+See [Roadmap](./roadmap.md) for planned work: completing/extending the MCP server as the primary agent iteration interface, benchmarking and composite commit scoring delivered via MCP, dependency/library-selection guidance metrics, and commit guidance.

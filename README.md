@@ -115,6 +115,10 @@ See [`docs/metrics-and-gates.md`](./docs/metrics-and-gates.md) and [`docs/snapsh
 
 `maaidd mcp` starts a stdio MCP server exposing tools for agents (e.g. `metrics`, `gate`, `history`, `codegraph`). See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
 
+## Roadmap
+
+See [`docs/roadmap.md`](./docs/roadmap.md) for planned work (MCP completion/extension, benchmarking and composite scoring, dependency/library-selection guidance metrics, and commit guidance) aligned with the agent iteration interface.
+
 ## Development
 
 ```bash

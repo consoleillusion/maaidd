@@ -16,10 +16,14 @@ bun src/cli/index.ts mcp
 |---|---|
 | `metrics` | Run FTA on a path and return results (`json`/`toon`/`table`). |
 | `gate` | Check FTA results against configured thresholds; reports pass/fail and violations. |
-| `history` | Read aggregated snapshot history from `metric/maaidd.db` (tests, LOC, gate counts, cyclo, FTA, Halstead). |
+| `history` | Read aggregated snapshot history from `./maaidd.db` (tests, LOC, gate counts, cyclo, FTA, Halstead; includes pending as `current` where supported). |
 | `codegraph` | Inspect code-graph index status or run code-graph commands/queries (supports `query` or exact `args`). Requires an index (e.g. `bunx @sdsrs/code-graph incremental-index`). |
 
 Tool availability/behavior is implemented in `src/mcp/server.ts` and respects project config where applicable.
+
+## Planned
+
+See [Roadmap](./roadmap.md): planned expansion includes delivering benchmarking and composite commit scoring via MCP, dependency/library-selection guidance metrics, and completing/extending the MCP server as the primary token-efficient agent interface (stable, structured outputs).
 
 ## Codegraph setup
 
