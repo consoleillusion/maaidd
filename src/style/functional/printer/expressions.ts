@@ -13,7 +13,11 @@ function needsParens(node: any): boolean {
     node?.type === "AssignmentExpression" ||
     node?.type === "ConditionalExpression" ||
     node?.type === "ArrowFunctionExpression" ||
-    node?.type === "YieldExpression"
+    node?.type === "YieldExpression" ||
+    node?.type === "BinaryExpression" ||
+    node?.type === "LogicalExpression" ||
+    node?.type === "UnaryExpression" ||
+    node?.type === "AwaitExpression"
   );
 }
 

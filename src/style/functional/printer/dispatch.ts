@@ -49,6 +49,62 @@ import {
 import { printJsx, printJsxFlat } from "./jsx.ts";
 import { takeLeadingComments, takeRemainingComments } from "./comments.ts";
 
+
+const PREC: Record<string, number> = {
+  "||": 1, "??": 1,
+  "&&": 2,
+  "|": 3, "^": 4, "&": 5,
+  "==": 6, "!=": 6, "===": 6, "!==": 6,
+  "<": 7, ">": 7, "<=": 7, ">=": 7, "in": 7, "instanceof": 7,
+  "<<": 8, ">>": 8, ">>>": 8,
+  "+": 9, "-": 9,
+  "*": 10, "/": 10, "%": 10,
+  "**": 11,
+};
+
+function needsExprParens(node: any): boolean {
+  return (
+    node?.type === "ConditionalExpression" ||
+    node?.type === "AssignmentExpression" ||
+    node?.type === "ArrowFunctionExpression" ||
+    node?.type === "YieldExpression" ||
+    node?.type === "SequenceExpression" ||
+    node?.type === "TSAsExpression" ||
+    node?.type === "TSSatisfiesExpression" ||
+    node?.type === "TSTypeAssertion"
+  );
+}
+
+function printBinaryOperand(node: any, ctx: Ctx, depth: number, op: string, side: "left" | "right"): string {
+  const inner = printNode(node, ctx, depth);
+  if (needsExprParens(node)) return "(" + inner + ")";
+  if (node.type === "BinaryExpression" || node.type === "LogicalExpression") {
+    const p = PREC[op] ?? 0;
+    const cp = PREC[node.operator] ?? 0;
+    if (cp < p) return "(" + inner + ")";
+    if (cp === p && side === "right" && op !== "**") return "(" + inner + ")";
+    // ?? and ||/&& cannot mix without parens
+    if ((op === "??" && (node.operator === "||" || node.operator === "&&")) ||
+        ((op === "||" || op === "&&") && node.operator === "??")) return "(" + inner + ")";
+  }
+  return inner;
+}
+
+function printUnaryArg(node: any, ctx: Ctx, depth: number, op: string): string {
+  const inner = printNode(node, ctx, depth);
+  if (needsExprParens(node)) return "(" + inner + ")";
+  if (op === "!" || op === "~" || op === "+" || op === "-" || op === "typeof" || op === "void" || op === "delete" || op === "await") {
+    if (node.type === "BinaryExpression" || node.type === "LogicalExpression" || node.type === "ConditionalExpression") return "(" + inner + ")";
+  }
+  return inner;
+}
+
+function printConditionalBranch(node: any, ctx: Ctx, depth: number): string {
+  const inner = printNode(node, ctx, depth);
+  if (node?.type === "AssignmentExpression" || node?.type === "ArrowFunctionExpression" || node?.type === "YieldExpression" || node?.type === "SequenceExpression") return "(" + inner + ")";
+  return inner;
+}
+
 export function printNode(
   node: any,
   ctx: Ctx,
@@ -144,15 +200,13 @@ export function printNode(
     case "OptionalMemberExpression":
       return printMember(node, ctx, depth);
     case "BinaryExpression":
-    case "LogicalExpression":
-      return (
-        printNode(node.left, ctx, depth) +
-        " " +
-        node.operator +
-        " " +
-        printNode(node.right, ctx, depth)
-      );
-    case "UnaryExpression":
+    case "LogicalExpression": {
+      const left = printBinaryOperand(node.left, ctx, depth, node.operator, "left");
+      const right = printBinaryOperand(node.right, ctx, depth, node.operator, "right");
+      return left + " " + node.operator + " " + right;
+    }
+    case "UnaryExpression": {
+      const arg = printUnaryArg(node.argument, ctx, depth, node.operator);
       return (
         node.operator +
         (node.operator === "typeof" ||
@@ -160,27 +214,25 @@ export function printNode(
         node.operator === "delete"
           ? " "
           : "") +
-        printNode(node.argument, ctx, depth)
+        arg
       );
+    }
     case "UpdateExpression":
       return node.prefix
         ? node.operator + printNode(node.argument, ctx, depth)
         : printNode(node.argument, ctx, depth) + node.operator;
-    case "AssignmentExpression":
-      return (
-        printNode(node.left, ctx, depth) +
-        " " +
-        node.operator +
-        " " +
-        printNode(node.right, ctx, depth)
-      );
+    case "AssignmentExpression": {
+      const right = printNode(node.right, ctx, depth);
+      const r = (node.right?.type === "SequenceExpression") ? "(" + right + ")" : right;
+      return printNode(node.left, ctx, depth) + " " + node.operator + " " + r;
+    }
     case "ConditionalExpression":
       return (
         printNode(node.test, ctx, depth) +
         " ? " +
-        printNode(node.consequent, ctx, depth) +
+        printConditionalBranch(node.consequent, ctx, depth) +
         " : " +
-        printNode(node.alternate, ctx, depth)
+        printConditionalBranch(node.alternate, ctx, depth)
       );
     case "SequenceExpression":
       return node.expressions
@@ -221,8 +273,11 @@ export function printNode(
       );
     case "RestElement":
       return "..." + printNode(node.argument, ctx, depth);
-    case "SpreadElement":
-      return "..." + printNode(node.argument, ctx, depth);
+    case "SpreadElement": {
+      const arg = printNode(node.argument, ctx, depth);
+      const needs = node.argument?.type === "AssignmentExpression" || node.argument?.type === "SequenceExpression" || node.argument?.type === "ConditionalExpression" || node.argument?.type === "ArrowFunctionExpression" || node.argument?.type === "YieldExpression";
+      return "..." + (needs ? "(" + arg + ")" : arg);
+    }
 
     case "ClassDeclaration":
     case "ClassExpression":
@@ -245,8 +300,11 @@ export function printNode(
     case "ExportAllDeclaration":
       return printExportAll(node, ctx, depth);
 
-    case "AwaitExpression":
-      return "await " + printNode(node.argument, ctx, depth);
+    case "AwaitExpression": {
+      const arg = printNode(node.argument, ctx, depth);
+      const needs = node.argument?.type === "BinaryExpression" || node.argument?.type === "LogicalExpression" || node.argument?.type === "ConditionalExpression" || node.argument?.type === "AssignmentExpression" || node.argument?.type === "ArrowFunctionExpression" || node.argument?.type === "YieldExpression" || node.argument?.type === "SequenceExpression" || node.argument?.type === "TSAsExpression" || node.argument?.type === "TSSatisfiesExpression";
+      return "await " + (needs ? "(" + arg + ")" : arg);
+    }
     case "YieldExpression":
       return (
         "yield" +
