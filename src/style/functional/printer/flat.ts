@@ -207,13 +207,19 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
     }
     case "ArrowFunctionExpression":
     case "FunctionExpression": {
-      if (node.body?.type === "BlockStatement" && node.body.body.length > 0) return null;
       const params = flatList(node.params, ctx, depth);
       if (params === null) return null;
       const async = node.async ? "async " : "";
       if (node.type === "ArrowFunctionExpression") {
-        return `${async}(${params}) => {}`;
+        if (node.body?.type === "BlockStatement") {
+          return node.body.body.length === 0 ? `${async}(${params}) => {}` : null;
+        }
+        const body = printFlat(node.body, ctx, depth);
+        if (body === null) return null;
+        const wrapped = node.body.type === "ObjectExpression" ? `(${body})` : body;
+        return `${async}(${params}) => ${wrapped}`;
       }
+      if (node.body?.type !== "BlockStatement" || node.body.body.length > 0) return null;
       const name = node.id ? " " + node.id.name : "";
       return `${async}function${node.generator ? "*" : ""}${name}(${params}) {}`;
     }
