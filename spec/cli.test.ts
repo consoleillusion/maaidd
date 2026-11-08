@@ -70,10 +70,14 @@ describe("CLI", () => {
   it("init creates config files", () => {
     const tmp = `/tmp/opencode/cli-init-test-${Date.now()}`;
     mkdirSync(tmp, { recursive: true });
-    const result = spawnSync("bun", ["run", CLI, "init"], {
-      encoding: "utf8",
-      cwd: tmp,
-    });
+    const result = spawnSync(
+      "bun",
+      ["run", CLI, "init", "--non-interactive", "--write-config", "--no-hooks"],
+      {
+        encoding: "utf8",
+        cwd: tmp,
+      },
+    );
     expect(result.status).toBe(0);
     expect(existsSync(`${tmp}/maaidd.config.json`)).toBe(true);
     expect(existsSync(`${tmp}/biome.json`)).toBe(true);

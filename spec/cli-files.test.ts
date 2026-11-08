@@ -103,7 +103,13 @@ describe("project commands", () => {
 
   it("initializes without overwriting existing config files", () => {
     const dir = project();
-    const first = runCli(["init"], { cwd: dir });
+    const initArgs = [
+      "init",
+      "--non-interactive",
+      "--write-config",
+      "--no-hooks",
+    ];
+    const first = runCli(initArgs, { cwd: dir });
     expect(first.status).toBe(0);
 
     const configPath = join(dir, "maaidd.config.json");
@@ -111,9 +117,9 @@ describe("project commands", () => {
     expect(JSON.parse(original).metrics.testCommand).toBe("bun run test");
     expect(existsSync(join(dir, "biome.json"))).toBe(true);
 
-    const second = runCli(["init"], { cwd: dir });
+    const second = runCli(initArgs, { cwd: dir });
     expect(second.status).toBe(0);
-    expect(second.stdout).toContain("Already exists:");
+    expect(second.stdout).toContain("skipped");
     expect(readFileSync(configPath, "utf8")).toBe(original);
   });
 
