@@ -1,11 +1,26 @@
 /**
- * Run the project's tests and retain the counts used by metric snapshots.
+ * Run the project's tests and retain counts plus per-test results for snapshots.
  *
  * Test failures are data, not a reason to abort snapshot creation. Both Bun's
- * summary and Node's `node --test` TAP summary are understood; npm wrappers
- * work because their child runner prints the same summary.
+ * summary and Node's `node --test` TAP summary are understood for counts; per-
+ * test details are captured from Bun's JUnit reporter when possible.
  */
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+export type TestStatus = "pass" | "fail" | "skip" | "todo";
+
+export interface TestCaseResult {
+  /** Stable identity: suite hierarchy (e.g. describe/classname) */
+  suite: string;
+  name: string;
+  file: string;
+  status: TestStatus;
+  durationMs: number | null;
+  error?: string;
+}
 
 export interface TestRunSummary {
   command: string;
@@ -16,6 +31,9 @@ export interface TestRunSummary {
   todo: number | null;
   exitCode: number;
   error?: string;
+  /** Per-test results when collected (e.g. Bun JUnit); absent for legacy/counts-only. */
+  results?: TestCaseResult[];
+  resultsDetail?: "full" | "counts-only";
 }
 
 export interface TestRunnerOptions {
@@ -26,6 +44,60 @@ export interface TestRunnerOptions {
 function count(output: string, bun: RegExp, node: RegExp): number | null {
   const match = bun.exec(output) ?? node.exec(output);
   return match ? Number(match[1]) : null;
+}
+
+function attr(tag: string, name: string): string {
+  const m = new RegExp(`${name}="([^"]*)"`).exec(tag);
+  return m ? m[1].replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">") : "";
+}
+
+function unesc(s: string): string {
+  return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+}
+
+/** Parse Bun/JUnit XML into per-test results (best-effort). */
+export function parseJunitResults(xml: string): TestCaseResult[] {
+  const results: TestCaseResult[] = [];
+  const tc = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
+  let m: RegExpExecArray | null;
+  while ((m = tc.exec(xml))) {
+    const attrs = m[1];
+    const body = m[2] ?? "";
+    const name = attr("<x " + attrs, "name");
+    const suite = attr("<x " + attrs, "classname");
+    const file = attr("<x " + attrs, "file");
+    const time = Number(attr("<x " + attrs, "time"));
+    let status: TestStatus = "pass";
+    let error: string | undefined;
+    if (/<skipped\b/i.test(body)) status = "skip";
+    else if (/<failure\b|<error\b/i.test(body)) {
+      status = "fail";
+      const msg = /<(?:failure|error)\b[^>]*message="([^"]*)"/i.exec(body)?.[1];
+      const text = /<(?:failure|error)\b[^>]*>([\s\S]*?)<\/(?:failure|error)>/i.exec(body)?.[1];
+      error = unesc((msg ?? text ?? "").trim()).slice(0, 4000) || undefined;
+    }
+    results.push({
+      suite,
+      name,
+      file,
+      status,
+      durationMs: Number.isFinite(time) ? Math.round(time * 1000) : null,
+      ...(error ? { error } : {}),
+    });
+  }
+  return results;
+}
+
+function isBunTestCommand(command: string): boolean {
+  // default "bun run test" and direct "bun test" forms
+  return /^\s*bun\s+run\s+test\b/.test(command) || /^\s*bun\s+test\b/.test(command);
+}
+
+function withJunit(command: string, outfile: string): string {
+  const flags = `--reporter=junit --reporter-outfile=${JSON.stringify(outfile)}`;
+  if (/^\s*bun\s+run\s+test\b/.test(command)) return `${command} -- ${flags}`;
+  if (/^\s*bun\s+test\b/.test(command)) return `${command} ${flags}`;
+  return command;
 }
 
 /** Parse Bun and Node test summaries without depending on ANSI styling. */
@@ -70,21 +142,51 @@ export function runTestSuite(
   command = "bun run test",
   options: TestRunnerOptions = {},
 ): TestRunSummary {
-  const result = spawnSync(command, {
-    cwd: options.cwd,
-    env: options.env,
-    shell: true,
-    encoding: "utf8",
-    maxBuffer: 32 * 1024 * 1024,
-  });
-  const exitCode = result.status ?? 1;
-  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  const summary = parseTestOutput(command, output, exitCode);
-
-  if (result.error) {
-    summary.error = result.error.message;
-  } else if (summary.total === null) {
-    summary.error = "Could not find test counts in the test runner output";
+  const bun = isBunTestCommand(command);
+  let tmp: string | null = null;
+  let outfile: string | null = null;
+  let runCommand = command;
+  if (bun) {
+    tmp = mkdtempSync(join(tmpdir(), "maaidd-junit-"));
+    outfile = join(tmp, "junit.xml");
+    runCommand = withJunit(command, outfile);
   }
-  return summary;
+  try {
+    const result = spawnSync(runCommand, {
+      cwd: options.cwd,
+      env: options.env,
+      shell: true,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    const exitCode = result.status ?? 1;
+    const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+    const summary = parseTestOutput(command, output, exitCode);
+
+    if (result.error) {
+      summary.error = result.error.message;
+    }
+    if (outfile) {
+      try {
+        const xml = readFileSync(outfile, "utf8");
+        const results = parseJunitResults(xml);
+        if (results.length) {
+          summary.results = results;
+          summary.resultsDetail = "full";
+        } else {
+          summary.resultsDetail = "counts-only";
+        }
+      } catch {
+        summary.resultsDetail = "counts-only";
+      }
+    } else {
+      summary.resultsDetail = "counts-only";
+    }
+    if (summary.total === null) {
+      summary.error = summary.error ?? "Could not find test counts in the test runner output";
+    }
+    return summary;
+  } finally {
+    if (tmp) try { rmSync(tmp, { recursive: true, force: true }); } catch {}
+  }
 }
