@@ -7,4 +7,8 @@ export {
   savePendingSnapshot,
   saveSnapshot,
 } from "./store.ts";
-export type { HistoryEntry, SaveSnapshotOptions, SnapshotAggregate } from "./store.ts";
+export type {
+  HistoryEntry,
+  SaveSnapshotOptions,
+  SnapshotAggregate,
+} from "./store.ts";

@@ -54,7 +54,9 @@ const gateCommand = buildCommand({
       return;
     }
 
-    stderr(`Gate failed: ${violations.length} violation${violations.length === 1 ? "" : "s"}`);
+    stderr(
+      `Gate failed: ${violations.length} violation${violations.length === 1 ? "" : "s"}`,
+    );
     for (const v of violations) {
       stderr(`  ${v.message}`);
     }

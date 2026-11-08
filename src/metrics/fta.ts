@@ -95,7 +95,9 @@ export function runFta(path: string, excludeUnder: number = 0): FtaResult {
     metrics = metrics.filter((m) => m.line_count >= excludeUnder);
   }
 
-  const scores = metrics.map((m) => m.fta_score).filter((s) => Number.isFinite(s));
+  const scores = metrics
+    .map((m) => m.fta_score)
+    .filter((s) => Number.isFinite(s));
   const average =
     scores.length > 0
       ? scores.reduce((a, b) => a + b, 0) / scores.length

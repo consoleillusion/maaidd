@@ -23,7 +23,9 @@ export function formatFunctional(
     ...options,
     semicolons: true, // Biome adds semicolons; the printer preserves them
   };
-  const normalized = formatWithBiome(source, biomeOptions, { forceStyle: true });
+  const normalized = formatWithBiome(source, biomeOptions, {
+    forceStyle: true,
+  });
 
   // 2. Re-parse the Biome output.
   const isTS = /\.(?:[cm]?ts|tsx)$/i.test(options.filename);

@@ -59,7 +59,8 @@ const checkCommand = buildCommand({
       toArrow: {
         kind: "boolean",
         optional: true,
-        brief: "Convert function declarations to const arrows (functional only)",
+        brief:
+          "Convert function declarations to const arrows (functional only)",
       },
       biome: {
         kind: "boolean",
@@ -118,7 +119,9 @@ const checkCommand = buildCommand({
         source = readFileSync(path, "utf8");
       } catch (err) {
         failed++;
-        stderr(`Cannot read ${path}: ${err instanceof Error ? err.message : String(err)}`);
+        stderr(
+          `Cannot read ${path}: ${err instanceof Error ? err.message : String(err)}`,
+        );
         return;
       }
       if (!source.trim()) return;
@@ -132,7 +135,9 @@ const checkCommand = buildCommand({
         }
       } catch (err) {
         failed++;
-        stderr(`Check error: ${path}: ${err instanceof Error ? err.message : String(err)}`);
+        stderr(
+          `Check error: ${path}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     };
 
@@ -148,7 +153,9 @@ const checkCommand = buildCommand({
           }
         } catch (err) {
           failed++;
-          stderr(`Check error: stdin: ${err instanceof Error ? err.message : String(err)}`);
+          stderr(
+            `Check error: stdin: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     } else {
@@ -170,7 +177,9 @@ const checkCommand = buildCommand({
 
     if (checked > 0) {
       const status = changed > 0 ? `${changed} would change` : "all clean";
-      stderr(`${checked} checked, ${status}${failed ? `, ${failed} failed` : ""}`);
+      stderr(
+        `${checked} checked, ${status}${failed ? `, ${failed} failed` : ""}`,
+      );
     }
 
     if (changed > 0 || failed > 0) process.exitCode = 1;

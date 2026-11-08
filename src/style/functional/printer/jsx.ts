@@ -10,7 +10,8 @@ function printJsxName(node: any, ctx: Ctx, depth: number): string {
   if (node.type === "JSXIdentifier") return node.name;
   if (node.type === "JSXMemberExpression") {
     return (
-      printJsxName(node.object, ctx, depth) + "." +
+      printJsxName(node.object, ctx, depth) +
+      "." +
       printJsxName(node.property, ctx, depth)
     );
   }
@@ -27,7 +28,9 @@ function printJsxAttribute(node: any, ctx: Ctx, depth: number): string {
   const name = node.name.name;
   if (!node.value) return name;
   if (node.value.type === "StringLiteral") {
-    return name + "=" + (node.value.extra?.raw ?? JSON.stringify(node.value.value));
+    return (
+      name + "=" + (node.value.extra?.raw ?? JSON.stringify(node.value.value))
+    );
   }
   if (node.value.type === "JSXExpressionContainer") {
     return name + "={" + printNode(node.value.expression, ctx, depth) + "}";
@@ -64,7 +67,11 @@ function printJsxChildLines(children: any[], ctx: Ctx, depth: number): string {
     .join("\n");
 }
 
-export function printJsxFlat(node: any, ctx: Ctx, depth: number): string | null {
+export function printJsxFlat(
+  node: any,
+  ctx: Ctx,
+  depth: number,
+): string | null {
   if (node.type === "JSXFragment") {
     if (!node.children.length) return "<></>";
     const parts = node.children.map((c: any) => {
@@ -117,29 +124,21 @@ function printJsxElement(node: any, ctx: Ctx, depth: number): string {
 
   if (!node.children.length) {
     if (!attrs.length) return `<${name} />`;
-    const attrLines = attrs.map((a: any) => ctx.ind(depth + 1) + printJsxAttribute(a, ctx, depth + 1));
-    return (
-      `<${name}\n` +
-      attrLines.join("\n") +
-      "\n" +
-      ctx.ind(depth) +
-      "/>"
+    const attrLines = attrs.map(
+      (a: any) => ctx.ind(depth + 1) + printJsxAttribute(a, ctx, depth + 1),
     );
+    return `<${name}\n` + attrLines.join("\n") + "\n" + ctx.ind(depth) + "/>";
   }
 
   // Has children — expand
   if (!attrs.length) {
     const childTexts = printJsxChildLines(node.children, ctx, depth + 1);
-    return (
-      `<${name}>\n` +
-      childTexts +
-      "\n" +
-      ctx.ind(depth) +
-      `</${name}>`
-    );
+    return `<${name}>\n` + childTexts + "\n" + ctx.ind(depth) + `</${name}>`;
   }
 
-  const attrLines = attrs.map((a: any) => ctx.ind(depth + 1) + printJsxAttribute(a, ctx, depth + 1));
+  const attrLines = attrs.map(
+    (a: any) => ctx.ind(depth + 1) + printJsxAttribute(a, ctx, depth + 1),
+  );
   const childTexts = printJsxChildLines(node.children, ctx, depth + 1);
   return (
     `<${name}\n` +
@@ -161,11 +160,5 @@ function printJsxFragment(node: any, ctx: Ctx, depth: number): string {
   if (!node.children.length) return "<></>";
 
   const childTexts = printJsxChildLines(node.children, ctx, depth + 1);
-  return (
-    "<>\n" +
-    childTexts +
-    "\n" +
-    ctx.ind(depth) +
-    "</>"
-  );
+  return "<>\n" + childTexts + "\n" + ctx.ind(depth) + "</>";
 }

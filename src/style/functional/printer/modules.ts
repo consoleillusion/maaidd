@@ -78,10 +78,7 @@ export function printExportDefault(node: any, ctx: any, depth: number): string {
   const decl = printNode(node.declaration, ctx, depth).trimStart();
   const needsSemi = !node.declaration.type.endsWith("Declaration");
   return (
-    ctx.ind(depth) +
-    "export default " +
-    decl +
-    (needsSemi ? semi(ctx) : "")
+    ctx.ind(depth) + "export default " + decl + (needsSemi ? semi(ctx) : "")
   );
 }
 

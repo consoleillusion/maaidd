@@ -30,7 +30,9 @@ export function codegraphStatus(cwd = process.cwd()): string {
   const recommendations = readOptional(
     join(cwd, ".code-graph", "recommendations.jsonl"),
   );
-  const sourceRoots = readOptional(join(cwd, ".code-graph", "source-roots.json"));
+  const sourceRoots = readOptional(
+    join(cwd, ".code-graph", "source-roots.json"),
+  );
   return [
     `Code-graph index: ${indexDb}`,
     `Source roots: ${sourceRoots || "(none)"}`,
@@ -51,7 +53,10 @@ export function resolveCodegraphBinary(): string {
   return existsSync(local) ? local : "code-graph-mcp";
 }
 
-export function runCodegraph(args: string[], cwd = process.cwd()): CodegraphRun {
+export function runCodegraph(
+  args: string[],
+  cwd = process.cwd(),
+): CodegraphRun {
   const result = spawnSync(resolveCodegraphBinary(), args, {
     cwd,
     encoding: "utf8",

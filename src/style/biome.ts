@@ -61,7 +61,8 @@ function explicitStyleArgs(
 ): string[] {
   const args: string[] = [];
   if (explicit.has("indent")) args.push(...indentArgs(options));
-  if (explicit.has("line-width")) args.push(`--line-width=${options.lineWidth}`);
+  if (explicit.has("line-width"))
+    args.push(`--line-width=${options.lineWidth}`);
   if (explicit.has("semicolons")) {
     args.push(`--semicolons=${options.semicolons ? "always" : "as-needed"}`);
   }
@@ -112,13 +113,17 @@ export function formatWithBiome(
   }
   if (result.status !== 0) {
     const details = (result.stderr || result.stdout || "").trim();
-    throw new Error(`Biome failed for ${options.filename}${details ? `:\n${details}` : ""}`);
+    throw new Error(
+      `Biome failed for ${options.filename}${details ? `:\n${details}` : ""}`,
+    );
   }
   return result.stdout;
 }
 
 export function biomeVersion(): string | undefined {
-  const result = spawnSync(resolveBiomeBinary(), ["--version"], { encoding: "utf8" });
+  const result = spawnSync(resolveBiomeBinary(), ["--version"], {
+    encoding: "utf8",
+  });
   if (result.status !== 0) return undefined;
   return result.stdout.trim();
 }

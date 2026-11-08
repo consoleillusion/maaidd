@@ -22,7 +22,9 @@ export function indentLines(text: string, pad: string): string {
 export function shiftContinuations(text: string, pad: string): string {
   if (!isMultiline(text)) return text;
   const [first, ...rest] = text.split("\n");
-  return [first, ...rest.map((line) => (line.length ? pad + line : line))].join("\n");
+  return [first, ...rest.map((line) => (line.length ? pad + line : line))].join(
+    "\n",
+  );
 }
 
 export function appendToLastLine(text: string, suffix: string): string {

@@ -8,11 +8,7 @@ import { printFlat } from "./flat.ts";
 import { printKey } from "./literals.ts";
 import type { Ctx } from "./context.ts";
 
-function printTypeArgsFlat(
-  node: any,
-  ctx: Ctx,
-  depth: number,
-): string | null {
+function printTypeArgsFlat(node: any, ctx: Ctx, depth: number): string | null {
   if (!node) return "";
   const params = node.params ?? [];
   if (!params.length) return "";
@@ -25,26 +21,44 @@ function printTypeArgsFlat(
   return "<" + parts.join(", ") + ">";
 }
 
-export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null {
+export function printTypeFlat(
+  node: any,
+  ctx: Ctx,
+  depth: number,
+): string | null {
   if (!node) return "";
   switch (node.type) {
-    case "TSAnyKeyword": return "any";
-    case "TSUnknownKeyword": return "unknown";
-    case "TSNeverKeyword": return "never";
-    case "TSStringKeyword": return "string";
-    case "TSNumberKeyword": return "number";
-    case "TSBooleanKeyword": return "boolean";
-    case "TSBigIntKeyword": return "bigint";
-    case "TSSymbolKeyword": return "symbol";
-    case "TSObjectKeyword": return "object";
-    case "TSVoidKeyword": return "void";
-    case "TSUndefinedKeyword": return "undefined";
-    case "TSNullKeyword": return "null";
-    case "TSIntrinsicKeyword": return "intrinsic";
+    case "TSAnyKeyword":
+      return "any";
+    case "TSUnknownKeyword":
+      return "unknown";
+    case "TSNeverKeyword":
+      return "never";
+    case "TSStringKeyword":
+      return "string";
+    case "TSNumberKeyword":
+      return "number";
+    case "TSBooleanKeyword":
+      return "boolean";
+    case "TSBigIntKeyword":
+      return "bigint";
+    case "TSSymbolKeyword":
+      return "symbol";
+    case "TSObjectKeyword":
+      return "object";
+    case "TSVoidKeyword":
+      return "void";
+    case "TSUndefinedKeyword":
+      return "undefined";
+    case "TSNullKeyword":
+      return "null";
+    case "TSIntrinsicKeyword":
+      return "intrinsic";
     case "TSTypeReference": {
-      const name = node.typeName.type === "Identifier"
-        ? node.typeName.name
-        : printTypeFlat(node.typeName, ctx, depth);
+      const name =
+        node.typeName.type === "Identifier"
+          ? node.typeName.name
+          : printTypeFlat(node.typeName, ctx, depth);
       if (name === null) return null;
       const args = printTypeArgsFlat(node.typeParameters, ctx, depth);
       return args === null ? null : name + args;
@@ -55,10 +69,7 @@ export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null
       return expression === null || args === null ? null : expression + args;
     }
     case "TSQualifiedName":
-      return (
-        printTypeFlat(node.left, ctx, depth) + "." +
-        node.right.name
-      );
+      return printTypeFlat(node.left, ctx, depth) + "." + node.right.name;
     case "TSTypeLiteral":
       return null; // always expand
     case "TSIntersectionType":
@@ -86,8 +97,14 @@ export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null
     }
     case "TSFunctionType":
     case "TSConstructorType": {
-      const params = (node.params ?? []).map((p: any) => printNode(p, ctx, depth));
-      const ret = printTypeFlat(node.typeAnnotation?.typeAnnotation, ctx, depth);
+      const params = (node.params ?? []).map((p: any) =>
+        printNode(p, ctx, depth),
+      );
+      const ret = printTypeFlat(
+        node.typeAnnotation?.typeAnnotation,
+        ctx,
+        depth,
+      );
       if (ret === null) return null;
       const prefix = node.type === "TSConstructorType" ? "new " : "";
       return `${prefix}(${params.join(", ")}) => ${ret}`;
@@ -102,7 +119,9 @@ export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null
       );
     case "TSTypeOperator":
       return (
-        node.operator + " " + (printTypeFlat(node.typeAnnotation, ctx, depth) ?? "")
+        node.operator +
+        " " +
+        (printTypeFlat(node.typeAnnotation, ctx, depth) ?? "")
       );
     case "TSInferType":
       return "infer " + node.typeParameter.name;
@@ -115,11 +134,19 @@ export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null
       return `${check} extends ${ext} ? ${tru} : ${fal}`;
     }
     case "TSMappedType": {
-      const constraint = printTypeFlat(node.typeParameter?.constraint, ctx, depth);
+      const constraint = printTypeFlat(
+        node.typeParameter?.constraint,
+        ctx,
+        depth,
+      );
       if (constraint === null) return null;
       const name = node.typeParameter?.name ?? "K";
-      const nameType = node.nameType ? " as " + printTypeFlat(node.nameType, ctx, depth) : "";
-      const value = node.typeAnnotation ? ": " + printTypeFlat(node.typeAnnotation, ctx, depth) : "";
+      const nameType = node.nameType
+        ? " as " + printTypeFlat(node.nameType, ctx, depth)
+        : "";
+      const value = node.typeAnnotation
+        ? ": " + printTypeFlat(node.typeAnnotation, ctx, depth)
+        : "";
       if (value.startsWith(": null")) return null;
       return `{ [${name} in ${constraint}${nameType}]${value} }`;
     }
@@ -132,7 +159,9 @@ export function printTypeFlat(node: any, ctx: Ctx, depth: number): string | null
     case "TSImportType": {
       const arg = printTypeFlat(node.argument, ctx, depth);
       if (arg === null) return null;
-      const qual = node.qualifier ? "." + printTypeFlat(node.qualifier, ctx, depth) : "";
+      const qual = node.qualifier
+        ? "." + printTypeFlat(node.qualifier, ctx, depth)
+        : "";
       return `import(${arg})${qual}`;
     }
     case "TSTemplateLiteralType": {
@@ -170,29 +199,35 @@ function printTypeProperty(prop: any, ctx: Ctx, depth: number): string {
   }
   if (prop.type === "TSMethodSignature") {
     const key = printKey(prop, ctx, depth);
-    const params = (prop.params ?? []).map((p: any) => printNode(p, ctx, depth));
+    const params = (prop.params ?? []).map((p: any) =>
+      printNode(p, ctx, depth),
+    );
     const annotation = prop.typeAnnotation
       ? printNode(prop.typeAnnotation, ctx, depth)
       : "";
     return `${key}(${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSCallSignatureDeclaration") {
-    const params = (prop.params ?? []).map((p: any) => printNode(p, ctx, depth));
+    const params = (prop.params ?? []).map((p: any) =>
+      printNode(p, ctx, depth),
+    );
     const annotation = prop.typeAnnotation
       ? printNode(prop.typeAnnotation, ctx, depth)
       : "";
     return `(${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSConstructSignatureDeclaration") {
-    const params = (prop.params ?? []).map((p: any) => printNode(p, ctx, depth));
+    const params = (prop.params ?? []).map((p: any) =>
+      printNode(p, ctx, depth),
+    );
     const annotation = prop.typeAnnotation
       ? printNode(prop.typeAnnotation, ctx, depth)
       : "";
     return `new (${params.join(", ")})${annotation}`;
   }
   if (prop.type === "TSIndexSignature") {
-    const params = (prop.parameters ?? []).map((p: any) =>
-      p.name?.name + printNode(p.typeAnnotation, ctx, depth),
+    const params = (prop.parameters ?? []).map(
+      (p: any) => p.name?.name + printNode(p.typeAnnotation, ctx, depth),
     );
     const annotation = prop.typeAnnotation
       ? printNode(prop.typeAnnotation, ctx, depth)
@@ -235,9 +270,7 @@ function printUnionOrIntersection(node: any, ctx: Ctx, depth: number): string {
     flatParts.push(f);
   }
   if (flatParts.length) {
-    const flat = flatParts.join(
-      node.type === "TSUnionType" ? " | " : " & ",
-    );
+    const flat = flatParts.join(node.type === "TSUnionType" ? " | " : " & ");
     if (fits(flat, ctx, depth * ctx.indentWidth)) return flat;
   }
 
@@ -248,8 +281,9 @@ function printUnionOrIntersection(node: any, ctx: Ctx, depth: number): string {
       lines.push(ctx.ind(depth + 1) + (i === 0 ? "" : sep) + f);
     } else {
       lines.push(
-        ctx.ind(depth + 1) + (i === 0 ? "" : sep) +
-        printTypeBody(types[i], ctx, depth + 1),
+        ctx.ind(depth + 1) +
+          (i === 0 ? "" : sep) +
+          printTypeBody(types[i], ctx, depth + 1),
       );
     }
   }
@@ -265,7 +299,9 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
     return printUnionOrIntersection(node, ctx, depth);
   }
   if (node.type === "TSFunctionType" || node.type === "TSConstructorType") {
-    const params = (node.params ?? []).map((p: any) => printNode(p, ctx, depth));
+    const params = (node.params ?? []).map((p: any) =>
+      printNode(p, ctx, depth),
+    );
     const ret = printTypeBody(node.typeAnnotation?.typeAnnotation, ctx, depth);
     const prefix = node.type === "TSConstructorType" ? "new " : "";
     return `${prefix}(${params.join(", ")}) => ${ret}`;
@@ -273,7 +309,11 @@ function printTypeBody(node: any, ctx: Ctx, depth: number): string {
   return `/* ${node.type} */`;
 }
 
-export function printTypeAnnotation(node: any, ctx: Ctx, depth: number): string {
+export function printTypeAnnotation(
+  node: any,
+  ctx: Ctx,
+  depth: number,
+): string {
   const inner = node.typeAnnotation;
   if (!inner) return "";
   return ": " + printTypeBody(inner, ctx, depth);
@@ -285,12 +325,17 @@ export function printTSInterface(node: any, ctx: Ctx, depth: number): string {
     ? printTypeFlat(node.typeParameters, ctx, depth)
     : "";
   const extends_ = node.extends?.length
-    ? " extends " + node.extends.map((e: any) => printTypeFlat(e.expression, ctx, depth)).join(", ")
+    ? " extends " +
+      node.extends
+        .map((e: any) => printTypeFlat(e.expression, ctx, depth))
+        .join(", ")
     : "";
 
   const body = node.body?.body ?? [];
   if (!body.length) {
-    return ctx.ind(depth) + `interface ${name}${typeParams ?? ""}${extends_} {}`;
+    return (
+      ctx.ind(depth) + `interface ${name}${typeParams ?? ""}${extends_} {}`
+    );
   }
 
   const lines: string[] = [];
@@ -334,7 +379,9 @@ export function printTSTypeAlias(node: any, ctx: Ctx, depth: number): string {
     ? printTypeFlat(node.typeParameters, ctx, depth)
     : "";
   const body = printTypeBody(node.typeAnnotation, ctx, depth);
-  return ctx.ind(depth) + `type ${name}${typeParams ?? ""} = ${body}` + semi(ctx);
+  return (
+    ctx.ind(depth) + `type ${name}${typeParams ?? ""} = ${body}` + semi(ctx)
+  );
 }
 
 export function printTSModule(node: any, ctx: Ctx, depth: number): string {

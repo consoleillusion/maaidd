@@ -56,7 +56,8 @@ const formatCommand = buildCommand({
       toArrow: {
         kind: "boolean",
         optional: true,
-        brief: "Convert function declarations to const arrows (functional only)",
+        brief:
+          "Convert function declarations to const arrows (functional only)",
       },
       biome: {
         kind: "boolean",

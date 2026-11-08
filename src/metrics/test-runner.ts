@@ -43,11 +43,7 @@ export function parseTestOutput(
 
   const passed = count(output, bunCount("pass"), nodeCount("pass"));
   const failed = count(output, bunCount("fail"), nodeCount("fail"));
-  const skipped = count(
-    output,
-    bunCount("skip(?:ped)?"),
-    nodeCount("skipped"),
-  );
+  const skipped = count(output, bunCount("skip(?:ped)?"), nodeCount("skipped"));
   const todo = count(output, bunCount("todo"), nodeCount("todo"));
 
   const bunTotal = /^\s*Ran\s+(\d+)\s+tests?\b/m.exec(output);

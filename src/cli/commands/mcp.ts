@@ -6,7 +6,8 @@ import { runMcpServer } from "../../mcp/server.ts";
 
 const mcpCommand = buildCommand({
   docs: {
-    brief: "Start the MCP server (stdio transport) exposing codegraph + metrics tools",
+    brief:
+      "Start the MCP server (stdio transport) exposing codegraph + metrics tools",
   },
   parameters: {},
   func: async () => {

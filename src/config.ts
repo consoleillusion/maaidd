@@ -12,7 +12,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function mergeDeep<T extends Record<string, unknown>>(base: T, patch: unknown): T {
+function mergeDeep<T extends Record<string, unknown>>(
+  base: T,
+  patch: unknown,
+): T {
   if (!isRecord(patch)) return structuredClone(base);
   const out: Record<string, unknown> = { ...structuredClone(base) };
   for (const [key, value] of Object.entries(patch)) {
@@ -49,7 +52,10 @@ export function loadConfig(configPath?: string): MaaiddConfig {
       `Cannot read MAAIDD config ${file}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
-  return mergeDeep(DEFAULT_CONFIG as unknown as Record<string, unknown>, parsed) as unknown as MaaiddConfig;
+  return mergeDeep(
+    DEFAULT_CONFIG as unknown as Record<string, unknown>,
+    parsed,
+  ) as unknown as MaaiddConfig;
 }
 
 export function normalizeIndent(indent: Indent): Indent {
@@ -65,9 +71,7 @@ export function resolveFormatOptions(
 ): ResolvedFormatOptions {
   const filename = input.filename ?? "stdin.ts";
   const typescript =
-    input.typescript ??
-    /\.(?:[cm]?ts|tsx)$/i.test(filename) ??
-    false;
+    input.typescript ?? /\.(?:[cm]?ts|tsx)$/i.test(filename) ?? false;
 
   return {
     style: input.style ?? config.style,

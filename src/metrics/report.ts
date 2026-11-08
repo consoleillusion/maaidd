@@ -49,24 +49,67 @@ type SeriesKey =
   | "avgHalsteadVolume"
   | "totalHalsteadBugs";
 
-const series: { key: SeriesKey; label: string; stroke: string; scale: string }[] = [
+const series: {
+  key: SeriesKey;
+  label: string;
+  stroke: string;
+  scale: string;
+}[] = [
   { key: "testsTotal", label: "Tests", stroke: "#64748b", scale: "y" },
   { key: "testsPassed", label: "Passing tests", stroke: "#22c55e", scale: "y" },
   { key: "testsFailed", label: "Failing tests", stroke: "#ef4444", scale: "y" },
-  { key: "testsSkipped", label: "Skipped tests", stroke: "#94a3b8", scale: "y" },
-  { key: "passing", label: "Files passing gate", stroke: "#15803d", scale: "y" },
-  { key: "failing", label: "Files failing gate", stroke: "#b91c1c", scale: "y" },
+  {
+    key: "testsSkipped",
+    label: "Skipped tests",
+    stroke: "#94a3b8",
+    scale: "y",
+  },
+  {
+    key: "passing",
+    label: "Files passing gate",
+    stroke: "#15803d",
+    scale: "y",
+  },
+  {
+    key: "failing",
+    label: "Files failing gate",
+    stroke: "#b91c1c",
+    scale: "y",
+  },
   { key: "totalFiles", label: "Files", stroke: "#a855f7", scale: "y" },
   { key: "avgCyclo", label: "Avg cyclo", stroke: "#f97316", scale: "y" },
   { key: "maxCyclo", label: "Max cyclo", stroke: "#c2410c", scale: "y" },
-  { key: "avgFtaScore", label: "Avg FTA score", stroke: "#3b82f6", scale: "y2" },
-  { key: "avgHalsteadDifficulty", label: "Avg Halstead difficulty", stroke: "#14b8a6", scale: "y2" },
-  { key: "totalHalsteadBugs", label: "Halstead bugs", stroke: "#ec4899", scale: "y2" },
+  {
+    key: "avgFtaScore",
+    label: "Avg FTA score",
+    stroke: "#3b82f6",
+    scale: "y2",
+  },
+  {
+    key: "avgHalsteadDifficulty",
+    label: "Avg Halstead difficulty",
+    stroke: "#14b8a6",
+    scale: "y2",
+  },
+  {
+    key: "totalHalsteadBugs",
+    label: "Halstead bugs",
+    stroke: "#ec4899",
+    scale: "y2",
+  },
   { key: "totalLines", label: "Lines of code", stroke: "#0ea5e9", scale: "y3" },
-  { key: "avgHalsteadVolume", label: "Avg Halstead volume", stroke: "#eab308", scale: "y3" },
+  {
+    key: "avgHalsteadVolume",
+    label: "Avg Halstead volume",
+    stroke: "#eab308",
+    scale: "y3",
+  },
 ];
 
-function chartValue(snapshot: SnapshotAggregate, key: SeriesKey): number | null {
+function chartValue(
+  snapshot: SnapshotAggregate,
+  key: SeriesKey,
+): number | null {
   const value = snapshot[key];
   return value === null ? null : Number(value ?? 0);
 }
@@ -81,14 +124,20 @@ export function generateReport(metricDir = "."): string {
 
   const labels = snapshots.map((s) => s.shortSha);
   const x = snapshots.map((_, i) => i);
-  const values = series.map((s) => snapshots.map((snap) => chartValue(snap, s.key)));
+  const values = series.map((s) =>
+    snapshots.map((snap) => chartValue(snap, s.key)),
+  );
   const uplotJs = loadUplotJs();
   const uplotCss = loadUplotCss();
   const tableRows = buildTableRows(snapshots);
 
   const dataJson = JSON.stringify({
     labels,
-    series: series.map((s) => ({ label: s.label, stroke: s.stroke, scale: s.scale })),
+    series: series.map((s) => ({
+      label: s.label,
+      stroke: s.stroke,
+      scale: s.scale,
+    })),
     values,
     x,
   });

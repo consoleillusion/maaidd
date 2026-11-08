@@ -15,7 +15,9 @@ export function printComment(comment: BabelComment): string {
 }
 
 function isPrinted(comment: BabelComment, ctx: Ctx): boolean {
-  return typeof comment.start === "number" && ctx.printedComments.has(comment.start);
+  return (
+    typeof comment.start === "number" && ctx.printedComments.has(comment.start)
+  );
 }
 
 function markPrinted(comment: BabelComment, ctx: Ctx): void {
@@ -23,7 +25,11 @@ function markPrinted(comment: BabelComment, ctx: Ctx): void {
 }
 
 /** Comments that should appear on their own lines before a statement/property/element. */
-export function takeLeadingComments(node: any, ctx: Ctx, depth: number): string[] {
+export function takeLeadingComments(
+  node: any,
+  ctx: Ctx,
+  depth: number,
+): string[] {
   const comments = (node?.leadingComments ?? []) as BabelComment[];
   const lines: string[] = [];
   for (const comment of comments) {
@@ -41,7 +47,11 @@ export function takeTrailingComment(node: any, ctx: Ctx): string {
     if (isPrinted(comment, ctx)) continue;
     const nodeEnd = node?.loc?.end?.line;
     const commentStart = comment.loc?.start?.line;
-    if (nodeEnd !== undefined && commentStart !== undefined && nodeEnd === commentStart) {
+    if (
+      nodeEnd !== undefined &&
+      commentStart !== undefined &&
+      nodeEnd === commentStart
+    ) {
       markPrinted(comment, ctx);
       return " " + printComment(comment);
     }
@@ -78,7 +88,10 @@ export function inlineTrailingComments(node: any, ctx: Ctx): string {
 }
 
 /** Print comments that were never attached to a node, usually at end of file. */
-export function takeRemainingComments(comments: BabelComment[] | undefined, ctx: Ctx): string[] {
+export function takeRemainingComments(
+  comments: BabelComment[] | undefined,
+  ctx: Ctx,
+): string[] {
   const out: string[] = [];
   for (const comment of comments ?? []) {
     if (isPrinted(comment, ctx)) continue;

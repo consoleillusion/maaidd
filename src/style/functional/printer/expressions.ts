@@ -36,14 +36,7 @@ export function printCall(node: any, ctx: any, depth: number): string {
     }
   }
   return (
-    neu +
-    callee +
-    opt +
-    "(\n" +
-    lines.join("\n") +
-    "\n" +
-    ctx.ind(depth) +
-    ")"
+    neu + callee + opt + "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")"
   );
 }
 

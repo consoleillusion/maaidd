@@ -28,7 +28,9 @@ const graphCommand = buildCommand({
     const stderr = (s: string) => process.stderr.write(s + "\n");
 
     if (!existsSync(codegraphIndexPath())) {
-      stderr("No code-graph index found. Run `bunx @sdsrs/code-graph incremental-index` first.");
+      stderr(
+        "No code-graph index found. Run `bunx @sdsrs/code-graph incremental-index` first.",
+      );
       process.exitCode = 1;
       return;
     }

@@ -4,15 +4,28 @@ import { printJsxFlat } from "./jsx.ts";
 import { printTypeFlat } from "./typescript.ts";
 
 function hasUnprintedComments(node: any, ctx: Ctx): boolean {
-  for (const key of ["leadingComments", "trailingComments", "innerComments"] as const) {
+  for (const key of [
+    "leadingComments",
+    "trailingComments",
+    "innerComments",
+  ] as const) {
     for (const comment of node?.[key] ?? []) {
-      if (typeof comment.start !== "number" || !ctx.printedComments.has(comment.start)) return true;
+      if (
+        typeof comment.start !== "number" ||
+        !ctx.printedComments.has(comment.start)
+      )
+        return true;
     }
   }
   return false;
 }
 
-function flatList(nodes: any[], ctx: Ctx, depth: number, separator = ", "): string | null {
+function flatList(
+  nodes: any[],
+  ctx: Ctx,
+  depth: number,
+  separator = ", ",
+): string | null {
   const parts: string[] = [];
   for (const node of nodes) {
     if (!node) {
@@ -164,7 +177,9 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       const argument = printFlat(node.argument, ctx, depth);
       if (argument === null) return null;
       const space =
-        node.operator === "typeof" || node.operator === "void" || node.operator === "delete"
+        node.operator === "typeof" ||
+        node.operator === "void" ||
+        node.operator === "delete"
           ? " "
           : "";
       return node.operator + space + argument;
@@ -184,7 +199,8 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       const test = printFlat(node.test, ctx, depth);
       const consequent = printFlat(node.consequent, ctx, depth);
       const alternate = printFlat(node.alternate, ctx, depth);
-      if (test === null || consequent === null || alternate === null) return null;
+      if (test === null || consequent === null || alternate === null)
+        return null;
       return `${test} ? ${consequent} : ${alternate}`;
     }
     case "SequenceExpression": {
@@ -212,14 +228,18 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       const async = node.async ? "async " : "";
       if (node.type === "ArrowFunctionExpression") {
         if (node.body?.type === "BlockStatement") {
-          return node.body.body.length === 0 ? `${async}(${params}) => {}` : null;
+          return node.body.body.length === 0
+            ? `${async}(${params}) => {}`
+            : null;
         }
         const body = printFlat(node.body, ctx, depth);
         if (body === null) return null;
-        const wrapped = node.body.type === "ObjectExpression" ? `(${body})` : body;
+        const wrapped =
+          node.body.type === "ObjectExpression" ? `(${body})` : body;
         return `${async}(${params}) => ${wrapped}`;
       }
-      if (node.body?.type !== "BlockStatement" || node.body.body.length > 0) return null;
+      if (node.body?.type !== "BlockStatement" || node.body.body.length > 0)
+        return null;
       const name = node.id ? " " + node.id.name : "";
       return `${async}function${node.generator ? "*" : ""}${name}(${params}) {}`;
     }
@@ -247,7 +267,8 @@ export function printFlat(node: any, ctx: Ctx, depth: number): string | null {
       return printJsxFlat(node, ctx, depth);
 
     default:
-      if (node.value != null && typeof node.value !== "object") return String(node.value);
+      if (node.value != null && typeof node.value !== "object")
+        return String(node.value);
       return null;
   }
 }
@@ -262,7 +283,8 @@ function printFlatProperty(prop: any, ctx: Ctx, depth: number): string | null {
     const key = printFlatKey(prop, ctx, depth);
     const params = flatList(prop.params, ctx, depth);
     if (key === null || params === null) return null;
-    const kind = prop.kind === "get" || prop.kind === "set" ? prop.kind + " " : "";
+    const kind =
+      prop.kind === "get" || prop.kind === "set" ? prop.kind + " " : "";
     const async = prop.async ? "async " : "";
     return `${kind}${async}${prop.generator ? "*" : ""}${key}(${params}) {}`;
   }

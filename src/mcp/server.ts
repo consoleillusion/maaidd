@@ -17,9 +17,7 @@ import {
 } from "../codegraph.ts";
 
 export function createMcpServer(): McpServer {
-  const server = new McpServer(
-    { name: "maaidd", version: "0.1.0" },
-  );
+  const server = new McpServer({ name: "maaidd", version: "0.1.0" });
 
   // metrics tool — run FTA and return results
   server.tool(
@@ -113,14 +111,20 @@ export function createMcpServer(): McpServer {
       const history = readAggregatedHistory(".", config.metrics.thresholds);
       if (!history.length) {
         return {
-          content: [{ type: "text" as const, text: "No metric history found (maaidd.db)." }],
+          content: [
+            {
+              type: "text" as const,
+              text: "No metric history found (maaidd.db).",
+            },
+          ],
         };
       }
       const text = history
         .map((s) => {
-          const tests = s.testsTotal === null
-            ? "tests=n/a"
-            : `tests=${s.testsPassed ?? "?"}/${s.testsTotal}, failed=${s.testsFailed ?? "?"}`;
+          const tests =
+            s.testsTotal === null
+              ? "tests=n/a"
+              : `tests=${s.testsPassed ?? "?"}/${s.testsTotal}, failed=${s.testsFailed ?? "?"}`;
           return `${s.shortSha}: ${tests}, ${s.totalFiles} files, ${s.totalLines} lines, gate=${s.passing}/${s.totalFiles}, avg cyclo=${s.avgCyclo.toFixed(1)}, max cyclo=${s.maxCyclo}, avg FTA=${s.avgFtaScore.toFixed(1)}`;
         })
         .join("\n");
@@ -140,7 +144,9 @@ export function createMcpServer(): McpServer {
       args: z
         .array(z.string())
         .optional()
-        .describe("Exact code-graph argv; preferred when arguments contain spaces"),
+        .describe(
+          "Exact code-graph argv; preferred when arguments contain spaces",
+        ),
     },
     async ({ query, args }) => {
       const indexDb = codegraphIndexPath();
@@ -156,9 +162,12 @@ export function createMcpServer(): McpServer {
         };
       }
 
-      const commandArgs = args ?? (query?.trim() ? query.trim().split(/\s+/) : []);
+      const commandArgs =
+        args ?? (query?.trim() ? query.trim().split(/\s+/) : []);
       if (commandArgs.length === 0) {
-        return { content: [{ type: "text" as const, text: codegraphStatus() }] };
+        return {
+          content: [{ type: "text" as const, text: codegraphStatus() }],
+        };
       }
 
       const result = runCodegraph(commandArgs);

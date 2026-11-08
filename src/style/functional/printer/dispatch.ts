@@ -97,7 +97,9 @@ export function printNode(
         semi(ctx)
       );
     case "ExpressionStatement":
-      return ctx.ind(depth) + printNode(node.expression, ctx, depth) + semi(ctx);
+      return (
+        ctx.ind(depth) + printNode(node.expression, ctx, depth) + semi(ctx)
+      );
     case "IfStatement":
       return printIf(node, ctx, depth);
     case "ForStatement":
@@ -210,7 +212,9 @@ export function printNode(
       return printObjectPattern(node, ctx, depth);
     case "AssignmentPattern":
       return (
-        printNode(node.left, ctx, depth) + " = " + printNode(node.right, ctx, depth)
+        printNode(node.left, ctx, depth) +
+        " = " +
+        printNode(node.right, ctx, depth)
       );
     case "RestElement":
       return "..." + printNode(node.argument, ctx, depth);
@@ -252,7 +256,9 @@ export function printNode(
       return "super";
     case "MetaProperty":
       return (
-        printNode(node.meta, ctx, depth) + "." + printNode(node.property, ctx, depth)
+        printNode(node.meta, ctx, depth) +
+        "." +
+        printNode(node.property, ctx, depth)
       );
     case "ImportExpression":
       return "import(" + printNode(node.source, ctx, depth) + ")";
@@ -328,4 +334,3 @@ export function printNode(
       return `/* unsupported:${t} */`;
   }
 }
-

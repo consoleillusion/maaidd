@@ -1,5 +1,5 @@
 import type { Ctx } from "./context.ts";
-import { fits } from "./layout.ts";
+import { fits, shiftContinuations } from "./layout.ts";
 import { printNode } from "./dispatch.ts";
 
 export function printParams(
@@ -20,15 +20,27 @@ export function printParams(
   return "(\n" + lines.join("\n") + "\n" + ctx.ind(depth) + ")";
 }
 
-export function printFunction(node: any, ctx: Ctx, depth: number, isDecl: boolean): string {
+export function printFunction(
+  node: any,
+  ctx: Ctx,
+  depth: number,
+  isDecl: boolean,
+): string {
   const async = node.async ? "async " : "";
   const generator = node.generator ? "*" : "";
   const name = node.id ? " " + printNode(node.id, ctx, depth) : "";
-  const params = printParams(node.params ?? [], ctx, depth, depth * ctx.indentWidth + 9);
+  const params = printParams(
+    node.params ?? [],
+    ctx,
+    depth,
+    depth * ctx.indentWidth + 9,
+  );
   const typeParameters = node.typeParameters
     ? printNode(node.typeParameters, ctx, depth)
     : "";
-  const returnType = node.returnType ? printNode(node.returnType, ctx, depth) : "";
+  const returnType = node.returnType
+    ? printNode(node.returnType, ctx, depth)
+    : "";
   const head = `${async}function${generator}${name}${typeParameters}${params}${returnType}`;
   const body = printNode(node.body, ctx, depth);
   const text = head + " " + body.trimStart();
@@ -40,20 +52,36 @@ export function printArrow(node: any, ctx: Ctx, depth: number): string {
   const typeParameters = node.typeParameters
     ? printNode(node.typeParameters, ctx, depth)
     : "";
-  const params = printParams(node.params ?? [], ctx, depth, depth * ctx.indentWidth + 2);
-  const returnType = node.returnType ? printNode(node.returnType, ctx, depth) : "";
+  const params = printParams(
+    node.params ?? [],
+    ctx,
+    depth,
+    depth * ctx.indentWidth + 2,
+  );
+  const returnType = node.returnType
+    ? printNode(node.returnType, ctx, depth)
+    : "";
   const head = `${async}${typeParameters}${params}${returnType} =>`;
 
   if (node.body?.type === "BlockStatement") {
     return head + " " + printNode(node.body, ctx, depth).trimStart();
   }
 
-  const needsParens = node.body?.type === "ObjectExpression";
-  const body = printNode(node.body, ctx, depth, depth * ctx.indentWidth + head.length + 1);
-  if (!body.includes("\n")) {
-    return head + " " + (needsParens ? "(" + body + ")" : body);
+  // Parenthesize object literals so concise arrows don't become blocks.
+  if (node.body?.type === "ObjectExpression") {
+    const body = printNode(node.body, ctx, depth + 1);
+    if (!body.includes("\n")) return head + " (" + body + ")";
+    return (
+      head +
+      "\n" +
+      ctx.ind(depth + 1) +
+      "(" +
+      shiftContinuations(body, " ") +
+      ")"
+    );
   }
-  const multi = printNode(node.body, ctx, depth + 1);
-  if (needsParens) return head + "\n" + ctx.ind(depth + 1) + "(" + multi + ")";
-  return head + "\n" + ctx.ind(depth + 1) + multi;
+
+  const body = printNode(node.body, ctx, depth + 1);
+  if (!body.includes("\n")) return head + " " + body;
+  return head + "\n" + ctx.ind(depth + 1) + body;
 }

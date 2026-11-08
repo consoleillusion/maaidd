@@ -1,17 +1,37 @@
 /**
  * Shared CLI utilities for file collection, flag detection, and formatting.
  */
-import { readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
+import {
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+  mkdirSync,
+} from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { format } from "../../index.ts";
 import type { FormatOptions } from "../../types.ts";
 
 export const FORMATTABLE_EXTENSIONS = new Set([
-  ".js", ".jsx", ".mjs", ".cjs",
-  ".ts", ".tsx", ".mts", ".cts",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".tsx",
+  ".mts",
+  ".cts",
 ]);
 
-export const SKIP_DIRS = new Set(["node_modules", ".git", ".hg", ".svn", ".code-graph", "dist", "build"]);
+export const SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  ".hg",
+  ".svn",
+  ".code-graph",
+  "dist",
+  "build",
+]);
 
 /** Recursively collect formattable files under dir. */
 export function collectFiles(dir: string): string[] {
@@ -78,10 +98,16 @@ export function formatFile(
 }
 
 /** Format stdin, write to stdout. */
-export function formatStdin(options: FormatOptions, stdout: (s: string) => void): void {
+export function formatStdin(
+  options: FormatOptions,
+  stdout: (s: string) => void,
+): void {
   const source = readFileSync(0, "utf8");
   if (!source.trim()) return;
-  const result = format(source, { ...options, filename: options.filename ?? "stdin.ts" });
+  const result = format(source, {
+    ...options,
+    filename: options.filename ?? "stdin.ts",
+  });
   stdout(result);
 }
 
@@ -97,7 +123,9 @@ export function formatSingleFile(
   try {
     source = readFileSync(inputPath, "utf8");
   } catch (err) {
-    stderr(`Cannot read ${inputPath}: ${err instanceof Error ? err.message : String(err)}`);
+    stderr(
+      `Cannot read ${inputPath}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -107,7 +135,9 @@ export function formatSingleFile(
   try {
     result = format(source, { ...options, filename: inputPath });
   } catch (err) {
-    stderr(`Format error: ${inputPath}: ${err instanceof Error ? err.message : String(err)}`);
+    stderr(
+      `Format error: ${inputPath}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -117,7 +147,9 @@ export function formatSingleFile(
     return;
   }
 
-  const dest = isDirectory(outputPath) ? join(outputPath, basename(inputPath)) : outputPath;
+  const dest = isDirectory(outputPath)
+    ? join(outputPath, basename(inputPath))
+    : outputPath;
   mkdirSync(dirname(dest), { recursive: true });
   writeFileSync(dest, result, "utf8");
 }
@@ -145,17 +177,23 @@ export function formatDirectory(
   let failed = 0;
 
   for (const file of files) {
-    const dest = outputPath ? join(outputPath, relative(inputPath, file)) : file;
+    const dest = outputPath
+      ? join(outputPath, relative(inputPath, file))
+      : file;
     try {
       if (formatFile(file, dest, options)) formatted++;
     } catch (err) {
       failed++;
-      stderr(`Format error: ${file}: ${err instanceof Error ? err.message : String(err)}`);
+      stderr(
+        `Format error: ${file}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
   const failedSuffix = failed ? `, ${failed} failed` : "";
-  stderr(`Formatted ${formatted} file${formatted === 1 ? "" : "s"}${failedSuffix}`);
+  stderr(
+    `Formatted ${formatted} file${formatted === 1 ? "" : "s"}${failedSuffix}`,
+  );
   if (failed) process.exitCode = 1;
 }
 

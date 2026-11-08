@@ -19,7 +19,8 @@ export interface Ctx {
 }
 
 export function makeContext(options: PrinterOptions): Ctx {
-  const indentWidth = options.indent === "tab" ? 2 : Number(options.indent) || 2;
+  const indentWidth =
+    options.indent === "tab" ? 2 : Number(options.indent) || 2;
   const ind =
     options.indent === "tab"
       ? (level: number) => "\t".repeat(Math.max(0, level))

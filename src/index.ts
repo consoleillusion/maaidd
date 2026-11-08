@@ -16,10 +16,7 @@ import type { FormatOptions, ResolvedFormatOptions } from "./types.ts";
  * - `style: "functional"`: Biome normalization, then the leading-comma layout diff.
  *   `toArrow` is applied in the functional pipeline after Biome normalization.
  */
-export function format(
-  source: string,
-  options: FormatOptions = {},
-): string {
+export function format(source: string, options: FormatOptions = {}): string {
   const config = options.configPath
     ? loadConfig(options.configPath)
     : loadConfig();

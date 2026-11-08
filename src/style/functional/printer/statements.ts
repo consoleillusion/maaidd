@@ -6,7 +6,11 @@ import { semi } from "./context.ts";
 import { shiftContinuations } from "./layout.ts";
 import { takeLeadingComments } from "./comments.ts";
 
-export function printVariableDeclaration(node: any, ctx: any, depth: number): string {
+export function printVariableDeclaration(
+  node: any,
+  ctx: any,
+  depth: number,
+): string {
   const kind = node.kind; // const | let | var
   const decls = node.declarations.map((d: any) =>
     printVariableDeclarator(d, ctx, depth),
@@ -23,19 +27,36 @@ export function printVariableDeclaration(node: any, ctx: any, depth: number): st
   return ctx.ind(depth) + kind + " " + lines.join(",\n") + semi(ctx);
 }
 
-export function printVariableDeclarator(node: any, ctx: any, depth: number): string {
-  const id = printNode(node.id, ctx, depth) +
-    (node.id.typeAnnotation ? printNode(node.id.typeAnnotation, ctx, depth) : "");
+export function printVariableDeclarator(
+  node: any,
+  ctx: any,
+  depth: number,
+): string {
+  const id =
+    printNode(node.id, ctx, depth) +
+    (node.id.typeAnnotation
+      ? printNode(node.id.typeAnnotation, ctx, depth)
+      : "");
   if (!node.init) return id;
 
   const init = printNode(node.init, ctx, depth);
 
   // If the initializer is an object/array that expands, break after `=`
   if (init.includes("\n") && init.startsWith("{")) {
-    return id + " =\n" + ctx.ind(depth + 1) + shiftContinuations(init, ctx.ind(depth + 1));
+    return (
+      id +
+      " =\n" +
+      ctx.ind(depth + 1) +
+      shiftContinuations(init, ctx.ind(depth + 1))
+    );
   }
   if (init.includes("\n") && init.startsWith("[")) {
-    return id + " =\n" + ctx.ind(depth + 1) + shiftContinuations(init, ctx.ind(depth + 1));
+    return (
+      id +
+      " =\n" +
+      ctx.ind(depth + 1) +
+      shiftContinuations(init, ctx.ind(depth + 1))
+    );
   }
 
   return id + " = " + shiftContinuations(init, ctx.ind(depth));
@@ -64,7 +85,9 @@ export function printIf(node: any, ctx: any, depth: number): string {
         printNode(node.alternate, ctx, depth).trimStart();
     } else {
       out +=
-        (node.consequent.type === "BlockStatement" ? " " : "\n" + ctx.ind(depth)) +
+        (node.consequent.type === "BlockStatement"
+          ? " "
+          : "\n" + ctx.ind(depth)) +
         "else " +
         formatClause(node.alternate, ctx, depth);
     }
@@ -161,12 +184,17 @@ export function printLabeled(node: any, ctx: any, depth: number): string {
 }
 
 export function printTry(node: any, ctx: any, depth: number): string {
-  let out = ctx.ind(depth) + "try " + printNode(node.block, ctx, depth).trimStart();
+  let out =
+    ctx.ind(depth) + "try " + printNode(node.block, ctx, depth).trimStart();
   if (node.handler) {
     const param = node.handler.param
       ? " (" + printNode(node.handler.param, ctx, depth) + ")"
       : "";
-    out += " catch" + param + " " + printNode(node.handler.body, ctx, depth).trimStart();
+    out +=
+      " catch" +
+      param +
+      " " +
+      printNode(node.handler.body, ctx, depth).trimStart();
   }
   if (node.finalizer) {
     out += " finally " + printNode(node.finalizer, ctx, depth).trimStart();

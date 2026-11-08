@@ -49,7 +49,8 @@ const metricsCommand = buildCommand({
       tests: {
         kind: "boolean",
         default: true,
-        brief: "Include test-runner counts when saving (use --no-tests to omit)",
+        brief:
+          "Include test-runner counts when saving (use --no-tests to omit)",
       },
       testCommand: {
         kind: "parsed",
@@ -142,7 +143,13 @@ const metricsCommand = buildCommand({
 });
 
 function printTable(
-  metrics: { file_name: string; cyclo: number; fta_score: number; assessment: string; line_count: number }[],
+  metrics: {
+    file_name: string;
+    cyclo: number;
+    fta_score: number;
+    assessment: string;
+    line_count: number;
+  }[],
   average: number | null,
   total: number,
   stdout: (s: string) => void,

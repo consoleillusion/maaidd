@@ -30,7 +30,8 @@ export function printClassMethod(node: any, ctx: any, depth: number): string {
   const static_ = node.static ? "static " : "";
   const async = node.async ? "async " : "";
   const gen = node.generator ? "*" : "";
-  const kind = node.kind === "get" || node.kind === "set" ? node.kind + " " : "";
+  const kind =
+    node.kind === "get" || node.kind === "set" ? node.kind + " " : "";
   const key = printKey(node, ctx, depth);
   const params = printParams(node.params ?? [], ctx, depth);
   const body = printNode(node.body, ctx, depth);

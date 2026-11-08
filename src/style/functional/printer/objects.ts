@@ -33,7 +33,10 @@ export function printObject(
 
   if (!options.forceExpand) {
     const flat = printFlat(node, ctx, depth);
-    if (flat !== null && fits(flat, ctx, collectionColumn(ctx, depth, options.column))) {
+    if (
+      flat !== null &&
+      fits(flat, ctx, collectionColumn(ctx, depth, options.column))
+    ) {
       return flat;
     }
   }
@@ -45,7 +48,9 @@ export function printObject(
   if (firstComments.length) {
     lines.push("{");
     lines.push(...firstComments);
-    lines.push(ctx.ind(depth) + printObjectProperty(first, ctx, depth) + firstTrailing);
+    lines.push(
+      ctx.ind(depth) + printObjectProperty(first, ctx, depth) + firstTrailing,
+    );
   } else {
     lines.push("{ " + printObjectProperty(first, ctx, depth) + firstTrailing);
   }
@@ -55,19 +60,29 @@ export function printObject(
     const comments = takeLeadingComments(prop, ctx, depth);
     if (comments.length) lines.push(...comments);
     const trailing = takeTrailingComment(prop, ctx);
-    lines.push(ctx.ind(depth) + ", " + printObjectProperty(prop, ctx, depth) + trailing);
+    lines.push(
+      ctx.ind(depth) + ", " + printObjectProperty(prop, ctx, depth) + trailing,
+    );
   }
 
   lines.push(ctx.ind(depth) + "}");
   return lines.join("\n");
 }
 
-export function printObjectProperty(prop: any, ctx: Ctx, depth: number): string {
+export function printObjectProperty(
+  prop: any,
+  ctx: Ctx,
+  depth: number,
+): string {
   if (prop.type === "SpreadElement" || prop.type === "RestElement") {
     return "..." + printNode(prop.argument, ctx, depth);
   }
 
-  if (prop.type === "ObjectMethod" || prop.type === "ClassMethod" || prop.type === "ClassPrivateMethod") {
+  if (
+    prop.type === "ObjectMethod" ||
+    prop.type === "ClassMethod" ||
+    prop.type === "ClassPrivateMethod"
+  ) {
     return printMethodLike(prop, ctx, depth);
   }
 
@@ -84,7 +99,12 @@ export function printObjectProperty(prop: any, ctx: Ctx, depth: number): string 
 
   if (value.type === "ObjectExpression" && value.properties.length > 0) {
     const valueDepth = depth + ctx.opts.objectValueIndent;
-    return key + ":\n" + ctx.ind(valueDepth) + printObject(value, ctx, valueDepth, { forceExpand: true });
+    return (
+      key +
+      ":\n" +
+      ctx.ind(valueDepth) +
+      printObject(value, ctx, valueDepth, { forceExpand: true })
+    );
   }
 
   if (value.type === "ArrayExpression") {
@@ -97,7 +117,12 @@ export function printObjectProperty(prop: any, ctx: Ctx, depth: number): string 
     if (inline) return key + ": " + flat;
 
     const valueDepth = depth + ctx.opts.arrayValueIndent;
-    return key + ":\n" + ctx.ind(valueDepth) + printArray(value, ctx, valueDepth, { forceExpand: true });
+    return (
+      key +
+      ":\n" +
+      ctx.ind(valueDepth) +
+      printArray(value, ctx, valueDepth, { forceExpand: true })
+    );
   }
 
   if (
@@ -105,7 +130,11 @@ export function printObjectProperty(prop: any, ctx: Ctx, depth: number): string 
     value.type === "ArrowFunctionExpression" ||
     value.type === "ClassExpression"
   ) {
-    return key + ": " + printNode(value, ctx, depth + 1, depth * ctx.indentWidth + key.length + 2);
+    return (
+      key +
+      ": " +
+      printNode(value, ctx, depth + 1, depth * ctx.indentWidth + key.length + 2)
+    );
   }
 
   const column = depth * ctx.indentWidth + key.length + 2;
@@ -115,12 +144,15 @@ export function printObjectProperty(prop: any, ctx: Ctx, depth: number): string 
 }
 
 function printMethodLike(prop: any, ctx: Ctx, depth: number): string {
-  const kind = prop.kind === "get" || prop.kind === "set" ? prop.kind + " " : "";
+  const kind =
+    prop.kind === "get" || prop.kind === "set" ? prop.kind + " " : "";
   const async = prop.async ? "async " : "";
   const generator = prop.generator ? "*" : "";
   const key = printKey(prop, ctx, depth);
   const params = printParams(prop.params, ctx, depth);
-  const returnType = prop.returnType ? printNode(prop.returnType, ctx, depth) : "";
+  const returnType = prop.returnType
+    ? printNode(prop.returnType, ctx, depth)
+    : "";
   const body = printNode(prop.body, ctx, depth);
   return `${kind}${async}${generator}${key}(${params})${returnType} ${body.trimStart()}`;
 }
@@ -136,7 +168,10 @@ export function printArray(
 
   if (!options.forceExpand) {
     const flat = printFlat(node, ctx, depth);
-    if (flat !== null && fits(flat, ctx, collectionColumn(ctx, depth, options.column))) {
+    if (
+      flat !== null &&
+      fits(flat, ctx, collectionColumn(ctx, depth, options.column))
+    ) {
       return flat;
     }
   }
@@ -165,7 +200,9 @@ export function printArray(
     if (i === 0) {
       lines.push(prefix + shiftContinuations(text, "  ") + trailing);
     } else {
-      lines.push(ctx.ind(depth) + prefix + shiftContinuations(text, "  ") + trailing);
+      lines.push(
+        ctx.ind(depth) + prefix + shiftContinuations(text, "  ") + trailing,
+      );
     }
   }
 
@@ -190,6 +227,10 @@ export function embedInline(text: string, prefix: string): string {
   return prefix + shiftContinuations(text, " ".repeat(prefix.length));
 }
 
-export function indentCollection(text: string, ctx: Ctx, depth: number): string {
+export function indentCollection(
+  text: string,
+  ctx: Ctx,
+  depth: number,
+): string {
   return indentLines(text, ctx.ind(depth));
 }
