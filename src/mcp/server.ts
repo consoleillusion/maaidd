@@ -30,7 +30,7 @@ import {
 const projectInstructions = (): string => {
   if (!projectFileExists()) {
     return [
-      "MAAIDD project context is not initialized.",
+      "MAID project context is not initialized.",
       "Before starting design or implementation work, call `project_init`.",
       "Ask only the required questions and apply the returned defaults without prompting.",
       "Do not ask about defaults such as git commit practice, formatting, or testing expectations.",
@@ -39,7 +39,7 @@ const projectInstructions = (): string => {
     ].join(" ");
   }
   return [
-    "MAAIDD project context is loaded from maaidd.project.json.",
+    "MAID project context is loaded from maid.project.json.",
     "Call `project_read` before major design, scope, or constraint decisions.",
     "Use `project_update` when the project context changes; it deterministically regenerates PROJECT.md.",
   ].join(" ");
@@ -57,7 +57,7 @@ const errorResult = (err: unknown) => ({
 
 export function createMcpServer(): McpServer {
   const server = new McpServer(
-    { name: "maaidd", version: "0.1.0" },
+    { name: "maid", version: "0.1.0" },
     { instructions: projectInstructions() },
   );
   // metrics tool — run FTA and return results
@@ -134,7 +134,7 @@ export function createMcpServer(): McpServer {
   // history tool — read metric snapshots with aggregated trend values
   server.tool(
     "history",
-    "Read aggregated metric history snapshots from maaidd.db (per-commit trend: tests, lines of code, cyclo, FTA score, Halstead)",
+    "Read aggregated metric history snapshots from maid.db (per-commit trend: tests, lines of code, cyclo, FTA score, Halstead)",
     {},
     async () => {
       const config = loadConfig();
@@ -144,7 +144,7 @@ export function createMcpServer(): McpServer {
           content: [
             {
               type: "text" as const,
-              text: "No metric history found (maaidd.db).",
+              text: "No metric history found (maid.db).",
             },
           ],
         };
@@ -217,7 +217,7 @@ export function createMcpServer(): McpServer {
     {
       title: "Initialize project context",
       description:
-        "Start guided project initialization. Returns required questions, repository-detected software, automatic defaults, and optionally the optional settings catalog. Call this before other work when maaidd.project.json is missing.",
+        "Start guided project initialization. Returns required questions, repository-detected software, automatic defaults, and optionally the optional settings catalog. Call this before other work when maid.project.json is missing.",
       inputSchema: {
         include: z
           .enum(["required", "optional", "all"])
@@ -246,13 +246,13 @@ export function createMcpServer(): McpServer {
     {
       title: "Save project context",
       description:
-        "Validate and save project context (goal, scope, software, design, constraints, best practices) and optional maaidd.config.json overrides. Deterministically regenerates PROJECT.md.",
+        "Validate and save project context (goal, scope, software, design, constraints, best practices) and optional maid.config.json overrides. Deterministically regenerates PROJECT.md.",
       inputSchema: {
         project: ProjectInputSchema.optional().describe(
-          "Project fields to merge into maaidd.project.json.",
+          "Project fields to merge into maid.project.json.",
         ),
         config: ConfigPatchSchema.optional().describe(
-          "Optional tooling overrides to merge into maaidd.config.json.",
+          "Optional tooling overrides to merge into maid.config.json.",
         ),
         dryRun: z
           .boolean()
@@ -299,7 +299,7 @@ export function createMcpServer(): McpServer {
     {
       title: "Read project context",
       description:
-        "Read the saved project context as Markdown (default) or JSON, and optionally verify that PROJECT.md is in sync with maaidd.project.json and maaidd.config.json.",
+        "Read the saved project context as Markdown (default) or JSON, and optionally verify that PROJECT.md is in sync with maid.project.json and maid.config.json.",
       inputSchema: {
         format: z
           .enum(["markdown", "json"])
@@ -350,7 +350,7 @@ export function createMcpServer(): McpServer {
   server.registerPrompt(
     "initialize-project",
     {
-      title: "Initialize MAAIDD project context",
+      title: "Initialize MAID project context",
       description:
         "Guide the caller through goal, scope, software, design, constraints, and best practices.",
     },
@@ -361,7 +361,7 @@ export function createMcpServer(): McpServer {
           content: {
             type: "text",
             text: [
-              "Initialize this project for MAAIDD.",
+              "Initialize this project for MAID.",
               "Call `project_init` and ask the user only for the required fields.",
               "Apply the returned defaults without prompting for them (for example git commit practice).",
               'Offer the optional settings catalog only if the user wants to review more configuration: call `project_init` with { include: "optional" }.',

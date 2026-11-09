@@ -3,7 +3,7 @@
 ## 1) Install
 
 ```bash
-cd /path/to/maaidd
+cd /path/to/maid
 bun install
 ```
 
@@ -13,7 +13,7 @@ bun install
 ./init.sh
 ```
 
-`init.sh` creates `metric/` (the metrics storage directory). For full project initialization via the CLI, see `maaidd init` (`bun src/cli/index.ts init --help`).
+`init.sh` creates `metric/` (the metrics storage directory). For full project initialization via the CLI, see `maid init` (`bun src/cli/index.ts init --help`).
 
 ## Project context initialization (AI agents)
 
@@ -22,14 +22,14 @@ When MCP is connected to a new project, the server advertises setup through its 
 - Ask only the required questions (goal, scope, and software). Software is detected from the repository where possible.
 - Do not prompt for defaults such as best-practice git commits, formatting, and testing expectations; they are applied automatically.
 - Call `project_init` with `include: "optional"` only if the user wants to review the optional settings catalog.
-- Save with `project_update`; it writes `maaidd.project.json` and deterministically generates `PROJECT.md`.
+- Save with `project_update`; it writes `maid.project.json` and deterministically generates `PROJECT.md`.
 - Use `project_read` in later sessions, and `project_read` with `verify: true` to confirm the generated document is in sync.
 
 See [MCP and codegraph](./mcp-and-codegraph.md#project-initialization).
 
 ## 3) Configure
 
-Create or edit `maaidd.config.json` in your project. Example:
+Create or edit `maid.config.json` in your project. Example:
 
 ```json
 {
@@ -68,7 +68,7 @@ bun src/cli/index.ts gate src
 ## 6) Save snapshots and generate a report
 
 ```bash
-# save tests + FTA for current HEAD into metric/maaidd.db
+# save tests + FTA for current HEAD into metric/maid.db
 bun src/cli/index.ts metrics src --save
 
 # or: pending before commit, finalize after commit

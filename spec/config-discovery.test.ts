@@ -23,7 +23,7 @@ describe("config discovery and normalization", () => {
     temporaryDirs.push(dir);
     const nested = join(dir, "a", "b");
     mkdirSync(nested, { recursive: true });
-    const path = join(dir, "maaidd.config.json");
+    const path = join(dir, "maid.config.json");
     writeFileSync(
       path,
       JSON.stringify({ metrics: { testCommand: "node --test" } }),

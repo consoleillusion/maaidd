@@ -1,5 +1,5 @@
 /**
- * `maaidd gate [path]` — enforce metric thresholds; exit 1 on violations.
+ * `maid gate [path]` — enforce metric thresholds; exit 1 on violations.
  */
 import { buildCommand } from "@stricli/core";
 import { runFta } from "../../metrics/fta.ts";
@@ -19,7 +19,7 @@ const gateCommand = buildCommand({
       config: {
         kind: "parsed",
         parse: (input: string) => input,
-        brief: "Path to maaidd.config.json",
+        brief: "Path to maid.config.json",
         placeholder: "path",
         optional: true,
       },

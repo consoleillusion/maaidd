@@ -140,7 +140,7 @@ export function generateReport(metricDir = "."): string {
     { includePending: true },
   );
   if (snapshots.length === 0) {
-    return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maaidd.db</code>).</p></body></html>";
+    return "<!DOCTYPE html>\n<html><body><p>No metric history found (<code>maid.db</code>).</p></body></html>";
   }
   const labels = snapshots.map((s) => s.shortSha);
   const x = snapshots.map((_, i) => i);
@@ -166,7 +166,7 @@ export function generateReport(metricDir = "."): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MAAIDD — Metric History</title>
+<title>MAID — Metric History</title>
 <style>
 ${uplotCss}
 body { font-family: system-ui, -apple-system, sans-serif; margin: 2rem; background: #fafafa; color: #222; }
@@ -192,8 +192,8 @@ li { margin: 0.15rem 0; }
 </style>
 </head>
 <body>
-<h1>MAAIDD — Metric History</h1>
-<p>${snapshots.length} snapshots from <code>maaidd.db</code> · x-axis: git commits in chronological order</p>
+<h1>MAID — Metric History</h1>
+<p>${snapshots.length} snapshots from <code>maid.db</code> · x-axis: git commits in chronological order</p>
 
 <div class="legend" id="legend"></div>
 <div id="chart"></div>

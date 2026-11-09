@@ -62,9 +62,9 @@ describe("commit snapshots (SQLite store)", () => {
     const sha = "a".repeat(40);
     const path = saveSnapshot(dir, sha, metrics, tests);
 
-    expect(path).toContain("maaidd.db");
+    expect(path).toContain("maid.db");
     expect(path).toContain(sha);
-    expect(existsSync(join(dir, "maaidd.db"))).toBe(true);
+    expect(existsSync(join(dir, "maid.db"))).toBe(true);
 
     const [entry] = readHistory(dir);
     expect(entry.commit).toBe(sha);

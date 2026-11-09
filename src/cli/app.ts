@@ -1,5 +1,5 @@
 /**
- * MAAIDD CLI application — Stricli route map.
+ * MAID CLI application — Stricli route map.
  */
 import { buildApplication, buildRouteMap } from "@stricli/core";
 import { formatCommand } from "./commands/format.ts";
@@ -25,13 +25,13 @@ export function buildApp() {
       completion: completionCommand,
     },
     docs: {
-      brief: "MAAIDD — Metric Assisted AI Driven Development",
+      brief: "MAID — Metric Assisted AI Driven Development",
       fullDescription:
         "Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.",
     },
   });
   return buildApplication(routes, {
-    name: "maaidd",
+    name: "maid",
     versionInfo: { currentVersion: "0.1.0" },
     scanner: {
       // Keep Stricli's camelCase API while accepting documented --kebab-case flags.

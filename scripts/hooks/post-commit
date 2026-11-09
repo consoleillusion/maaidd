@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# maaidd post-commit: finalize pending analytics to HEAD hash, stage for next commit (no amend).
+# maid post-commit: finalize pending analytics to HEAD hash, stage for next commit (no amend).
 set -euo pipefail
 
 # Skip in contexts where amending/staging side effects are risky
-if [ -n "${MAAIDD_SKIP_HOOKS:-}" ]; then exit 0; fi
+if [ -n "${MAID_SKIP_HOOKS:-}" ]; then exit 0; fi
 if [ -d "$(git rev-parse --git-dir)/rebase-merge" ] || [ -d "$(git rev-parse --git-dir)/rebase-apply" ]; then exit 0; fi
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -11,6 +11,6 @@ cd "$ROOT"
 
 # Finalize pending -> HEAD; if nothing pending, no-op
 if bun "$ROOT/src/cli/index.ts" metrics --finalize >/dev/null 2>&1; then
-  git add -- maaidd.db 2>/dev/null || true
+  git add -- maid.db 2>/dev/null || true
 fi
 exit 0

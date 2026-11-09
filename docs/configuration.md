@@ -1,6 +1,6 @@
 # Configuration
 
-MAAIDD is configured primarily via `maaidd.config.json` (see `src/config.ts`, `src/types.ts`, and `maaidd.config.json` in this repo).
+MAID is configured primarily via `maid.config.json` (see `src/config.ts`, `src/types.ts`, and `maid.config.json` in this repo).
 
 ## Top-level options
 
@@ -44,9 +44,9 @@ Controls the functional (Dhall/Haskell-like) layout pass:
 | `codegraph` | Enable codegraph-related MCP functionality. |
 | `metrics` | Enable metrics-related MCP functionality. |
 
-## Project context (`maaidd.project.json`)
+## Project context (`maid.project.json`)
 
-MCP project initialization writes a separate `maaidd.project.json` at the project root. It is the canonical project definition used by `project_read` and the `initialize-project` flow:
+MCP project initialization writes a separate `maid.project.json` at the project root. It is the canonical project definition used by `project_read` and the `initialize-project` flow:
 
 | Key | Description |
 |---|---|
@@ -60,9 +60,9 @@ MCP project initialization writes a separate `maaidd.project.json` at the projec
 | `bestPractices` | Git commit, formatting, testing, and documentation expectations. Best-practice defaults are applied without prompting. |
 | `createdAt` / `updatedAt` | Metadata; `updatedAt` only changes when project content changes. |
 
-`PROJECT.md` is generated deterministically from `maaidd.project.json` and the effective `maaidd.config.json`. Do not edit it directly; call `project_update` to regenerate it. `project_read({ verify: true })` checks that it is in sync.
+`PROJECT.md` is generated deterministically from `maid.project.json` and the effective `maid.config.json`. Do not edit it directly; call `project_update` to regenerate it. `project_read({ verify: true })` checks that it is in sync.
 
 ## Notes
 
-- `maaidd.config.json` contains *configuration* (including a `metrics` section). The **metric snapshot directory** is `metric/` (containing `maaidd.db`); it is not named `metrics/`.
-- Biome formatting also respects `biome.json` where applicable; MAAIDD forwards only explicitly provided style flags in Biome mode so project Biome config can govern defaults.
+- `maid.config.json` contains *configuration* (including a `metrics` section). The **metric snapshot directory** is `metric/` (containing `maid.db`); it is not named `metrics/`.
+- Biome formatting also respects `biome.json` where applicable; MAID forwards only explicitly provided style flags in Biome mode so project Biome config can govern defaults.

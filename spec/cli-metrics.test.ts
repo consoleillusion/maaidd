@@ -97,7 +97,7 @@ describe("metrics and gate commands", () => {
     );
     expect(result.status).toBe(0);
     expect(result.stderr).toContain("Tests: 7/8 passed, 1 failed");
-    expect(existsSync(join(dir, "maaidd.db"))).toBe(true);
+    expect(existsSync(join(dir, "maid.db"))).toBe(true);
 
     const [snapshot] = readHistory(dir);
     expect(snapshot.commit).toBe(currentHead());
@@ -120,7 +120,7 @@ describe("metrics and gate commands", () => {
     );
     expect(pending.status).toBe(0);
     expect(readHistory(dir)).toHaveLength(0);
-    expect(existsSync(join(dir, "maaidd.db"))).toBe(true);
+    expect(existsSync(join(dir, "maid.db"))).toBe(true);
 
     const finalized = runCli(["metrics", "--finalize"], { cwd: dir });
     expect(finalized.status).toBe(0);

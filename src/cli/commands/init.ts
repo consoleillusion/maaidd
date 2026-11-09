@@ -1,9 +1,9 @@
 /**
- * `maaidd init` — initialize MAAIDD in a project.
+ * `maid init` — initialize MAID in a project.
  *
  * - Default: Biome config baseline. Enabling functional style enables the
  *   additional functional options.
- * - Every maaidd.config.json option is available as an explicit CLI flag and
+ * - Every maid.config.json option is available as an explicit CLI flag and
  *   is written into the generated config.
  * - Interactive by default (TTY): prompts for hooks/confirmations unless
  *   explicit flags are provided. Destructive actions require confirmation.
@@ -23,7 +23,7 @@ import {
 } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { dirname, join, resolve } from "node:path";
-import { DEFAULT_CONFIG, type MaaiddConfig } from "../../types.ts";
+import { DEFAULT_CONFIG, type MaidConfig } from "../../types.ts";
 import { format } from "../../index.ts";
 import { resolveFormatOptions } from "../../config.ts";
 import { collectFiles, wasFlagProvided } from "./shared.ts";
@@ -46,13 +46,13 @@ function parseNonNegative(input: string): number {
   return Math.round(n);
 }
 
-function cloneConfig(): MaaiddConfig {
+function cloneConfig(): MaidConfig {
   return structuredClone(DEFAULT_CONFIG);
 }
 
-function applyFlagsToConfig(flags: Flags): MaaiddConfig {
+function applyFlagsToConfig(flags: Flags): MaidConfig {
   const c = cloneConfig();
-  if (flags.style !== undefined) c.style = flags.style as MaaiddConfig["style"];
+  if (flags.style !== undefined) c.style = flags.style as MaidConfig["style"];
   if (flags.indent !== undefined)
     c.indent = parseIndentInput(String(flags.indent));
   if (flags.lineWidth !== undefined)
@@ -60,9 +60,9 @@ function applyFlagsToConfig(flags: Flags): MaaiddConfig {
   if (wasFlagProvided("semicolons", "no-semicolons"))
     c.semicolons = Boolean(flags.semicolons);
   if (flags.quoteStyle !== undefined)
-    c.quoteStyle = flags.quoteStyle as MaaiddConfig["quoteStyle"];
+    c.quoteStyle = flags.quoteStyle as MaidConfig["quoteStyle"];
   if (flags.trailingComma !== undefined)
-    c.trailingComma = flags.trailingComma as MaaiddConfig["trailingComma"];
+    c.trailingComma = flags.trailingComma as MaidConfig["trailingComma"];
   if (wasFlagProvided("to-arrow", "no-to-arrow"))
     c.toArrow = Boolean(flags.toArrow);
   if (wasFlagProvided("biome", "no-biome")) c.biome = Boolean(flags.biome);
@@ -114,7 +114,7 @@ function applyFlagsToConfig(flags: Flags): MaaiddConfig {
   return c;
 }
 
-function biomeConfigFor(c: MaaiddConfig): Record<string, unknown> {
+function biomeConfigFor(c: MaidConfig): Record<string, unknown> {
   return {
     $schema: "https://biomejs.dev/schemas/2.6.6/schema.json",
     formatter: {
@@ -199,11 +199,11 @@ function writeConfigFile(
 
 async function maybeWriteConfigs(
   dir: string,
-  config: MaaiddConfig,
+  config: MaidConfig,
   flags: Flags,
   interactive: boolean,
 ): Promise<void> {
-  const configPath = join(dir, "maaidd.config.json");
+  const configPath = join(dir, "maid.config.json");
   const biomePath = join(dir, "biome.json");
   const configContent = `${JSON.stringify(config, null, 2)}\n`;
   const biomeContent = `${JSON.stringify(biomeConfigFor(config), null, 2)}\n`;
@@ -216,7 +216,7 @@ async function maybeWriteConfigs(
 
   if (existsSync(configPath) || existsSync(biomePath)) {
     const existing = [
-      existsSync(configPath) ? "maaidd.config.json" : null,
+      existsSync(configPath) ? "maid.config.json" : null,
       existsSync(biomePath) ? "biome.json" : null,
     ]
       .filter(Boolean)
@@ -238,7 +238,7 @@ async function maybeWriteConfigs(
         );
         const a = writeConfigFile(configPath, configContent, false);
         const b = writeConfigFile(biomePath, biomeContent, false);
-        stdout(`maaidd.config.json: ${a}, biome.json: ${b}`);
+        stdout(`maid.config.json: ${a}, biome.json: ${b}`);
         return;
       }
     }
@@ -252,7 +252,7 @@ async function maybeWriteConfigs(
   }
   if (
     interactive &&
-    !(await confirm(`Write maaidd.config.json and biome.json in ${dir}?`))
+    !(await confirm(`Write maid.config.json and biome.json in ${dir}?`))
   ) {
     stdout("Skipped writing config files.");
     return;
@@ -260,12 +260,12 @@ async function maybeWriteConfigs(
 
   const a = writeConfigFile(configPath, configContent, force || interactive);
   const b = writeConfigFile(biomePath, biomeContent, force || interactive);
-  stdout(`maaidd.config.json: ${a}, biome.json: ${b}`);
+  stdout(`maid.config.json: ${a}, biome.json: ${b}`);
 }
 
 async function maybeFormat(
   dir: string,
-  config: MaaiddConfig,
+  config: MaidConfig,
   flags: Flags,
   interactive: boolean,
 ): Promise<void> {
@@ -296,7 +296,7 @@ async function maybeFormat(
 
 async function doFormat(
   dir: string,
-  config: MaaiddConfig,
+  config: MaidConfig,
   paths: string[],
 ): Promise<void> {
   const resolved = resolveFormatOptions({}, config);
@@ -379,16 +379,16 @@ function printMcpHint(dir: string): void {
   );
   stdout(`Example cwd: ${dir}`);
   stdout(
-    "Tools: metrics, gate, history, codegraph. Prereqs: fta for metrics/gate; .code-graph/index.db for codegraph; maaidd.db/history as configured.",
+    "Tools: metrics, gate, history, codegraph. Prereqs: fta for metrics/gate; .code-graph/index.db for codegraph; maid.db/history as configured.",
   );
 }
 
 const initCommand = buildCommand({
   docs: {
     brief:
-      "Initialize MAAIDD (maaidd.config.json, biome.json, git hooks, optional formatting)",
+      "Initialize MAID (maid.config.json, biome.json, git hooks, optional formatting)",
     fullDescription:
-      "Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maaidd.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.",
+      "Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.",
   },
   parameters: {
     flags: {
@@ -411,7 +411,7 @@ const initCommand = buildCommand({
       },
       writeConfig: {
         kind: "boolean",
-        brief: "Write maaidd.config.json and biome.json",
+        brief: "Write maid.config.json and biome.json",
         optional: true,
       },
       format: {
@@ -554,7 +554,7 @@ const initCommand = buildCommand({
     const interactive = isInteractive(flags);
     const config = applyFlagsToConfig(flags);
 
-    stdout(`MAAIDD init in ${dir}`);
+    stdout(`MAID init in ${dir}`);
     stdout(
       `Style: ${config.style}${config.style === "functional" ? " (functional options enabled)" : " (Biome default baseline)"}`,
     );

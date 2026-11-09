@@ -1,6 +1,6 @@
 # Formatting
 
-MAAIDD formats JavaScript/TypeScript with a **Biome-first** pipeline and an optional **functional** layout mode.
+MAID formats JavaScript/TypeScript with a **Biome-first** pipeline and an optional **functional** layout mode.
 
 ## Modes
 
@@ -16,7 +16,7 @@ MAAIDD formats JavaScript/TypeScript with a **Biome-first** pipeline and an opti
 - **Biome normalization first**, then a functional layout pass.
 - The functional pass applies Dhall/Haskell-like **leading-comma** layout as a *diff on top of Biome* (the goal is consistent diffs, not a fully independent formatter).
 - `toArrow` can be applied in the functional pipeline (after normalization) when enabled.
-- Controlled by `functional` options in `maaidd.config.json` (comma style, value indents, blank lines, inline array threshold, etc.).
+- Controlled by `functional` options in `maid.config.json` (comma style, value indents, blank lines, inline array threshold, etc.).
 
 ## Legacy printer (JS)
 
@@ -31,4 +31,4 @@ The TypeScript API (`src/index.ts`) is the primary, Biome-first implementation.
 
 ## Deterministic formatting
 
-Use `maaidd check` in CI/precommit to ensure files are formatted, and `maaidd format` to apply changes. The `cli.sh` helpers show a commit workflow that formats and records a pending metric snapshot.
+Use `maid check` in CI/precommit to ensure files are formatted, and `maid format` to apply changes. The `cli.sh` helpers show a commit workflow that formats and records a pending metric snapshot.

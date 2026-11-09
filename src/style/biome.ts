@@ -85,8 +85,8 @@ export function formatWithBiome(
   } else if (run.explicit && run.explicit.size > 0) {
     args.push(...explicitStyleArgs(options, run.explicit));
   }
-  // `configPath` belongs to maaidd.config.json, not Biome. Biome discovers its
-  // own biome.json from the input path; passing MAAIDD's config here is invalid.
+  // `configPath` belongs to maid.config.json, not Biome. Biome discovers its
+  // own biome.json from the input path; passing MAID's config here is invalid.
   const result = spawnSync(resolveBiomeBinary(), args, {
     input: source,
     encoding: "utf8",

@@ -24,7 +24,7 @@ export interface McpOptions {
   codegraph: boolean;
   metrics: boolean;
 }
-export interface MaaiddConfig {
+export interface MaidConfig {
   style: Style;
   indent: Indent;
   lineWidth: number;
@@ -65,7 +65,7 @@ export interface ResolvedFormatOptions {
   configPath?: string;
   functional: FunctionalOptions;
 }
-export const DEFAULT_CONFIG: MaaiddConfig = {
+export const DEFAULT_CONFIG: MaidConfig = {
   style: "biome",
   indent: 2,
   lineWidth: 80,

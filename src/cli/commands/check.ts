@@ -1,5 +1,5 @@
 /**
- * `maaidd check [paths...]` — check formatting without writing.
+ * `maid check [paths...]` — check formatting without writing.
  * Exits 1 if any file would change.
  */
 import { buildCommand } from "@stricli/core";
@@ -69,7 +69,7 @@ const checkCommand = buildCommand({
       config: {
         kind: "parsed",
         parse: (input: string) => input,
-        brief: "Path to maaidd.config.json",
+        brief: "Path to maid.config.json",
         placeholder: "path",
         optional: true,
       },

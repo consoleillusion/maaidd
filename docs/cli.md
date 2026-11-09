@@ -1,20 +1,20 @@
-# CLI reference (`maaidd`)
+# CLI reference (`maid`)
 
 > Generated with Stricli built-ins (`generateHelpTextForAllCommands`, `formatHelp`). Run `bun scripts/generate-cli-docs.ts`.
 
-## `maaidd`
+## `maid`
 
 ```text
 USAGE
-  maaidd format [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] [--output path] <args>...
-  maaidd check [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] <args>...
-  maaidd metrics [--format table|json|toon|html] [--save] [--pending] [--finalize] [--force] [--tests] [--test-command command] [--exclude-under N] [--config path] <args>...
-  maaidd gate [--exclude-under N] [--config path] <args>...
-  maaidd report [--output path]
-  maaidd mcp
-  maaidd graph <args>...
-  maaidd init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
-  maaidd completion install|uninstall ...
+  maid format [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] [--output path] <args>...
+  maid check [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] <args>...
+  maid metrics [--format table|json|toon|html] [--save] [--pending] [--finalize] [--force] [--tests] [--test-command command] [--exclude-under N] [--config path] <args>...
+  maid gate [--exclude-under N] [--config path] <args>...
+  maid report [--output path]
+  maid mcp
+  maid graph <args>...
+  maid init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid completion install|uninstall ...
 
 Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.
 
@@ -29,16 +29,16 @@ COMMANDS
   report      Generate uPlot HTML history dashboard from metric snapshots
   mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
   graph       Query the code-graph index
-  init        Initialize MAAIDD (maaidd.config.json, biome.json, git hooks, optional formatting)
-  completion  Install or uninstall shell completion for maaidd
+  init        Initialize MAID (maid.config.json, biome.json, git hooks, optional formatting)
+  completion  Install or uninstall shell completion for maid
 ```
 
-## `maaidd maaidd format`
+## `maid maid format`
 
 ```text
 USAGE
-  maaidd format [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] [--output path] <args>...
-  maaidd format --help
+  maid format [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] [--output path] <args>...
+  maid format --help
 
 Format files, directories, or stdin with Biome or functional style
 
@@ -51,7 +51,7 @@ FLAGS
      [--trailing-comma]              Trailing comma style                                            [all|es5|none]
      [--to-arrow/--no-to-arrow]      Convert function declarations to const arrows (functional only)
      [--biome/--no-biome]            Pass through Biome (use --no-biome for functional-only)         [default = true]
-     [--config]                      Path to maaidd.config.json
+     [--config]                      Path to maid.config.json
      [--output]                      Output file or directory
   -h  --help                         Print help information and exit
 
@@ -59,12 +59,12 @@ ARGUMENTS
   args...  Files or directories to format (default: stdin)
 ```
 
-## `maaidd maaidd check`
+## `maid maid check`
 
 ```text
 USAGE
-  maaidd check [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] <args>...
-  maaidd check --help
+  maid check [--style biome|functional] [--indent N|tab] [--line-width N] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--config path] <args>...
+  maid check --help
 
 Check formatting without writing; exits 1 if any file would change
 
@@ -77,62 +77,62 @@ FLAGS
      [--trailing-comma]              Trailing comma style                                            [all|es5|none]
      [--to-arrow/--no-to-arrow]      Convert function declarations to const arrows (functional only)
      [--biome/--no-biome]            Pass through Biome (use --no-biome for functional-only)         [default = true]
-     [--config]                      Path to maaidd.config.json
+     [--config]                      Path to maid.config.json
   -h  --help                         Print help information and exit
 
 ARGUMENTS
   args...  Files or directories to check (default: stdin)
 ```
 
-## `maaidd maaidd metrics`
+## `maid maid metrics`
 
 ```text
 USAGE
-  maaidd metrics [--format table|json|toon|html] [--save] [--pending] [--finalize] [--force] [--tests] [--test-command command] [--exclude-under N] [--config path] <args>...
-  maaidd metrics --help
+  maid metrics [--format table|json|toon|html] [--save] [--pending] [--finalize] [--force] [--tests] [--test-command command] [--exclude-under N] [--config path] <args>...
+  maid metrics --help
 
 Run FTA metrics; optionally save tests + metrics for a git commit
 
 FLAGS
      [--format]                  Output format (default: table)                                  [table|json|toon|html]
-     [--save/--no-save]          Save tests + FTA metrics for current HEAD (maaidd.db)
+     [--save/--no-save]          Save tests + FTA metrics for current HEAD (maid.db)
      [--pending/--no-pending]    Save a pending snapshot to finalize after a commit
      [--finalize/--no-finalize]  Finalize the pending snapshot using the current HEAD
      [--force/--no-force]        Replace an existing snapshot for the same commit
      [--tests/--no-tests]        Include test-runner counts when saving (use --no-tests to omit) [default = true]
      [--test-command]            Command used to collect test counts
      [--exclude-under]           Exclude files under N lines
-     [--config]                  Path to maaidd.config.json
+     [--config]                  Path to maid.config.json
   -h  --help                     Print help information and exit
 
 ARGUMENTS
   args...  Path to analyze (default: src)
 ```
 
-## `maaidd maaidd gate`
+## `maid maid gate`
 
 ```text
 USAGE
-  maaidd gate [--exclude-under N] [--config path] <args>...
-  maaidd gate --help
+  maid gate [--exclude-under N] [--config path] <args>...
+  maid gate --help
 
 Enforce FTA metric thresholds; exits 1 on violations
 
 FLAGS
      [--exclude-under]  Exclude files under N lines
-     [--config]         Path to maaidd.config.json
+     [--config]         Path to maid.config.json
   -h  --help            Print help information and exit
 
 ARGUMENTS
   args...  Path to analyze (default: src)
 ```
 
-## `maaidd maaidd report`
+## `maid maid report`
 
 ```text
 USAGE
-  maaidd report [--output path]
-  maaidd report --help
+  maid report [--output path]
+  maid report --help
 
 Generate uPlot HTML history dashboard from metric snapshots
 
@@ -141,12 +141,12 @@ FLAGS
   -h  --help     Print help information and exit
 ```
 
-## `maaidd maaidd mcp`
+## `maid maid mcp`
 
 ```text
 USAGE
-  maaidd mcp
-  maaidd mcp --help
+  maid mcp
+  maid mcp --help
 
 Start the MCP server (stdio transport) exposing codegraph + metrics tools
 
@@ -154,12 +154,12 @@ FLAGS
   -h --help  Print help information and exit
 ```
 
-## `maaidd maaidd graph`
+## `maid maid graph`
 
 ```text
 USAGE
-  maaidd graph <args>...
-  maaidd graph --help
+  maid graph <args>...
+  maid graph --help
 
 Query the code-graph index
 
@@ -170,20 +170,20 @@ ARGUMENTS
   args...  Query arguments passed to code-graph
 ```
 
-## `maaidd maaidd init`
+## `maid maid init`
 
 ```text
 USAGE
-  maaidd init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
-  maaidd init --help
+  maid init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid init --help
 
-Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maaidd.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.
+Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.
 
 FLAGS
   -y [--yes/--no-yes]                                                    Accept safe defaults non-interactively (does not format or force overwrite)
      [--non-interactive/--no-non-interactive]                            Disable prompts; requires explicit flags for hooks/destructive actions
      [--force/--no-force]                                                Overwrite existing config files when writing
-     [--write-config/--no-write-config]                                  Write maaidd.config.json and biome.json
+     [--write-config/--no-write-config]                                  Write maid.config.json and biome.json
      [--format/--no-format]                                              Run initial formatting (destructive; explicit opt-in)
      [--format-path]                                                     Path to format when --format is set (default: .)
      [--accept-git-hooks/--no-accept-git-hooks]                          Install git pre/post commit hooks without prompting
@@ -212,27 +212,27 @@ FLAGS
   -h  --help                                                             Print help information and exit
 ```
 
-## `maaidd maaidd completion install`
+## `maid maid completion install`
 
 ```text
 USAGE
-  maaidd completion install
-  maaidd completion install --help
+  maid completion install
+  maid completion install --help
 
-Installs bash autocomplete support for maaidd
+Installs bash autocomplete support for maid
 
 FLAGS
   -h --help  Print help information and exit
 ```
 
-## `maaidd maaidd completion uninstall`
+## `maid maid completion uninstall`
 
 ```text
 USAGE
-  maaidd completion uninstall
-  maaidd completion uninstall --help
+  maid completion uninstall
+  maid completion uninstall --help
 
-Uninstalls bash autocomplete support for maaidd
+Uninstalls bash autocomplete support for maid
 
 FLAGS
   -h --help  Print help information and exit

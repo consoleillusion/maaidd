@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# maaidd pre-commit: format, capture pending analytics (FTA + tests), stage results.
+# maid pre-commit: format, capture pending analytics (FTA + tests), stage results.
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -15,4 +15,4 @@ fi
 bun "$ROOT/src/cli/index.ts" metrics --pending src >/dev/null
 
 # Stage analytics DB (and WAL/SHM ignored; main DB may be tracked)
-git add -- maaidd.db 2>/dev/null || true
+git add -- maid.db 2>/dev/null || true

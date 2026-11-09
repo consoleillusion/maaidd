@@ -15,7 +15,7 @@ import { makeTempDir } from "./test-utils.ts";
 const temporaryDirs: string[] = [];
 
 const makeProject = (): string => {
-  const dir = makeTempDir("maaidd-project-");
+  const dir = makeTempDir("maid-project-");
   temporaryDirs.push(dir);
   writeFileSync(
     join(dir, "package.json"),
@@ -145,7 +145,7 @@ describe("project persistence", () => {
     expect(second.project.updatedAt).toBe(first.project.updatedAt);
   });
 
-  it("merges optional tooling overrides into maaidd.config.json", () => {
+  it("merges optional tooling overrides into maid.config.json", () => {
     const dir = makeProject();
     const result = updateProject({
       root: dir,
@@ -156,7 +156,7 @@ describe("project persistence", () => {
     });
 
     const config = JSON.parse(
-      readFileSync(join(dir, "maaidd.config.json"), "utf8"),
+      readFileSync(join(dir, "maid.config.json"), "utf8"),
     ) as {
       lineWidth: number;
       metrics: { thresholds: { minFtaScore: number } };

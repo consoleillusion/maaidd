@@ -1,5 +1,5 @@
 /**
- * `maaidd report` — generate uPlot HTML history dashboard from metric/*.json.
+ * `maid report` — generate uPlot HTML history dashboard from metric/*.json.
  *
  * One line chart: x-axis = git commits, one line per tracked metric
  * (passing tests, lines of code, cyclomatic complexity, FTA score,

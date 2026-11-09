@@ -1,10 +1,10 @@
 # Metrics and gates
 
-MAAIDD uses [FTA (Fast TypeScript Analyzer / FTA CLI)](https://github.com/sgb-io/fta) to measure code and can enforce thresholds (“gates”).
+MAID uses [FTA (Fast TypeScript Analyzer / FTA CLI)](https://github.com/sgb-io/fta) to measure code and can enforce thresholds (“gates”).
 
 ## FTA metrics
 
-`maaidd metrics [path]` runs FTA and reports per-file metrics (e.g. `cyclo`, `fta_score`, `assessment`, `line_count`, Halstead fields when available).
+`maid metrics [path]` runs FTA and reports per-file metrics (e.g. `cyclo`, `fta_score`, `assessment`, `line_count`, Halstead fields when available).
 
 ```bash
 bun src/cli/index.ts metrics src
@@ -17,7 +17,7 @@ Options include `--exclude-under N` and `--config <path>`. See [CLI reference](.
 
 ## Gates
 
-`maaidd gate [path]` checks FTA results against configured thresholds:
+`maid gate [path]` checks FTA results against configured thresholds:
 
 - `metrics.thresholds.maxCyclomatic`
 - `metrics.thresholds.minFtaScore`
@@ -33,7 +33,7 @@ bun src/cli/index.ts gate src
 
 ## Test-runner integration (snapshots)
 
-When saving snapshots (`--save` or `--pending`), MAAIDD can run the configured test command (`metrics.testCommand`, default `bun run test`) and store the parsed counts alongside FTA:
+When saving snapshots (`--save` or `--pending`), MAID can run the configured test command (`metrics.testCommand`, default `bun run test`) and store the parsed counts alongside FTA:
 
 ```bash
 bun src/cli/index.ts metrics src --save

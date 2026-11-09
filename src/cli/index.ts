@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * MAAIDD CLI entry point.
+ * MAID CLI entry point.
  */
 import { run } from "@stricli/core";
 import { buildApp } from "./app.ts";

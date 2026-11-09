@@ -7,7 +7,7 @@ import { createMcpServer } from "../src/mcp/server.ts";
 import { makeTempDir, writeExecutable } from "./test-utils.ts";
 
 const server = createMcpServer();
-const client = new Client({ name: "maaidd-spec", version: "1.0.0" });
+const client = new Client({ name: "maid-spec", version: "1.0.0" });
 const temporaryDirs: string[] = [];
 const originalCodegraphBin = process.env.CODEGRAPH_BIN;
 
@@ -77,7 +77,7 @@ describe("MCP development tools", () => {
     });
     const parsed = JSON.parse(text(plan));
     expect(["missing", "partial", "complete"]).toContain(parsed.status);
-    expect(parsed.projectFile).toBe("maaidd.project.json");
+    expect(parsed.projectFile).toBe("maid.project.json");
     expect(parsed.projectDoc).toBe("PROJECT.md");
     expect(parsed.detected).toBeDefined();
   });

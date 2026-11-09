@@ -1,15 +1,15 @@
-# MAAIDD — Metric Assisted AI Driven Development
+# MAID — Metric Assisted AI Driven Development
 
-MAAIDD is a Bun/TypeScript CLI and library for orchestrating AI-assisted development with **consistent formatting** and **measurable feedback**.
+MAID is a Bun/TypeScript CLI and library for orchestrating AI-assisted development with **consistent formatting** and **measurable feedback**.
 
 - **Biome-first formatting** for normalization and consistent diffs.
 - **Functional formatting mode** (Dhall/Haskell-like leading commas) applied as a *layout diff on top of Biome normalization*.
 - **Code metrics** via [FTA](https://github.com/sgb-io/fta) (cyclomatic complexity, Halstead, FTA score, LOC).
 - **Gates** to enforce metric thresholds.
-- **Per-commit snapshots** (tests + FTA) stored in an embedded **SQLite** database (`metric/maaidd.db`), with legacy JSON import.
+- **Per-commit snapshots** (tests + FTA) stored in an embedded **SQLite** database (`metric/maid.db`), with legacy JSON import.
 - **uPlot HTML reports** to visualize trends over git commits.
 - **MCP server** exposing guided project initialization plus metrics, gate, history, and codegraph tools to AI agents.
-- **Deterministic project docs**: `maaidd.project.json` is canonical; `PROJECT.md` is generated from it and `maaidd.config.json`.
+- **Deterministic project docs**: `maid.project.json` is canonical; `PROJECT.md` is generated from it and `maid.config.json`.
 
 ## Requirements
 
@@ -35,10 +35,10 @@ bun src/cli/index.ts check src
 bun src/cli/index.ts metrics src
 bun src/cli/index.ts metrics src --format json
 
-# Enforce thresholds from maaidd.config.json
+# Enforce thresholds from maid.config.json
 bun src/cli/index.ts gate src
 
-# Save a snapshot (runs test command + FTA, stores in metric/maaidd.db)
+# Save a snapshot (runs test command + FTA, stores in metric/maid.db)
 bun src/cli/index.ts metrics src --save
 
 # Generate an HTML trend report
@@ -70,7 +70,7 @@ Full, generated reference: [`docs/cli.md`](./docs/cli.md) (regenerate with `bun 
 
 ## Configuration
 
-MAAIDD reads `maaidd.config.json` (by default, discovered/loaded from the working context as implemented in `src/config.ts`). Key areas:
+MAID reads `maid.config.json` (by default, discovered/loaded from the working context as implemented in `src/config.ts`). Key areas:
 
 - `style`: `"biome"` (default) or `"functional"`
 - Biome/format options: `indent`, `lineWidth`, `semicolons`, `quoteStyle`, `trailingComma`, `toArrow`, `biome`
@@ -78,14 +78,14 @@ MAAIDD reads `maaidd.config.json` (by default, discovered/loaded from the workin
 - `metrics`: `excludeUnder`, `testCommand` (default `bun run test`), `thresholds.maxCyclomatic`, `thresholds.minFtaScore`
 - `mcp`: `codegraph`, `metrics`
 
-Project context is stored separately in `maaidd.project.json` (goal, scope, software, design, constraints, best practices), with a deterministic `PROJECT.md` generated from it and `maaidd.config.json`.
+Project context is stored separately in `maid.project.json` (goal, scope, software, design, constraints, best practices), with a deterministic `PROJECT.md` generated from it and `maid.config.json`.
 
 See [`docs/configuration.md`](./docs/configuration.md).
 
 ## Library API
 
 ```ts
-import { format, formatFunctional, formatWithBiome, loadConfig } from "maaidd";
+import { format, formatFunctional, formatWithBiome, loadConfig } from "maid";
 
 const out = format(source, {
   style: "biome", // default
@@ -106,17 +106,17 @@ Notes:
 
 ## Metrics, snapshots, and reports
 
-- **Snapshots** are stored in `metric/maaidd.db` (SQLite, via Bun `bun:sqlite`). Legacy `metric/<commit>.json` files are imported automatically and non-destructively.
-- `maaidd metrics --save` records **FTA metrics** and **test-runner counts** (from `metrics.testCommand`) for the current `HEAD`.
+- **Snapshots** are stored in `metric/maid.db` (SQLite, via Bun `bun:sqlite`). Legacy `metric/<commit>.json` files are imported automatically and non-destructively.
+- `maid metrics --save` records **FTA metrics** and **test-runner counts** (from `metrics.testCommand`) for the current `HEAD`.
 - Use `--pending` before a commit and `--finalize` after to attach the snapshot to the new commit SHA.
-- `maaidd gate` checks FTA results against thresholds (FTA gate ≠ test pass/fail).
-- `maaidd report` generates a self-contained uPlot HTML dashboard over commit history.
+- `maid gate` checks FTA results against thresholds (FTA gate ≠ test pass/fail).
+- `maid report` generates a self-contained uPlot HTML dashboard over commit history.
 
 See [`docs/metrics-and-gates.md`](./docs/metrics-and-gates.md) and [`docs/snapshots-and-reports.md`](./docs/snapshots-and-reports.md).
 
 ## MCP server
 
-`maaidd mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
+`maid mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
 
 ## Roadmap
 
@@ -141,7 +141,7 @@ See [`docs/development.md`](./docs/development.md).
 src/        CLI, formatter/styles, metrics, report, MCP, codegraph
 spec/       Bun tests
 fixtures/   formatting fixtures
-metric/     metrics DB (maaidd.db) and/or legacy JSON snapshots
+metric/     metrics DB (maid.db) and/or legacy JSON snapshots
 docs/       documentation (cli.md is generated)
 scripts/    maintenance scripts (CLI doc generation)
 ```

@@ -4,7 +4,7 @@
 
 Per-commit metric snapshots are stored in an embedded SQLite database:
 
-- **Path:** `metric/maaidd.db` (under the `metric/` directory)
+- **Path:** `metric/maid.db` (under the `metric/` directory)
 - **Engine:** Bun `bun:sqlite`
 
 Snapshots contain:
@@ -14,7 +14,7 @@ Snapshots contain:
 
 ## Legacy JSON import (non-destructive)
 
-If `metric/` contains legacy files, MAAIDD imports them automatically on access:
+If `metric/` contains legacy files, MAID imports them automatically on access:
 
 - `metric/<commit>.json` — either a legacy raw FTA array or a versioned snapshot document
 - `metric/.pending.json` — imported as pending state if applicable
@@ -40,11 +40,11 @@ Behavior notes:
 
 ## `cli.sh` helpers
 
-`cli.sh` provides `precommit`, `postcommit`, and `commit` helpers that format and record snapshots via `maaidd metrics --pending/--finalize` (SQLite-backed).
+`cli.sh` provides `precommit`, `postcommit`, and `commit` helpers that format and record snapshots via `maid metrics --pending/--finalize` (SQLite-backed).
 
 ## Reports (uPlot)
 
-`maaidd report` generates a self-contained HTML dashboard from stored snapshots:
+`maid report` generates a self-contained HTML dashboard from stored snapshots:
 
 ```bash
 bun src/cli/index.ts report -o metric/report.html

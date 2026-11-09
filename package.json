@@ -1,10 +1,10 @@
 {
-  "name": "maaidd",
+  "name": "maid",
   "version": "0.1.0",
-  "description": "MAAIDD — Metric Assisted AI Driven Development: Biome-first formatting, FTA metrics, gates, reports, and MCP tooling",
+  "description": "MAID — Metric Assisted AI Driven Development: Biome-first formatting, FTA metrics, gates, reports, and MCP tooling",
   "type": "module",
   "bin": {
-    "maaidd": "./src/cli/index.ts"
+    "maid": "./src/cli/index.ts"
   },
   "main": "./src/index.ts",
   "exports": {

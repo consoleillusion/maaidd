@@ -1,5 +1,5 @@
 /**
- * `maaidd metrics [path]` — FTA code metrics and per-commit project snapshots.
+ * `maid metrics [path]` — FTA code metrics and per-commit project snapshots.
  */
 import { buildCommand } from "@stricli/core";
 import { runFta } from "../../metrics/fta.ts";
@@ -28,7 +28,7 @@ const metricsCommand = buildCommand({
       save: {
         kind: "boolean",
         optional: true,
-        brief: "Save tests + FTA metrics for current HEAD (maaidd.db)",
+        brief: "Save tests + FTA metrics for current HEAD (maid.db)",
       },
       pending: {
         kind: "boolean",
@@ -68,7 +68,7 @@ const metricsCommand = buildCommand({
       config: {
         kind: "parsed",
         parse: (input: string) => input,
-        brief: "Path to maaidd.config.json",
+        brief: "Path to maid.config.json",
         placeholder: "path",
         optional: true,
       },

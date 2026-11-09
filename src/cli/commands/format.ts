@@ -1,5 +1,5 @@
 /**
- * `maaidd format [paths...]` — format files/dirs/stdin.
+ * `maid format [paths...]` — format files/dirs/stdin.
  */
 import { buildCommand } from "@stricli/core";
 import { resolveFormatOptions, loadConfig } from "../../index.ts";
@@ -66,7 +66,7 @@ const formatCommand = buildCommand({
       config: {
         kind: "parsed",
         parse: (input: string) => input,
-        brief: "Path to maaidd.config.json",
+        brief: "Path to maid.config.json",
         placeholder: "path",
         optional: true,
       },

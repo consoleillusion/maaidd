@@ -7,7 +7,7 @@ export const CLI = join(ROOT, "src", "cli", "index.ts");
 export const FTA_BIN = join(ROOT, "node_modules", ".bin", "fta");
 
 /** Temporary projects live inside this repository and are removed by each spec. */
-export function makeTempDir(prefix = "maaidd-spec-"): string {
+export function makeTempDir(prefix = "maid-spec-"): string {
   return mkdtempSync(join(ROOT, prefix));
 }
 

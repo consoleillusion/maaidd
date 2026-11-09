@@ -1,20 +1,20 @@
 /**
  * Project context used by MCP initialization.
  *
- * `maaidd.project.json` is the canonical, machine-readable project definition.
+ * `maid.project.json` is the canonical, machine-readable project definition.
  * `PROJECT.md` is a deterministic projection of that file plus the effective
- * `maaidd.config.json`; it is never authored by a model.
+ * `maid.config.json`; it is never authored by a model.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { z } from "zod";
 import { loadConfig } from "./config.ts";
-import { DEFAULT_CONFIG, type MaaiddConfig } from "./types.ts";
+import { DEFAULT_CONFIG, type MaidConfig } from "./types.ts";
 
 export const PROJECT_SCHEMA_VERSION = 1 as const;
-export const PROJECT_FILE = "maaidd.project.json";
+export const PROJECT_FILE = "maid.project.json";
 export const PROJECT_DOC = "PROJECT.md";
-const CONFIG_FILE = "maaidd.config.json";
+const CONFIG_FILE = "maid.config.json";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -176,7 +176,7 @@ export const PROJECT_DEFAULTS: Omit<
     summary: "",
     principles: [
       "Prefer small, focused modules with clear boundaries.",
-      "Keep behavior covered by tests and measurable with maaidd metrics and gates.",
+      "Keep behavior covered by tests and measurable with maid metrics and gates.",
       "Avoid unnecessary dependencies; justify additions.",
     ],
     architecture: "",
@@ -184,9 +184,9 @@ export const PROJECT_DEFAULTS: Omit<
   constraints: [],
   bestPractices: {
     commits:
-      "Make small, atomic commits. Use an imperative subject line (72 characters or fewer) and explain why in the body. Run tests and `maaidd gate` before committing. Capture a pending snapshot before a commit and finalize after.",
+      "Make small, atomic commits. Use an imperative subject line (72 characters or fewer) and explain why in the body. Run tests and `maid gate` before committing. Capture a pending snapshot before a commit and finalize after.",
     formatting:
-      "Run `maaidd format` and `maaidd check`; Biome is the source of truth for formatting.",
+      "Run `maid format` and `maid check`; Biome is the source of truth for formatting.",
     testing:
       "Keep the full test suite passing and add or update tests for behavior changes.",
     documentation:
@@ -265,7 +265,7 @@ export interface UpdateProjectResult {
   dryRun: boolean;
   project: ProjectContext;
   markdown: string;
-  config: MaaiddConfig;
+  config: MaidConfig;
 }
 
 export interface ProjectReadResult {
@@ -444,7 +444,7 @@ export function detectProject(root = process.cwd()): DetectedProject {
   };
 }
 
-/** Walk up from start looking for a maaidd project or config file. */
+/** Walk up from start looking for a maid project or config file. */
 export function findProjectRoot(start = process.cwd()): string {
   const origin = resolve(start);
   let dir = origin;
@@ -465,7 +465,7 @@ export function projectFileExists(root = findProjectRoot()): boolean {
   return existsSync(join(root, PROJECT_FILE));
 }
 
-export function loadEffectiveConfig(root = findProjectRoot()): MaaiddConfig {
+export function loadEffectiveConfig(root = findProjectRoot()): MaidConfig {
   return loadConfig(join(root, CONFIG_FILE));
 }
 
@@ -582,12 +582,12 @@ const yesNo = (value: boolean): string => (value ? "yes" : "no");
  */
 export function renderProjectMarkdown(
   project: ProjectContext,
-  config: MaaiddConfig,
+  config: MaidConfig,
 ): string {
   const software = project.software;
   const best = project.bestPractices;
   const lines = [
-    "<!-- Generated from maaidd.project.json and maaidd.config.json by maaidd. Do not edit directly. -->",
+    "<!-- Generated from maid.project.json and maid.config.json by maid. Do not edit directly. -->",
     "",
     `# ${project.name.trim() || "Project"}`,
     "",
@@ -720,7 +720,7 @@ const requiredQuestions = (
 
 const optionalOptions = (
   project: ProjectContext,
-  config: MaaiddConfig,
+  config: MaidConfig,
 ): SetupOption[] => {
   return [
     {
@@ -902,13 +902,13 @@ const readConfigObject = (root: string): unknown => {
   return raw;
 };
 
-const mergedConfig = (root: string, patch: ConfigPatch): MaaiddConfig => {
+const mergedConfig = (root: string, patch: ConfigPatch): MaidConfig => {
   const existing = readConfigObject(root);
   const withExisting = mergeDeep(
     DEFAULT_CONFIG as unknown as Record<string, unknown>,
     existing,
   );
-  return mergeDeep(withExisting, patch) as unknown as MaaiddConfig;
+  return mergeDeep(withExisting, patch) as unknown as MaidConfig;
 };
 
 export function updateProject(

@@ -1,5 +1,5 @@
 /**
- * `maaidd mcp` — start the MCP server (stdio transport).
+ * `maid mcp` — start the MCP server (stdio transport).
  */
 import { buildCommand } from "@stricli/core";
 import { runMcpServer } from "../../mcp/server.ts";

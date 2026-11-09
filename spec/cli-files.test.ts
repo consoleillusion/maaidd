@@ -112,7 +112,7 @@ describe("project commands", () => {
     const first = runCli(initArgs, { cwd: dir });
     expect(first.status).toBe(0);
 
-    const configPath = join(dir, "maaidd.config.json");
+    const configPath = join(dir, "maid.config.json");
     const original = readFileSync(configPath, "utf8");
     expect(JSON.parse(original).metrics.testCommand).toBe("bun run test");
     expect(existsSync(join(dir, "biome.json"))).toBe(true);

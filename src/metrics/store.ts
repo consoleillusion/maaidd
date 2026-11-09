@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import type { FtaFileMetric } from "./fta.ts";
 import type { TestRunSummary } from "./test-runner.ts";
 import type { MetricsThresholds } from "../types.ts";
-const DB = "maaidd.db";
+const DB = "maid.db";
 const PENDING = "__pending__";
 export interface HistoryEntry {
   commit: string;

@@ -1,5 +1,5 @@
 {
-  description = "MAAIDD — Metric Assisted AI Driven Development";
+  description = "MAID — Metric Assisted AI Driven Development";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -18,8 +18,8 @@
       apps = forAllSystems (system:
         let
           pkgs = import nixpkgs { inherit system; };
-          maaidd = pkgs.writeShellApplication {
-            name = "maaidd";
+          maid = pkgs.writeShellApplication {
+            name = "maid";
             runtimeInputs = [ pkgs.bun ];
             text = ''
               exec bun ${self}/src/cli/index.ts "$@"
@@ -29,7 +29,7 @@
         {
           default = {
             type = "app";
-            program = "${maaidd}/bin/maaidd";
+            program = "${maid}/bin/maid";
           };
         });
     };

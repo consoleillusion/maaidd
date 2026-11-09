@@ -1,5 +1,5 @@
 /**
- * `maaidd graph <query>` — human-facing codegraph query wrapper.
+ * `maid graph <query>` — human-facing codegraph query wrapper.
  */
 import { buildCommand } from "@stricli/core";
 import { existsSync } from "node:fs";

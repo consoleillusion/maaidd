@@ -1,5 +1,5 @@
 /**
- * MAAIDD — Metric Assisted AI Driven Development.
+ * MAID — Metric Assisted AI Driven Development.
  *
  * Public format API. Biome-first by default; functional mode is a layout diff
  * applied on top of Biome's normalization.

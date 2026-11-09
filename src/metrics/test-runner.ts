@@ -146,7 +146,7 @@ export function runTestSuite(
   let outfile: string | null = null;
   let runCommand = command;
   if (bun) {
-    tmp = mkdtempSync(join(tmpdir(), "maaidd-junit-"));
+    tmp = mkdtempSync(join(tmpdir(), "maid-junit-"));
     outfile = join(tmp, "junit.xml");
     runCommand = withJunit(command, outfile);
   }

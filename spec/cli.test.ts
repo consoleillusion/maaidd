@@ -79,7 +79,7 @@ describe("CLI", () => {
       },
     );
     expect(result.status).toBe(0);
-    expect(existsSync(`${tmp}/maaidd.config.json`)).toBe(true);
+    expect(existsSync(`${tmp}/maid.config.json`)).toBe(true);
     expect(existsSync(`${tmp}/biome.json`)).toBe(true);
     rmSync(tmp, { recursive: true, force: true });
   });

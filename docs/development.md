@@ -13,7 +13,7 @@
 - `spec/` — Bun tests (`bun:test`)
 - `fixtures/` — golden formatting fixtures
 - `examples/` — sample inputs
-- `metric/` — `maaidd.db` (SQLite) and/or legacy imported JSON snapshots
+- `metric/` — `maid.db` (SQLite) and/or legacy imported JSON snapshots
 - `docs/` — documentation (`cli.md` is generated)
 - `scripts/` — maintenance scripts
 
@@ -30,7 +30,7 @@ bun run docs:cli -- --check   # fail if docs/cli.md is stale
 ## Style conventions
 
 - Double quotes, semicolons, 2-space indent, trailing commas (match existing code).
-- Prefer the TypeScript/Stricli CLI (`src/cli/index.ts`) and `maaidd.config.json` for current behavior.
+- Prefer the TypeScript/Stricli CLI (`src/cli/index.ts`) and `maid.config.json` for current behavior.
 
 ## Generated CLI docs
 
@@ -44,8 +44,8 @@ Do not hand-edit `docs/cli.md`. Update command definitions in `src/cli/` and reg
 
 ## Metrics storage
 
-Snapshots use embedded SQLite at `metric/maaidd.db` (`src/metrics/store.ts`, re-exported via `history.ts`). Tests should use temp directories and the public history API; do not assume JSON snapshot files are created for new saves.
+Snapshots use embedded SQLite at `metric/maid.db` (`src/metrics/store.ts`, re-exported via `history.ts`). Tests should use temp directories and the public history API; do not assume JSON snapshot files are created for new saves.
 
 ## Nix
 
-A `flake.nix` provides a Bun-based app entry (`maaidd`). Validate Nix changes in an environment with Nix if needed.
+A `flake.nix` provides a Bun-based app entry (`maid`). Validate Nix changes in an environment with Nix if needed.

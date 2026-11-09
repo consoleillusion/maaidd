@@ -21,7 +21,7 @@ function render(): string {
     caseStyle: "convert-camel-to-kebab" as const,
   };
   const rootHelp = app.root.formatHelp({
-    prefix: ["maaidd"],
+    prefix: ["maid"],
     config: fmt,
     ansiColor: false,
     text: app.defaultText,
@@ -31,11 +31,11 @@ function render(): string {
   });
   const commands = generateHelpTextForAllCommands(app);
   const lines = [
-    "# CLI reference (`maaidd`)",
+    "# CLI reference (`maid`)",
     "",
     "> Generated with Stricli built-ins (`generateHelpTextForAllCommands`, `formatHelp`). Run `bun scripts/generate-cli-docs.ts`.",
     "",
-    "## `maaidd`",
+    "## `maid`",
     "",
     "```text",
     rootHelp.trimEnd(),
@@ -44,7 +44,7 @@ function render(): string {
   ];
   for (const [route, helpText] of commands) {
     lines.push(
-      `## \`maaidd ${route}\``,
+      `## \`maid ${route}\``,
       "",
       "```text",
       helpText.trimEnd(),

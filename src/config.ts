@@ -4,7 +4,7 @@ import {
   DEFAULT_CONFIG,
   FormatOptions,
   Indent,
-  MaaiddConfig,
+  MaidConfig,
   ResolvedFormatOptions,
 } from "./types.ts";
 const isRecord = (value: unknown) => {
@@ -23,18 +23,18 @@ const mergeDeep = (base: T, patch: unknown) => {
   }
   return out as T;
 };
-/** Walk up from start looking for maaidd.config.json. */
+/** Walk up from start looking for maid.config.json. */
 export function findConfigPath(start = process.cwd()): string | undefined {
   let dir = resolve(start);
   for (;;) {
-    const candidate = join(dir, "maaidd.config.json");
+    const candidate = join(dir, "maid.config.json");
     if (existsSync(candidate)) return candidate;
     const parent = dirname(dir);
     if (parent === dir) return undefined;
     dir = parent;
   }
 }
-export function loadConfig(configPath?: string): MaaiddConfig {
+export function loadConfig(configPath?: string): MaidConfig {
   const file = configPath ? resolve(configPath) : findConfigPath();
   if (!file || !existsSync(file)) return structuredClone(DEFAULT_CONFIG);
   let parsed: unknown;
@@ -42,13 +42,13 @@ export function loadConfig(configPath?: string): MaaiddConfig {
     parsed = JSON.parse(readFileSync(file, "utf8"));
   } catch (error) {
     throw new Error(
-      `Cannot read MAAIDD config ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      `Cannot read MAID config ${file}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
   return mergeDeep(
     DEFAULT_CONFIG as unknown as Record<string, unknown>,
     parsed,
-  ) as unknown as MaaiddConfig;
+  ) as unknown as MaidConfig;
 }
 export function normalizeIndent(indent: Indent): Indent {
   if (indent === "tab") return "tab";
@@ -58,7 +58,7 @@ export function normalizeIndent(indent: Indent): Indent {
 }
 export function resolveFormatOptions(
   input: FormatOptions = {},
-  config: MaaiddConfig = DEFAULT_CONFIG,
+  config: MaidConfig = DEFAULT_CONFIG,
 ): ResolvedFormatOptions {
   const filename = input.filename ?? "stdin.ts";
   const typescript =
