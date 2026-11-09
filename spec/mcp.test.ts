@@ -53,12 +53,14 @@ describe("MCP development tools", () => {
     expect(result.tools.map((tool) => tool.name).sort()).toEqual([
       "benchmark",
       "codegraph",
+      "dependencies",
       "gate",
       "history",
       "metrics",
       "project_init",
       "project_read",
       "project_update",
+      "score",
       "status",
     ]);
   });

@@ -56,3 +56,29 @@ maid benchmark --snapshot HEAD --format toon
 ```
 
 The payload reports current/baseline values, deltas, target pass/fail, per-test fixed/broken/added/removed outcomes, and a short recent trend (last five snapshots). The baseline defaults to the previous commit; `first`, `head`, `pending`, or an explicit commit are also accepted.
+
+## Composite score
+
+`maid score` (and MCP `score`) combines six weighted components into a transparent 0-100 score:
+
+| Component | Meaning |
+|---|---|
+| `gate` | Fraction of files passing the configured FTA gate thresholds. |
+| `fta` | Average FTA score normalized to 0-1. |
+| `complexity` | Average cyclomatic complexity relative to `metrics.thresholds.maxCyclomatic`. |
+| `tests` | Test pass rate. |
+| `trend` | Fraction of benchmark targets met versus the baseline. |
+| `dependencies` | Dependency impact (unchanged/improved = 1; penalties reduce it). |
+
+Weights, grade cutoffs, and `missingDataCredit` are configurable in `insights.score`. The payload lists each component's normalized value, weight, and point contribution, so the score is auditable rather than opaque.
+
+## Dependency guidance
+
+`maid dependencies` (and MCP `dependencies`) compares `package.json` (configurable via `insights.dependencies.manifests`) against the baseline commit:
+
+- Runtime/dev/optional/peer additions subtract configurable points; removals add points.
+- `allow` dependencies take half the normal penalty; `deny` dependencies double it and are called out in guidance.
+- Reducing LOC by `offset.minLinesReduced` or average cyclomatic complexity by `offset.minCyclomaticReduced` earns `offset.bonusPerDependency` per added dependency.
+- The payload reports `scoreDelta`, and the `score` tool folds it into its `dependencies` component.
+
+Only manifests with a matching adapter are scanned; `package.json` is supported today. Additional ecosystems can be added by extending the adapter table in `src/insights/dependencies.ts`.

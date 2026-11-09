@@ -12,5 +12,13 @@ export { getStatus } from "./status.ts";
 export type { StatusOptions } from "./status.ts";
 export { getBenchmark, buildBenchmark } from "./benchmark.ts";
 export type { BenchmarkOptions } from "./benchmark.ts";
+export { getDependencies, buildDependencies } from "./dependencies.ts";
+export type {
+  DependencyChange,
+  DependencyOptions,
+  DependencyScope,
+} from "./dependencies.ts";
+export { getScore, buildScore } from "./score.ts";
+export type { ScoreOptions } from "./score.ts";
 export { renderInsight } from "./render.ts";
 export type { InsightFormat } from "./render.ts";

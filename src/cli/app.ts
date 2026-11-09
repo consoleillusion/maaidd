@@ -13,6 +13,8 @@ import { initCommand } from "./commands/init.ts";
 import { completionCommand } from "./commands/completion.ts";
 import { statusCommand } from "./commands/status.ts";
 import { benchmarkCommand } from "./commands/benchmark.ts";
+import { dependenciesCommand } from "./commands/dependencies.ts";
+import { scoreCommand } from "./commands/score.ts";
 export function buildApp() {
   const routes = buildRouteMap({
     routes: {
@@ -26,6 +28,8 @@ export function buildApp() {
       init: initCommand,
       status: statusCommand,
       benchmark: benchmarkCommand,
+      dependencies: dependenciesCommand,
+      score: scoreCommand,
       completion: completionCommand,
     },
     docs: {

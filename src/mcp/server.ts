@@ -13,7 +13,13 @@ import {
   runCodegraph,
 } from "../codegraph.ts";
 import { loadConfig } from "../config.ts";
-import { getBenchmark, getStatus, renderInsight } from "../insights/index.ts";
+import {
+  getBenchmark,
+  getDependencies,
+  getScore,
+  getStatus,
+  renderInsight,
+} from "../insights/index.ts";
 import { runFta } from "../metrics/fta.ts";
 import { checkGate } from "../metrics/gate.ts";
 import { readAggregatedHistory } from "../metrics/history.ts";
@@ -301,6 +307,96 @@ export function createMcpServer(): McpServer {
           baseline,
           snapshot,
           detail,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: renderInsight(payload, format),
+            },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // dependencies — dependency changes and library-selection guidance.
+  server.registerTool(
+    "dependencies",
+    {
+      title: "Dependency and library-selection guidance",
+      description:
+        "Return the same structured payload as `maid dependencies`: dependency additions/removals/version changes, transparent score impact, and guidance based on insights.dependencies.",
+      inputSchema: {
+        format: z
+          .enum(["json", "toon"])
+          .default("json")
+          .describe("Output encoding."),
+        baseline: z
+          .string()
+          .optional()
+          .describe(
+            "Baseline selector: previous, first, head, pending, or a commit. Defaults to config.",
+          ),
+        snapshot: z
+          .string()
+          .optional()
+          .describe(
+            "Current snapshot selector. Defaults to pending, then HEAD, then latest.",
+          ),
+      },
+    },
+    async ({ format, baseline, snapshot }) => {
+      try {
+        const payload = getDependencies({
+          root: findProjectRoot(),
+          baseline,
+          snapshot,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: renderInsight(payload, format),
+            },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // score — composite commit score.
+  server.registerTool(
+    "score",
+    {
+      title: "Composite commit score",
+      description:
+        "Return the same structured payload as `maid score`: transparent 0-100 score combining gate, FTA, complexity, tests, benchmark trend, and dependency impact, plus a configurable grade.",
+      inputSchema: {
+        format: z
+          .enum(["json", "toon"])
+          .default("json")
+          .describe("Output encoding."),
+        baseline: z
+          .string()
+          .optional()
+          .describe("Baseline selector for trend comparison."),
+        snapshot: z
+          .string()
+          .optional()
+          .describe(
+            "Current snapshot selector. Defaults to pending, then HEAD.",
+          ),
+      },
+    },
+    async ({ format, baseline, snapshot }) => {
+      try {
+        const payload = getScore({
+          root: findProjectRoot(),
+          baseline,
+          snapshot,
         });
         return {
           content: [

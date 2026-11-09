@@ -16,6 +16,8 @@ USAGE
   maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics] [--insights-config path|json]
   maid status [--format json|toon] [--section list] [--detail summary|full]
   maid benchmark [--baseline ref] [--snapshot ref] [--format json|toon] [--detail summary|full]
+  maid dependencies [--baseline ref] [--snapshot ref] [--format json|toon]
+  maid score [--baseline ref] [--snapshot ref] [--format json|toon]
   maid completion install|uninstall ...
 
 Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.
@@ -24,17 +26,19 @@ FLAGS
    --  All subsequent inputs should be interpreted as arguments
 
 COMMANDS
-  format      Format files, directories, or stdin with Biome or functional style
-  check       Check formatting without writing; exits 1 if any file would change
-  metrics     Run FTA metrics; optionally save tests + metrics for a git commit
-  gate        Enforce FTA metric thresholds; exits 1 on violations
-  report      Generate uPlot HTML history dashboard from metric snapshots
-  mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
-  graph       Query the code-graph index
-  init        Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)
-  status      Show project, snapshot, and iteration status
-  benchmark   Benchmark current metrics against a baseline and configured targets
-  completion  Install or uninstall shell completion for maid
+  format        Format files, directories, or stdin with Biome or functional style
+  check         Check formatting without writing; exits 1 if any file would change
+  metrics       Run FTA metrics; optionally save tests + metrics for a git commit
+  gate          Enforce FTA metric thresholds; exits 1 on violations
+  report        Generate uPlot HTML history dashboard from metric snapshots
+  mcp           Start the MCP server (stdio transport) exposing codegraph + metrics tools
+  graph         Query the code-graph index
+  init          Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)
+  status        Show project, snapshot, and iteration status
+  benchmark     Benchmark current metrics against a baseline and configured targets
+  dependencies  Show dependency changes and library-selection guidance
+  score         Show the composite commit score and its components
+  completion    Install or uninstall shell completion for maid
 ```
 
 ## `maid format`
@@ -253,6 +257,38 @@ FLAGS
      [--snapshot]  Current snapshot selector (default: pending, else HEAD)
      [--format]    Output format (default: json)                                  [json|toon]
      [--detail]    Test-change detail (default: summary)                          [summary|full]
+  -h  --help       Print help information and exit
+```
+
+## `maid dependencies`
+
+```text
+USAGE
+  maid dependencies [--baseline ref] [--snapshot ref] [--format json|toon]
+  maid dependencies --help
+
+Returns the same structured payload as the MCP `dependencies` tool: added/removed/changed dependencies, transparent score impact, and guidance.
+
+FLAGS
+     [--baseline]  Baseline selector: previous, first, head, pending, or a commit
+     [--snapshot]  Current snapshot selector (default: pending, else HEAD)
+     [--format]    Output format (default: json)                                  [json|toon]
+  -h  --help       Print help information and exit
+```
+
+## `maid score`
+
+```text
+USAGE
+  maid score [--baseline ref] [--snapshot ref] [--format json|toon]
+  maid score --help
+
+Returns the same structured payload as the MCP `score` tool: gate, FTA, complexity, tests, trend, and dependency components, weighted into a 0-100 score with a configurable grade.
+
+FLAGS
+     [--baseline]  Baseline selector for trend comparison
+     [--snapshot]  Current snapshot selector (default: pending, else HEAD)
+     [--format]    Output format (default: json)                           [json|toon]
   -h  --help       Print help information and exit
 ```
 
