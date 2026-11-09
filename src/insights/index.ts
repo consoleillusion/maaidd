@@ -20,5 +20,7 @@ export type {
 } from "./dependencies.ts";
 export { getScore, buildScore } from "./score.ts";
 export type { ScoreOptions } from "./score.ts";
+export { getCommitGuide, buildCommitGuide } from "./commit.ts";
+export type { CommitGuideOptions } from "./commit.ts";
 export { renderInsight } from "./render.ts";
 export type { InsightFormat } from "./render.ts";

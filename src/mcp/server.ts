@@ -15,6 +15,7 @@ import {
 import { loadConfig } from "../config.ts";
 import {
   getBenchmark,
+  getCommitGuide,
   getDependencies,
   getScore,
   getStatus,
@@ -411,6 +412,48 @@ export function createMcpServer(): McpServer {
       }
     },
   );
+  // commit_guide — small, iterative commit guidance.
+  server.registerTool(
+    "commit_guide",
+    {
+      title: "Commit guidance",
+      description:
+        "Return the same structured payload as `maid commit-guide`: working-tree size, pending snapshot/test/gate checks, dependency separation, blockers, split suggestions, and a suggested commit message.",
+      inputSchema: {
+        format: z
+          .enum(["json", "toon"])
+          .default("json")
+          .describe("Output encoding."),
+        snapshot: z
+          .string()
+          .optional()
+          .describe("Snapshot selector for test and gate checks."),
+        detail: z
+          .enum(["summary", "full"])
+          .default("summary")
+          .describe("File detail level."),
+      },
+    },
+    async ({ format, snapshot, detail }) => {
+      try {
+        const payload = getCommitGuide({
+          root: findProjectRoot(),
+          snapshot,
+          detail,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: renderInsight(payload, format),
+            },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
   // project_init — pull-based project setup plan.
   server.registerTool(
     "project_init",
@@ -566,6 +609,31 @@ export function createMcpServer(): McpServer {
               "Apply the returned defaults without prompting for them (for example git commit practice).",
               'Offer the optional settings catalog only if the user wants to review more configuration: call `project_init` with { include: "optional" }.',
               "Persist the result with `project_update`.",
+            ].join("\n"),
+          },
+        },
+      ],
+    }),
+  );
+  server.registerPrompt(
+    "commit-guidance",
+    {
+      title: "Guide the next commit",
+      description:
+        "Check whether the working tree is ready to commit and suggest a small, focused commit.",
+    },
+    () => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: [
+              "Review the next commit with MAID.",
+              "Call `commit_guide` and follow its blockers and warnings.",
+              "Call `benchmark` and `score` before committing to confirm the iteration improved or held project metrics.",
+              "Keep the commit small and focused. Separate dependency changes and documentation when MAID suggests it.",
+              "After committing, capture or finalize the snapshot so the next iteration starts from current data.",
             ].join("\n"),
           },
         },

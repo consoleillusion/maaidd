@@ -67,7 +67,7 @@ const git = (root: string, args: string[]): string | null => {
       cwd: root,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+    }).replace(/\s+$/, "");
   } catch {
     return null;
   }

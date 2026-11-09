@@ -82,3 +82,14 @@ Weights, grade cutoffs, and `missingDataCredit` are configurable in `insights.sc
 - The payload reports `scoreDelta`, and the `score` tool folds it into its `dependencies` component.
 
 Only manifests with a matching adapter are scanned; `package.json` is supported today. Additional ecosystems can be added by extending the adapter table in `src/insights/dependencies.ts`.
+
+## Commit guidance
+
+`maid commit-guide` (and MCP `commit_guide`, plus the `commit-guidance` prompt) checks whether the working tree is ready to commit:
+
+- Required blockers: pending snapshot present, tests passing, and gate passing (each configurable under `insights.commit`).
+- Warnings: commit size beyond `maxChangedFiles`/`maxChangedLines`, and dependency manifest changes mixed with other files.
+- Suggestions: split the change into focused commits (dependencies, code by directory, tests, docs, analytics), each with a conventional commit message.
+- `ready` is true only when there are no blockers, no size/separation warnings, and something to commit.
+
+Commit guidance deliberately reuses the benchmark and dependency analysis, so the same project state produces consistent recommendations across `status`, `benchmark`, `score`, `dependencies`, and `commit-guide`.

@@ -21,6 +21,7 @@ bun src/cli/index.ts mcp
 | `benchmark` | Compare the current snapshot against a baseline and configured targets: tests, FTA, cyclomatic complexity, Halstead bugs, LOC, per-test changes, and recent trends. Same payload as `maid benchmark`. |
 | `dependencies` | Report dependency additions/removals/version changes and library-selection guidance with a transparent score impact. Same payload as `maid dependencies`. |
 | `score` | Return the composite commit score: gate, FTA, complexity, tests, benchmark trend, and dependency impact, weighted and graded. Same payload as `maid score`. |
+| `commit_guide` | Guide the next commit: working-tree size, pending snapshot/test/gate checks, dependency separation, blockers, split suggestions, and a suggested message. Same payload as `maid commit-guide`. |
 | `metrics` | Run FTA on a path and return results (`json`/`toon`/`table`). |
 | `gate` | Check FTA results against configured thresholds; reports pass/fail and violations. |
 | `history` | Read aggregated snapshot history from `./maid.db` (tests, LOC, gate counts, cyclo, FTA, Halstead; includes pending as `current` where supported). |

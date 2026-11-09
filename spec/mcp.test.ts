@@ -53,6 +53,7 @@ describe("MCP development tools", () => {
     expect(result.tools.map((tool) => tool.name).sort()).toEqual([
       "benchmark",
       "codegraph",
+      "commit_guide",
       "dependencies",
       "gate",
       "history",
@@ -72,6 +73,8 @@ describe("MCP development tools", () => {
     );
     const prompt = await client.getPrompt({ name: "initialize-project" });
     expect(promptText(prompt)).toContain("project_init");
+    const commitPrompt = await client.getPrompt({ name: "commit-guidance" });
+    expect(promptText(commitPrompt)).toContain("commit_guide");
   });
 
   it("returns a project initialization plan", async () => {

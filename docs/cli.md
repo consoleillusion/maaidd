@@ -18,6 +18,7 @@ USAGE
   maid benchmark [--baseline ref] [--snapshot ref] [--format json|toon] [--detail summary|full]
   maid dependencies [--baseline ref] [--snapshot ref] [--format json|toon]
   maid score [--baseline ref] [--snapshot ref] [--format json|toon]
+  maid commit-guide [--snapshot ref] [--format json|toon] [--detail summary|full]
   maid completion install|uninstall ...
 
 Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.
@@ -38,6 +39,7 @@ COMMANDS
   benchmark     Benchmark current metrics against a baseline and configured targets
   dependencies  Show dependency changes and library-selection guidance
   score         Show the composite commit score and its components
+  commit-guide  Guide the next commit: blockers, size, split suggestions, message
   completion    Install or uninstall shell completion for maid
 ```
 
@@ -289,6 +291,22 @@ FLAGS
      [--baseline]  Baseline selector for trend comparison
      [--snapshot]  Current snapshot selector (default: pending, else HEAD)
      [--format]    Output format (default: json)                           [json|toon]
+  -h  --help       Print help information and exit
+```
+
+## `maid commit-guide`
+
+```text
+USAGE
+  maid commit-guide [--snapshot ref] [--format json|toon] [--detail summary|full]
+  maid commit-guide --help
+
+Returns the same structured payload as the MCP `commit_guide` tool: working-tree size, pending snapshot/test/gate checks, dependency separation, blockers, split suggestions, and a suggested commit message.
+
+FLAGS
+     [--snapshot]  Snapshot selector for test/gate checks
+     [--format]    Output format (default: json)          [json|toon]
+     [--detail]    File detail (default: summary)         [summary|full]
   -h  --help       Print help information and exit
 ```
 
