@@ -3,7 +3,14 @@
  * AI agents.
  */
 
-import { existsSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+  mkdirSync,
+} from "node:fs";
+import { resolve, relative, dirname } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -589,6 +596,110 @@ export function createMcpServer(): McpServer {
             { type: "text" as const, text: JSON.stringify(payload, null, 2) },
           ],
         };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // edit_file — read, write, or patch files within the project root.
+  server.tool(
+    "edit_file",
+    "Read, write, or patch a file within the project root. Paths are resolved relative to the project root and must stay within it; .git is protected.",
+    {
+      operation: z
+        .enum(["read", "write", "patch"])
+        .describe(
+          "read: return file contents; write: overwrite or create a file; patch: replace the first (and only) occurrence of oldString with newString",
+        ),
+      path: z
+        .string()
+        .describe("Path to the file, relative to the project root"),
+      content: z
+        .string()
+        .optional()
+        .describe("File content to write (operation 'write')"),
+      oldString: z
+        .string()
+        .optional()
+        .describe("Text to find and replace (operation 'patch')"),
+      newString: z
+        .string()
+        .optional()
+        .describe("Replacement text (operation 'patch')"),
+    },
+    async ({ operation, path, content, oldString, newString }) => {
+      try {
+        const root = findProjectRoot();
+        const abs = resolve(root, path);
+        const rel = relative(root, abs);
+        if (rel.startsWith("..")) {
+          return errorResult(new Error(`Path escapes project root: ${path}`));
+        }
+        const segments = rel.split(/[/\\]/);
+        if (segments.includes(".git")) {
+          return errorResult(new Error("Refusing to edit inside .git"));
+        }
+
+        switch (operation) {
+          case "read": {
+            if (!existsSync(abs)) {
+              return errorResult(new Error(`File not found: ${path}`));
+            }
+            const st = statSync(abs);
+            if (st.isDirectory()) {
+              return errorResult(new Error(`${path} is a directory`));
+            }
+            const text = readFileSync(abs, "utf8");
+            return { content: [{ type: "text" as const, text }] };
+          }
+          case "write": {
+            if (content === undefined) {
+              return errorResult(new Error("content is required for write"));
+            }
+            if (existsSync(abs)) {
+              const st = statSync(abs);
+              if (st.isDirectory()) {
+                return errorResult(new Error(`${path} is a directory`));
+              }
+            } else {
+              mkdirSync(dirname(abs), { recursive: true });
+            }
+            writeFileSync(abs, content, "utf8");
+            return {
+              content: [{ type: "text" as const, text: `Wrote ${path}` }],
+            };
+          }
+          case "patch": {
+            if (oldString === undefined || newString === undefined) {
+              return errorResult(
+                new Error("oldString and newString are required for patch"),
+              );
+            }
+            if (!existsSync(abs)) {
+              return errorResult(new Error(`File not found: ${path}`));
+            }
+            const st = statSync(abs);
+            if (st.isDirectory()) {
+              return errorResult(new Error(`${path} is a directory`));
+            }
+            const text = readFileSync(abs, "utf8");
+            const count = text.split(oldString).length - 1;
+            if (count === 0) {
+              return errorResult(new Error(`oldString not found in ${path}`));
+            }
+            if (count > 1) {
+              return errorResult(
+                new Error(
+                  `oldString occurs ${count} times in ${path}; patch is ambiguous`,
+                ),
+              );
+            }
+            writeFileSync(abs, text.replace(oldString, newString), "utf8");
+            return {
+              content: [{ type: "text" as const, text: `Patched ${path}` }],
+            };
+          }
+        }
       } catch (err) {
         return errorResult(err);
       }

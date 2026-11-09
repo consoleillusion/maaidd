@@ -55,6 +55,7 @@ describe("MCP development tools", () => {
       "codegraph",
       "commit_guide",
       "dependencies",
+      "edit_file",
       "gate",
       "history",
       "metrics",
