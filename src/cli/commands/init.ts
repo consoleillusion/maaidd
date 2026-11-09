@@ -349,6 +349,12 @@ async function doFormat(
         const source = readFileSync(file, "utf8");
         if (!source.trim()) continue;
         const result = format(source, { ...resolved, filename: file });
+        if (!result.trim()) {
+          // Formatter produced empty output for non-empty input; never clobber.
+          failed++;
+          stderr(`Format error: ${file}: formatter produced empty output`);
+          continue;
+        }
         if (result !== source) {
           writeFileSync(file, result, "utf8");
           total++;

@@ -101,6 +101,12 @@ export function formatWithBiome(
       `Biome failed for ${options.filename}${details ? `:\n${details}` : ""}`,
     );
   }
+  if (!source.trim() && !result.stdout.trim()) return result.stdout;
+  if (!result.stdout.trim()) {
+    throw new Error(
+      `Biome produced empty output for non-empty input: ${options.filename}`,
+    );
+  }
   return result.stdout;
 }
 export function biomeVersion(): string | undefined {

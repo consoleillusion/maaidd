@@ -82,6 +82,7 @@ export function formatFile(
   const source = readFileSync(sourcePath, "utf8");
   if (!source.trim()) return false;
   const result = format(source, { ...options, filename: sourcePath });
+  if (!result.trim()) return false; // formatter produced empty output
   if (destPath !== sourcePath) {
     mkdirSync(dirname(destPath), { recursive: true });
   }
@@ -127,6 +128,11 @@ export function formatSingleFile(
     stderr(
       `Format error: ${inputPath}: ${err instanceof Error ? err.message : String(err)}`,
     );
+    process.exitCode = 1;
+    return;
+  }
+  if (!result.trim()) {
+    stderr(`Format error: ${inputPath}: formatter produced empty output`);
     process.exitCode = 1;
     return;
   }
