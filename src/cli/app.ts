@@ -12,6 +12,7 @@ import { graphCommand } from "./commands/graph.ts";
 import { initCommand } from "./commands/init.ts";
 import { completionCommand } from "./commands/completion.ts";
 import { statusCommand } from "./commands/status.ts";
+import { benchmarkCommand } from "./commands/benchmark.ts";
 export function buildApp() {
   const routes = buildRouteMap({
     routes: {
@@ -24,6 +25,7 @@ export function buildApp() {
       graph: graphCommand,
       init: initCommand,
       status: statusCommand,
+      benchmark: benchmarkCommand,
       completion: completionCommand,
     },
     docs: {

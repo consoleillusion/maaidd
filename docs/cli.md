@@ -15,6 +15,7 @@ USAGE
   maid graph <args>...
   maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics] [--insights-config path|json]
   maid status [--format json|toon] [--section list] [--detail summary|full]
+  maid benchmark [--baseline ref] [--snapshot ref] [--format json|toon] [--detail summary|full]
   maid completion install|uninstall ...
 
 Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.
@@ -32,6 +33,7 @@ COMMANDS
   graph       Query the code-graph index
   init        Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)
   status      Show project, snapshot, and iteration status
+  benchmark   Benchmark current metrics against a baseline and configured targets
   completion  Install or uninstall shell completion for maid
 ```
 
@@ -235,6 +237,23 @@ FLAGS
      [--section]  Comma-separated sections (project,snapshot,git,benchmark,score,dependencies,commit)
      [--detail]   Payload detail (default: summary)                                                   [summary|full]
   -h  --help      Print help information and exit
+```
+
+## `maid benchmark`
+
+```text
+USAGE
+  maid benchmark [--baseline ref] [--snapshot ref] [--format json|toon] [--detail summary|full]
+  maid benchmark --help
+
+Returns the same structured payload as the MCP `benchmark` tool. The baseline defaults to insights.benchmark.baseline (normally the previous commit).
+
+FLAGS
+     [--baseline]  Baseline selector: previous, first, head, pending, or a commit
+     [--snapshot]  Current snapshot selector (default: pending, else HEAD)
+     [--format]    Output format (default: json)                                  [json|toon]
+     [--detail]    Test-change detail (default: summary)                          [summary|full]
+  -h  --help       Print help information and exit
 ```
 
 ## `maid completion install`

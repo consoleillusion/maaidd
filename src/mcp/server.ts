@@ -13,7 +13,7 @@ import {
   runCodegraph,
 } from "../codegraph.ts";
 import { loadConfig } from "../config.ts";
-import { getStatus, renderInsight } from "../insights/index.ts";
+import { getBenchmark, getStatus, renderInsight } from "../insights/index.ts";
 import { runFta } from "../metrics/fta.ts";
 import { checkGate } from "../metrics/gate.ts";
 import { readAggregatedHistory } from "../metrics/history.ts";
@@ -249,6 +249,57 @@ export function createMcpServer(): McpServer {
         const payload = getStatus({
           root: findProjectRoot(),
           sections,
+          detail,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: renderInsight(payload, format),
+            },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // benchmark — compare current snapshot against a baseline and targets.
+  server.registerTool(
+    "benchmark",
+    {
+      title: "Benchmark metrics against a baseline",
+      description:
+        "Return the same structured benchmark payload as `maid benchmark`: current vs baseline tests, FTA, cyclomatic, Halstead, LOC, trends, and configured target pass/fail.",
+      inputSchema: {
+        format: z
+          .enum(["json", "toon"])
+          .default("json")
+          .describe("Output encoding."),
+        baseline: z
+          .string()
+          .optional()
+          .describe(
+            "Baseline selector: previous, first, head, pending, or a commit. Defaults to config.",
+          ),
+        snapshot: z
+          .string()
+          .optional()
+          .describe(
+            "Current snapshot selector. Defaults to pending, then HEAD, then latest.",
+          ),
+        detail: z
+          .enum(["summary", "full"])
+          .default("summary")
+          .describe("Per-test change detail level."),
+      },
+    },
+    async ({ format, baseline, snapshot, detail }) => {
+      try {
+        const payload = getBenchmark({
+          root: findProjectRoot(),
+          baseline,
+          snapshot,
           detail,
         });
         return {

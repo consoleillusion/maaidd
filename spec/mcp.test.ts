@@ -51,6 +51,7 @@ describe("MCP development tools", () => {
   it("lists project, analytics, and codegraph tools", async () => {
     const result = await client.listTools();
     expect(result.tools.map((tool) => tool.name).sort()).toEqual([
+      "benchmark",
       "codegraph",
       "gate",
       "history",

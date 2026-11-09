@@ -10,5 +10,7 @@ export type {
 } from "./state.ts";
 export { getStatus } from "./status.ts";
 export type { StatusOptions } from "./status.ts";
+export { getBenchmark, buildBenchmark } from "./benchmark.ts";
+export type { BenchmarkOptions } from "./benchmark.ts";
 export { renderInsight } from "./render.ts";
 export type { InsightFormat } from "./render.ts";

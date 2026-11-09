@@ -18,6 +18,7 @@ bun src/cli/index.ts mcp
 | `project_update` | Merge validated project context and optional `maid.config.json` overrides; writes `maid.project.json` and deterministically regenerates `PROJECT.md`. Supports `dryRun`. |
 | `project_read` | Read the saved project context as Markdown (default) or JSON, and optionally verify that `PROJECT.md` is in sync. |
 | `status` | Return the same structured iteration-status payload as `maid status`: project context, HEAD/pending snapshots, and working-tree state. Supports `format: "json" \| "toon"`, section filtering, and `detail: "summary" \| "full"`. |
+| `benchmark` | Compare the current snapshot against a baseline and configured targets: tests, FTA, cyclomatic complexity, Halstead bugs, LOC, per-test changes, and recent trends. Same payload as `maid benchmark`. |
 | `metrics` | Run FTA on a path and return results (`json`/`toon`/`table`). |
 | `gate` | Check FTA results against configured thresholds; reports pass/fail and violations. |
 | `history` | Read aggregated snapshot history from `./maid.db` (tests, LOC, gate counts, cyclo, FTA, Halstead; includes pending as `current` where supported). |
