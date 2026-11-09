@@ -21,7 +21,6 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { createInterface } from "node:readline/promises";
 import { dirname, join, resolve } from "node:path";
 import { DEFAULT_CONFIG, type MaidConfig } from "../../types.ts";
 import { format } from "../../index.ts";
@@ -36,6 +35,13 @@ import {
   type ProjectInput,
 } from "../../project.ts";
 import { collectFiles, wasFlagProvided } from "./shared.ts";
+import {
+  cancel as clackCancel,
+  confirm as clackConfirm,
+  isCancel,
+  multiselect,
+  text,
+} from "@clack/prompts";
 
 type Flags = Record<string, unknown>;
 
@@ -159,19 +165,31 @@ function isInteractive(flags: Flags): boolean {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY);
 }
 
-async function promptLine(question: string): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    const answer = await rl.question(question);
-    return answer;
-  } finally {
-    rl.close();
+async function clackText(opts: Parameters<typeof text>[0]): Promise<string> {
+  const answer = await text(opts);
+  if (isCancel(answer)) {
+    clackCancel("Cancelled");
+    process.exit(1);
   }
+  return answer;
 }
 
-async function confirm(question: string): Promise<boolean> {
-  const answer = (await promptLine(`${question} [y/N]: `)).trim();
-  return answer === "y" || answer === "Y";
+async function askConfirm(
+  opts: Parameters<typeof clackConfirm>[0],
+): Promise<boolean> {
+  const answer = await clackConfirm(opts);
+  if (isCancel(answer)) {
+    clackCancel("Cancelled");
+    process.exit(1);
+  }
+  return answer;
+}
+
+async function confirm(
+  question: string,
+  initialValue = false,
+): Promise<boolean> {
+  return askConfirm({ message: question, initialValue });
 }
 
 function hooksAcceptedByFlag(): boolean | undefined {
@@ -428,9 +446,11 @@ async function promptValue(
   required: boolean,
 ): Promise<string> {
   for (;;) {
-    const suffix = fallback ? ` [${fallback}]` : "";
-    const answer = (await promptLine(`${label}${suffix}: `)).trim();
-    const value = answer || fallback;
+    const answer = await clackText({
+      message: label,
+      placeholder: fallback || undefined,
+    });
+    const value = (answer || "").trim() || fallback;
     if (value || !required) return value;
     stdout(`${label} is required.`);
   }
@@ -443,8 +463,10 @@ async function promptList(
 ): Promise<string[]> {
   const fallbackText = fallback.join(", ");
   for (;;) {
-    const suffix = fallbackText ? ` [${fallbackText}]` : "";
-    const answer = (await promptLine(`${label}${suffix}: `)).trim();
+    const answer = await clackText({
+      message: label,
+      placeholder: fallbackText || undefined,
+    });
     const value = answer ? splitList(answer) : fallback;
     if (value.length || !required) return value;
     stdout(`${label} requires at least one value.`);
@@ -455,8 +477,9 @@ async function promptSoftware(
   software: DetectedSoftware,
 ): Promise<DetectedSoftware> {
   return {
-    languages: await promptList(
-      "Languages (comma-separated)",
+    languages: await promptMultiselect(
+      "Languages",
+      software.languages,
       software.languages,
       true,
     ),
@@ -466,8 +489,9 @@ async function promptSoftware(
       software.packageManager,
       false,
     ),
-    frameworks: await promptList(
-      "Frameworks (comma-separated)",
+    frameworks: await promptMultiselect(
+      "Frameworks",
+      software.frameworks,
       software.frameworks,
       false,
     ),
@@ -478,6 +502,26 @@ async function promptSoftware(
       false,
     ),
   };
+}
+
+async function promptMultiselect(
+  label: string,
+  options: string[],
+  initialValues: string[],
+  required: boolean,
+): Promise<string[]> {
+  const answer = await multiselect({
+    message: label,
+    options: options.map((value) => ({ value, label: value })),
+    initialValues,
+    required,
+    maxItems: 8,
+  });
+  if (isCancel(answer)) {
+    clackCancel("Cancelled");
+    process.exit(1);
+  }
+  return answer;
 }
 
 function printOptionalOptions(dir: string): void {
@@ -583,20 +627,6 @@ async function maybeProject(
         "Project goal in one sentence",
         detected.goal || goal,
         true,
-      );
-    }
-    if (required.has("scope.in") && flags.scopeIn === undefined) {
-      scopeIn = await promptList(
-        "What is in scope? (comma-separated)",
-        scopeIn,
-        true,
-      );
-    }
-    if (required.has("scope.out") && flags.scopeOut === undefined) {
-      scopeOut = await promptList(
-        "What is explicitly out of scope? (comma-separated)",
-        scopeOut,
-        false,
       );
     }
     if (required.has("software")) {

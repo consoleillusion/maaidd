@@ -520,13 +520,12 @@ export function projectStatus(
   if (!project) {
     return {
       status: "missing",
-      missing: ["name", "goal", "scope.in", "software"],
+      missing: ["name", "goal", "software"],
     };
   }
   const missing: string[] = [];
   if (!project.name.trim()) missing.push("name");
   if (!project.goal.trim()) missing.push("goal");
-  if (project.scope.in.length === 0) missing.push("scope.in");
   if (!project.software.languages.length && !project.software.runtime)
     missing.push("software");
   return {
@@ -704,18 +703,6 @@ const requiredQuestions = (
       key: "goal",
       question: "What is the project goal in one sentence?",
       ...(detected.goal ? { suggested: detected.goal } : {}),
-    });
-  }
-  if (project.scope.in.length === 0) {
-    questions.push({
-      key: "scope.in",
-      question: "What is in scope for this project?",
-    });
-  }
-  if (project.scope.out.length === 0) {
-    questions.push({
-      key: "scope.out",
-      question: "What is explicitly out of scope? (recommended)",
     });
   }
   if (!project.software.languages.length && !project.software.runtime) {
