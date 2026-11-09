@@ -1,8 +1,9 @@
 # MAID documentation
 
 - [Overview](./overview.md) — goals, architecture, and design rationale
-- [Roadmap](./roadmap.md) — planned agent/MCP, scoring, benchmarking, and commit/library guidance work
+- [Roadmap](./roadmap.md) — delivered CLI/MCP iteration interface, scoring, benchmarking, dependency, and commit guidance
 - [Getting started](./getting-started.md) — install, init, and common workflows
+- [Insights](./insights.md) — status, benchmark, score, dependencies, and commit guidance shared by the CLI and MCP
 - [CLI reference](./cli.md) — **generated** command/flag reference (`bun run docs:cli`)
 - [Configuration](./configuration.md) — `maid.config.json`, project context, and formatting options
 - [Formatting](./formatting.md) — Biome-first and functional layout-diff modes

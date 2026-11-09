@@ -8,7 +8,8 @@ MAID is a Bun/TypeScript CLI and library for orchestrating AI-assisted developme
 - **Gates** to enforce metric thresholds.
 - **Per-commit snapshots** (tests + FTA) stored in an embedded **SQLite** database (`metric/maid.db`), with legacy JSON import.
 - **uPlot HTML reports** to visualize trends over git commits.
-- **MCP server** exposing guided project initialization plus metrics, gate, history, and codegraph tools to AI agents.
+- **Iteration insights**: `status`, `benchmark`, composite `score`, dependency guidance, and commit guidance, available identically from the CLI and MCP.
+- **MCP server** exposing guided project initialization plus metrics, gate, history, codegraph, and insight tools to AI agents.
 - **Deterministic project docs**: `maid.project.json` is canonical; `PROJECT.md` is generated from it and `maid.config.json`.
 
 ## Requirements
@@ -49,6 +50,14 @@ bun src/cli/index.ts report -o metric/report.html
 
 # Run the MCP server (stdio)
 bun src/cli/index.ts mcp
+
+# Iteration insights (CLI and MCP expose the same payloads)
+bun src/cli/index.ts status
+bun src/cli/index.ts metrics src --pending
+bun src/cli/index.ts benchmark
+bun src/cli/index.ts score
+bun src/cli/index.ts dependencies
+bun src/cli/index.ts commit-guide
 ```
 
 You can also use the package scripts: `bun run format`, `bun run check`, `bun run metrics`, `bun run gate`, `bun run report`, `bun run mcp`, `bun test`.
@@ -67,6 +76,11 @@ The CLI is built with [Stricli](https://github.com/bloomberg/stricli). Commands:
 | `mcp` | Start MCP server (stdio) for agents |
 | `graph` | Code-graph status/query helpers |
 | `init` | Initialize project context, tooling config, hooks, and generated docs |
+| `status` | Summarize project, snapshot, git, benchmark, score, dependencies, and commit state |
+| `benchmark` | Compare current metrics/tests against a baseline and targets |
+| `score` | Show the transparent composite commit score |
+| `dependencies` | Show dependency changes and library-selection guidance |
+| `commit-guide` | Check commit readiness and suggest a small, focused commit |
 | `completion` | Shell completion support |
 
 Full, generated reference: [`docs/cli.md`](./docs/cli.md) (regenerate with `bun run docs:cli`).
@@ -97,6 +111,7 @@ MAID reads `maid.config.json` (by default, discovered/loaded from the working co
 - `functional`: leading-comma layout options (`commaStyle`, indents, `forceBlankLines`, `maxInlineArrayItems`, etc.)
 - `metrics`: `excludeUnder`, `testCommand` (default `bun run test`), `thresholds.maxCyclomatic`, `thresholds.minFtaScore`
 - `mcp`: `codegraph`, `metrics`
+- `insights`: benchmark targets, score weights/grades, dependency penalties/allow/deny, and commit limits
 
 Project context is stored separately in `maid.project.json` (goal, scope, software, design, constraints, best practices), with a deterministic `PROJECT.md` generated from it and `maid.config.json`.
 
@@ -134,9 +149,15 @@ Notes:
 
 See [`docs/metrics-and-gates.md`](./docs/metrics-and-gates.md) and [`docs/snapshots-and-reports.md`](./docs/snapshots-and-reports.md).
 
+## Iteration insights
+
+`maid status`, `benchmark`, `score`, `dependencies`, and `commit-guide` form the agent iteration loop. Each command is a thin CLI adapter over the same core as its MCP counterpart, so manual CLI use and agent-driven MCP use produce identical payloads. All support `--format json|toon`.
+
+See [`docs/insights.md`](./docs/insights.md) for the full workflow and [`docs/configuration.md#insights`](./docs/configuration.md#insights) for configuration.
+
 ## MCP server
 
-`maid mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. `maid init` runs the same guide from the CLI. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
+`maid mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`, `status`, `benchmark`, `score`, `dependencies`, `commit_guide`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. `maid init` runs the same guide from the CLI. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
 
 ## Roadmap
 

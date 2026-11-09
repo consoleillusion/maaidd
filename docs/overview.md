@@ -8,7 +8,8 @@ MAID (**Metric Assisted AI Driven Development**) gives AI agents and developers 
 2. **Complexity/quality metrics** (FTA: cyclomatic, Halstead, FTA score, LOC) so changes can be evaluated objectively.
 3. **Commit history** of measurements (including test-runner results) so progress/regressions are visible.
 4. **Guided project setup** (CLI and MCP) for goal, scope, software, design, constraints, and best practices.
-5. **Agent-facing tools** (MCP) to query metrics, gates, history, and codegraph context.
+5. **Iteration insights** — status, benchmarking, composite scoring, dependency guidance, and commit guidance, delivered identically by the CLI and MCP.
+6. **Agent-facing tools** (MCP) to query metrics, gates, history, insights, and codegraph context.
 
 ## Architecture
 
@@ -33,8 +34,11 @@ project setup
 
 MCP server (stdio)
   ├─ project context: project_init, project_update, project_read
-  └─ analytics/codegraph: metrics, gate, history, codegraph
+  ├─ analytics/codegraph: metrics, gate, history, codegraph
+  └─ iteration insights: status, benchmark, score, dependencies, commit_guide
 ```
+
+The CLI and MCP are thin adapters over the same core. `src/insights/` owns the shared state, benchmark, score, dependency, and commit logic; a developer can use only the CLI, and an agent receives the same payloads over MCP.
 
 ## Key design choices
 
@@ -47,4 +51,4 @@ MCP server (stdio)
 
 ## Roadmap
 
-See [Roadmap](./roadmap.md) for completed and planned work: guided project initialization via CLI and MCP (implemented), completing/extending the MCP server as the primary agent iteration interface, benchmarking and composite commit scoring delivered via MCP, dependency/library-selection guidance metrics, and commit guidance.
+See [Roadmap](./roadmap.md). All planned work is implemented: guided project initialization, the shared CLI/MCP iteration interface, benchmarking, composite commit scoring, dependency/library-selection guidance, and commit guidance. See [Insights](./insights.md) for the workflow.

@@ -61,6 +61,10 @@ describe("status insight", () => {
       expect((payload.project as any).status).toBe("missing");
       expect((payload.snapshot as any).current).toBeNull();
       expect((payload.git as any).isRepo).toBe(false);
+      expect(payload.benchmark).toBeDefined();
+      expect(payload.score).toBeDefined();
+      expect(payload.dependencies).toBeDefined();
+      expect(payload.commit).toBeDefined();
       expect((payload.next as string[]).length).toBeGreaterThan(0);
     } finally {
       rmSync(dir, { recursive: true, force: true });

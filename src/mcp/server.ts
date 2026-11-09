@@ -35,6 +35,9 @@ import {
   updateProject,
 } from "../project.ts";
 
+const iterationInstructions =
+  'For the iteration loop use `status`, `benchmark`, `score`, `dependencies`, and `commit_guide`; prefer `format: "toon"` for token efficiency.';
+
 const projectInstructions = (): string => {
   if (!projectFileExists()) {
     return [
@@ -44,12 +47,14 @@ const projectInstructions = (): string => {
       "Do not ask about defaults such as git commit practice, formatting, or testing expectations.",
       'Call `project_init` with `include: "optional"` only if the user wants to review the optional settings catalog.',
       "Save the result with `project_update`.",
+      iterationInstructions,
     ].join(" ");
   }
   return [
     "MAID project context is loaded from maid.project.json.",
     "Call `project_read` before major design, scope, or constraint decisions.",
     "Use `project_update` when the project context changes; it deterministically regenerates PROJECT.md.",
+    iterationInstructions,
   ].join(" ");
 };
 

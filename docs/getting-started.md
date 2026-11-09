@@ -83,10 +83,23 @@ bun src/cli/index.ts metrics --finalize
 bun src/cli/index.ts report -o metric/report.html
 ```
 
-## 7) MCP server (for AI agents)
+## 7) Use the iteration insights (CLI or MCP)
+
+```bash
+bun src/cli/index.ts status
+bun src/cli/index.ts metrics src --pending
+bun src/cli/index.ts benchmark
+bun src/cli/index.ts score
+bun src/cli/index.ts dependencies
+bun src/cli/index.ts commit-guide
+```
+
+These commands and their MCP counterparts (`status`, `benchmark`, `score`, `dependencies`, `commit_guide`) call the same core and return the same payloads. Use `--format toon` for token-efficient agent output. See [Insights](./insights.md).
+
+## 8) MCP server (for AI agents)
 
 ```bash
 bun src/cli/index.ts mcp
 ```
 
-This runs an MCP stdio server exposing project context, metrics, gate, history, and codegraph tools. See [MCP and codegraph](./mcp-and-codegraph.md).
+This runs an MCP stdio server exposing project context, metrics, gate, history, codegraph, and iteration-insight tools. See [MCP and codegraph](./mcp-and-codegraph.md).
