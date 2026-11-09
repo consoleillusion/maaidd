@@ -8,7 +8,8 @@ MAAIDD is a Bun/TypeScript CLI and library for orchestrating AI-assisted develop
 - **Gates** to enforce metric thresholds.
 - **Per-commit snapshots** (tests + FTA) stored in an embedded **SQLite** database (`metric/maaidd.db`), with legacy JSON import.
 - **uPlot HTML reports** to visualize trends over git commits.
-- **MCP server** exposing metrics, gate, history, and codegraph tools to AI agents.
+- **MCP server** exposing guided project initialization plus metrics, gate, history, and codegraph tools to AI agents.
+- **Deterministic project docs**: `maaidd.project.json` is canonical; `PROJECT.md` is generated from it and `maaidd.config.json`.
 
 ## Requirements
 
@@ -77,6 +78,8 @@ MAAIDD reads `maaidd.config.json` (by default, discovered/loaded from the workin
 - `metrics`: `excludeUnder`, `testCommand` (default `bun run test`), `thresholds.maxCyclomatic`, `thresholds.minFtaScore`
 - `mcp`: `codegraph`, `metrics`
 
+Project context is stored separately in `maaidd.project.json` (goal, scope, software, design, constraints, best practices), with a deterministic `PROJECT.md` generated from it and `maaidd.config.json`.
+
 See [`docs/configuration.md`](./docs/configuration.md).
 
 ## Library API
@@ -113,11 +116,11 @@ See [`docs/metrics-and-gates.md`](./docs/metrics-and-gates.md) and [`docs/snapsh
 
 ## MCP server
 
-`maaidd mcp` starts a stdio MCP server exposing tools for agents (e.g. `metrics`, `gate`, `history`, `codegraph`). See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
+`maaidd mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
 
 ## Roadmap
 
-See [`docs/roadmap.md`](./docs/roadmap.md) for planned work (MCP completion/extension, benchmarking and composite scoring, dependency/library-selection guidance metrics, and commit guidance) aligned with the agent iteration interface.
+See [`docs/roadmap.md`](./docs/roadmap.md) for completed and planned work (guided MCP project initialization, MCP completion/extension, benchmarking and composite scoring, dependency/library-selection guidance metrics, and commit guidance) aligned with the agent iteration interface.
 
 ## Development
 

@@ -1,22 +1,65 @@
 /**
- * MCP server — exposes codegraph + metrics tools to AI agents.
+ * MCP server — exposes project initialization, codegraph, and metrics tools to
+ * AI agents.
  */
+
+import { existsSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { runFta } from "../metrics/fta.ts";
-import { checkGate } from "../metrics/gate.ts";
-import { metricsToToon } from "../metrics/toon.ts";
-import { readAggregatedHistory } from "../metrics/history.ts";
-import { loadConfig } from "../config.ts";
-import { existsSync } from "node:fs";
 import {
   codegraphIndexPath,
   codegraphStatus,
   runCodegraph,
 } from "../codegraph.ts";
+import { loadConfig } from "../config.ts";
+import { runFta } from "../metrics/fta.ts";
+import { checkGate } from "../metrics/gate.ts";
+import { readAggregatedHistory } from "../metrics/history.ts";
+import { metricsToToon } from "../metrics/toon.ts";
+import {
+  buildSetupPlan,
+  ConfigPatchSchema,
+  findProjectRoot,
+  ProjectInputSchema,
+  projectFileExists,
+  readProjectContext,
+  updateProject,
+} from "../project.ts";
+
+const projectInstructions = (): string => {
+  if (!projectFileExists()) {
+    return [
+      "MAAIDD project context is not initialized.",
+      "Before starting design or implementation work, call `project_init`.",
+      "Ask only the required questions and apply the returned defaults without prompting.",
+      "Do not ask about defaults such as git commit practice, formatting, or testing expectations.",
+      'Call `project_init` with `include: "optional"` only if the user wants to review the optional settings catalog.',
+      "Save the result with `project_update`.",
+    ].join(" ");
+  }
+  return [
+    "MAAIDD project context is loaded from maaidd.project.json.",
+    "Call `project_read` before major design, scope, or constraint decisions.",
+    "Use `project_update` when the project context changes; it deterministically regenerates PROJECT.md.",
+  ].join(" ");
+};
+
+const errorResult = (err: unknown) => ({
+  content: [
+    {
+      type: "text" as const,
+      text: `Error: ${err instanceof Error ? err.message : String(err)}`,
+    },
+  ],
+  isError: true,
+});
+
 export function createMcpServer(): McpServer {
-  const server = new McpServer({ name: "maaidd", version: "0.1.0" });
+  const server = new McpServer(
+    { name: "maaidd", version: "0.1.0" },
+    { instructions: projectInstructions() },
+  );
   // metrics tool — run FTA and return results
   server.tool(
     "metrics",
@@ -167,6 +210,167 @@ export function createMcpServer(): McpServer {
         isError: result.status !== 0 || Boolean(result.error),
       };
     },
+  );
+  // project_init — pull-based project setup plan.
+  server.registerTool(
+    "project_init",
+    {
+      title: "Initialize project context",
+      description:
+        "Start guided project initialization. Returns required questions, repository-detected software, automatic defaults, and optionally the optional settings catalog. Call this before other work when maaidd.project.json is missing.",
+      inputSchema: {
+        include: z
+          .enum(["required", "optional", "all"])
+          .default("required")
+          .describe(
+            "Use 'required' for required questions and defaults; use 'optional' only when the user wants to review additional settings.",
+          ),
+      },
+    },
+    async ({ include }) => {
+      try {
+        const plan = buildSetupPlan(findProjectRoot(), include);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify(plan, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // project_update — merge/save project context and optional tooling overrides.
+  server.registerTool(
+    "project_update",
+    {
+      title: "Save project context",
+      description:
+        "Validate and save project context (goal, scope, software, design, constraints, best practices) and optional maaidd.config.json overrides. Deterministically regenerates PROJECT.md.",
+      inputSchema: {
+        project: ProjectInputSchema.optional().describe(
+          "Project fields to merge into maaidd.project.json.",
+        ),
+        config: ConfigPatchSchema.optional().describe(
+          "Optional tooling overrides to merge into maaidd.config.json.",
+        ),
+        dryRun: z
+          .boolean()
+          .default(false)
+          .describe("Validate and render without writing files."),
+      },
+    },
+    async ({ project, config, dryRun }) => {
+      try {
+        const result = updateProject({
+          root: findProjectRoot(),
+          project,
+          config,
+          dryRun,
+        });
+        const payload = {
+          status: result.status,
+          missing: result.missing,
+          projectFile: result.projectFile,
+          projectDoc: result.projectDoc,
+          written: result.written,
+          dryRun: result.dryRun,
+          ...(result.dryRun
+            ? { project: result.project, markdown: result.markdown }
+            : {}),
+          next:
+            result.status === "complete"
+              ? "Project context is complete."
+              : "Call project_init for the remaining required questions.",
+        };
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify(payload, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // project_read — read the saved context and optionally verify generated docs.
+  server.registerTool(
+    "project_read",
+    {
+      title: "Read project context",
+      description:
+        "Read the saved project context as Markdown (default) or JSON, and optionally verify that PROJECT.md is in sync with maaidd.project.json and maaidd.config.json.",
+      inputSchema: {
+        format: z
+          .enum(["markdown", "json"])
+          .default("markdown")
+          .describe("Project representation to return."),
+        verify: z
+          .boolean()
+          .default(false)
+          .describe("Include whether PROJECT.md is in sync."),
+      },
+    },
+    async ({ format, verify }) => {
+      try {
+        const result = readProjectContext(findProjectRoot());
+        if (!result.project) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `No project context found. Call \`project_init\` to initialize ${result.projectFile}.`,
+              },
+            ],
+          };
+        }
+        const payload = {
+          status: result.status,
+          missing: result.missing,
+          projectFile: result.projectFile,
+          projectDoc: result.projectDoc,
+          ...(verify ? { docInSync: result.docInSync } : {}),
+          project: format === "json" ? result.project : result.markdown,
+          next:
+            verify && !result.docInSync
+              ? "PROJECT.md is out of sync. Call project_update to regenerate it deterministically."
+              : undefined,
+        };
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify(payload, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+  // Optional prompt for clients that expose MCP prompts.
+  server.registerPrompt(
+    "initialize-project",
+    {
+      title: "Initialize MAAIDD project context",
+      description:
+        "Guide the caller through goal, scope, software, design, constraints, and best practices.",
+    },
+    () => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: [
+              "Initialize this project for MAAIDD.",
+              "Call `project_init` and ask the user only for the required fields.",
+              "Apply the returned defaults without prompting for them (for example git commit practice).",
+              'Offer the optional settings catalog only if the user wants to review more configuration: call `project_init` with { include: "optional" }.',
+              "Persist the result with `project_update`.",
+            ].join("\n"),
+          },
+        },
+      ],
+    }),
   );
   return server;
 }

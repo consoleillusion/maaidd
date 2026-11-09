@@ -15,6 +15,18 @@ bun install
 
 `init.sh` creates `metric/` (the metrics storage directory). For full project initialization via the CLI, see `maaidd init` (`bun src/cli/index.ts init --help`).
 
+## Project context initialization (AI agents)
+
+When MCP is connected to a new project, the server advertises setup through its `instructions` and the `project_init` tool.
+
+- Ask only the required questions (goal, scope, and software). Software is detected from the repository where possible.
+- Do not prompt for defaults such as best-practice git commits, formatting, and testing expectations; they are applied automatically.
+- Call `project_init` with `include: "optional"` only if the user wants to review the optional settings catalog.
+- Save with `project_update`; it writes `maaidd.project.json` and deterministically generates `PROJECT.md`.
+- Use `project_read` in later sessions, and `project_read` with `verify: true` to confirm the generated document is in sync.
+
+See [MCP and codegraph](./mcp-and-codegraph.md#project-initialization).
+
 ## 3) Configure
 
 Create or edit `maaidd.config.json` in your project. Example:

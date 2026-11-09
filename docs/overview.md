@@ -25,7 +25,8 @@ src/ path
   └─ report → uPlot HTML (commit-ordered trends, pending as `current`)
 
 MCP server (stdio)
-  └─ tools: metrics, gate, history, codegraph
+  ├─ project context: project_init, project_update, project_read
+  └─ analytics/codegraph: metrics, gate, history, codegraph
 ```
 
 ## Key design choices
@@ -35,7 +36,8 @@ MCP server (stdio)
 - **Embedded SQLite:** metric snapshots are stored in `./maaidd.db` for reliable local storage and querying (including normalized per-test results). Legacy `metric/*.json` and legacy `./metric/*.json` snapshots are imported automatically (non-destructive).
 - **Current vs finalized snapshots:** pending snapshots are visible as `current` in history/report; post-commit finalization binds them to `HEAD` (no amend by default).
 - **Deterministic CLI docs:** `docs/cli.md` is generated from the real CLI (`bun run docs:cli`) to avoid drift.
+- **Deterministic project docs:** `maaidd.project.json` is canonical and `PROJECT.md` is generated from it plus `maaidd.config.json`; the MCP `project_read` tool can verify they are in sync.
 
 ## Roadmap
 
-See [Roadmap](./roadmap.md) for planned work: completing/extending the MCP server as the primary agent iteration interface, benchmarking and composite commit scoring delivered via MCP, dependency/library-selection guidance metrics, and commit guidance.
+See [Roadmap](./roadmap.md) for completed and planned work: guided MCP project initialization (implemented), completing/extending the MCP server as the primary agent iteration interface, benchmarking and composite commit scoring delivered via MCP, dependency/library-selection guidance metrics, and commit guidance.

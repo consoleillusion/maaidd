@@ -1,8 +1,8 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "bun:test";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { rmSync } from "node:fs";
 import { join } from "node:path";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createMcpServer } from "../src/mcp/server.ts";
 import { makeTempDir, writeExecutable } from "./test-utils.ts";
 
@@ -39,15 +39,55 @@ function text(result: any): string {
     .join("\n");
 }
 
+function promptText(result: any): string {
+  return result.messages
+    .map((message: any) =>
+      message.content.type === "text" ? message.content.text : "",
+    )
+    .join("\n");
+}
+
 describe("MCP development tools", () => {
-  it("lists analytics and codegraph tools", async () => {
+  it("lists project, analytics, and codegraph tools", async () => {
     const result = await client.listTools();
     expect(result.tools.map((tool) => tool.name).sort()).toEqual([
       "codegraph",
       "gate",
       "history",
       "metrics",
+      "project_init",
+      "project_read",
+      "project_update",
     ]);
+  });
+
+  it("exposes an initialize-project prompt", async () => {
+    const prompts = await client.listPrompts();
+    expect(prompts.prompts.map((prompt) => prompt.name)).toContain(
+      "initialize-project",
+    );
+    const prompt = await client.getPrompt({ name: "initialize-project" });
+    expect(promptText(prompt)).toContain("project_init");
+  });
+
+  it("returns a project initialization plan", async () => {
+    const plan = await client.callTool({
+      name: "project_init",
+      arguments: { include: "required" },
+    });
+    const parsed = JSON.parse(text(plan));
+    expect(["missing", "partial", "complete"]).toContain(parsed.status);
+    expect(parsed.projectFile).toBe("maaidd.project.json");
+    expect(parsed.projectDoc).toBe("PROJECT.md");
+    expect(parsed.detected).toBeDefined();
+  });
+
+  it("reads project context or explains that it is missing", async () => {
+    const result = await client.callTool({
+      name: "project_read",
+      arguments: { format: "markdown", verify: true },
+    });
+    expect(text(result)).toMatch(/No project context found|"status"/);
   });
 
   it("returns FTA metrics as JSON, TOON, and a table", async () => {

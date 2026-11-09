@@ -8,6 +8,7 @@
   - `printer/`, `transforms/` — legacy Babel/comma-first printer and transforms
   - `metrics/` — FTA, gates, test runner, snapshot store (SQLite), reports, TOON
   - `mcp/` — MCP server
+  - `project.ts` — project context schema, detection, persistence, and deterministic `PROJECT.md`
   - `codegraph.ts` — code-graph integration
 - `spec/` — Bun tests (`bun:test`)
 - `fixtures/` — golden formatting fixtures
