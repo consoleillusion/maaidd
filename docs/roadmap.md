@@ -4,7 +4,7 @@ Planned work for `maid`’s **agent-facing iteration interface** — helping an 
 
 ## Done
 
-1. **Guided MCP project initialization** — `maid mcp` detects missing project context at startup and advertises a guided, pull-based setup flow through server `instructions`, the `initialize-project` prompt, and the `project_init` tool. The flow captures goal, scope/non-goals, software/stack (with repository detection), design principles, constraints, and best practices. Best-practice defaults — including small atomic git commits, format/check before commit, and testing expectations — are applied without prompting. Callers request the optional settings catalog only when desired (`include: "optional"`), and `project_update` persists the result to `maid.project.json`, optionally merges tooling overrides into `maid.config.json`, and deterministically regenerates `PROJECT.md` from both configs (never model-generated). `project_read` exposes the saved context and can verify that `PROJECT.md` is in sync. Because MCP is pull-based, the caller decides which questions to present.
+1. **Guided project initialization (CLI and MCP)** — `maid init` and `maid mcp` share one guide that captures goal, scope/non-goals, software/stack (with repository detection), design principles, constraints, and best practices. The MCP server advertises the flow through server `instructions`, the `initialize-project` prompt, and the `project_init` tool; the CLI prompts directly for the same required fields. Best-practice defaults — including small atomic git commits, format/check before commit, and testing expectations — are applied without prompting. Callers request the optional settings catalog only when desired (`include: "optional"` or `maid init --show-options`). `project_update` and `maid init` persist the result to `maid.project.json`, optionally merge tooling overrides into `maid.config.json`, and deterministically regenerate `PROJECT.md` from both configs (never model-generated). `project_read` exposes the saved context and can verify that `PROJECT.md` is in sync. Because MCP is pull-based, the caller decides which questions to present.
 
 ## Planned (ordered)
 
@@ -16,6 +16,6 @@ Planned work for `maid`’s **agent-facing iteration interface** — helping an 
 
 ## Status
 
-Guided MCP project initialization is **implemented**. The remaining items are **planned** (not yet fully implemented).
+Guided project initialization is **implemented** in both the CLI and MCP. The remaining items are **planned** (not yet fully implemented).
 
-Current implemented foundations include the CLI, Biome-first/functional formatting constraints, FTA metrics/gates, SQLite snapshots in `./maid.db` with per-test results, pending-as-`current` reporting, tracked hooks, the initial MCP tools (`metrics`, `gate`, `history`, `codegraph`), and MCP project initialization (`project_init`, `project_update`, `project_read`, plus deterministic `PROJECT.md` generation).
+Current implemented foundations include the CLI, Biome-first/functional formatting constraints, FTA metrics/gates, SQLite snapshots in `./maid.db` with per-test results, pending-as-`current` reporting, tracked hooks, the initial MCP tools (`metrics`, `gate`, `history`, `codegraph`), and project initialization (`maid init`, `project_init`, `project_update`, `project_read`, plus deterministic `PROJECT.md` generation).

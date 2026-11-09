@@ -46,7 +46,7 @@ Controls the functional (Dhall/Haskell-like) layout pass:
 
 ## Project context (`maid.project.json`)
 
-MCP project initialization writes a separate `maid.project.json` at the project root. It is the canonical project definition used by `project_read` and the `initialize-project` flow:
+`maid init` and MCP project initialization write a separate `maid.project.json` at the project root. It is the canonical project definition used by `project_read` and the `initialize-project` flow:
 
 | Key | Description |
 |---|---|
@@ -61,6 +61,8 @@ MCP project initialization writes a separate `maid.project.json` at the project 
 | `createdAt` / `updatedAt` | Metadata; `updatedAt` only changes when project content changes. |
 
 `PROJECT.md` is generated deterministically from `maid.project.json` and the effective `maid.config.json`. Do not edit it directly; call `project_update` to regenerate it. `project_read({ verify: true })` checks that it is in sync.
+
+From the CLI, use `maid init --goal ... --scope-in ...` for non-interactive setup, `maid init --show-options` to print the optional settings catalog, and `maid init --skip-project` to leave project context untouched.
 
 ## Notes
 

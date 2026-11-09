@@ -27,6 +27,9 @@ bun install
 ## Quick start
 
 ```bash
+# Initialize project context and tooling (guided)
+bun src/cli/index.ts init
+
 # Format (writes in place / use --check to verify)
 bun run format -- src
 bun src/cli/index.ts check src
@@ -63,10 +66,27 @@ The CLI is built with [Stricli](https://github.com/bloomberg/stricli). Commands:
 | `report` | Generate uPlot HTML history dashboard |
 | `mcp` | Start MCP server (stdio) for agents |
 | `graph` | Code-graph status/query helpers |
-| `init` | Initialize project/tooling config |
+| `init` | Initialize project context, tooling config, hooks, and generated docs |
 | `completion` | Shell completion support |
 
 Full, generated reference: [`docs/cli.md`](./docs/cli.md) (regenerate with `bun run docs:cli`).
+
+## Project initialization
+
+`maid init` runs the same guided project setup as the MCP server. It asks only the required questions — goal, in-scope, and out-of-scope (with software detected from the repository) — and applies best-practice defaults for git commits, formatting, and testing without prompting.
+
+```bash
+# Interactive guide
+bun src/cli/index.ts init
+
+# Non-interactive
+bun src/cli/index.ts init --non-interactive --goal "Build the project" --scope-in "core, docs" --scope-out "billing"
+
+# Optional settings catalog only when requested
+bun src/cli/index.ts init --show-options
+```
+
+The result is written to `maid.project.json`; `PROJECT.md` is deterministically generated from it and `maid.config.json`. Use `--skip-project` to initialize tooling only.
 
 ## Configuration
 
@@ -116,11 +136,11 @@ See [`docs/metrics-and-gates.md`](./docs/metrics-and-gates.md) and [`docs/snapsh
 
 ## MCP server
 
-`maid mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
+`maid mcp` starts a stdio MCP server exposing tools for agents (e.g. `project_init`, `project_update`, `project_read`, `metrics`, `gate`, `history`, `codegraph`). In a new project, the server advertises guided setup through its instructions; the caller asks only required questions, applies defaults without prompting, and fetches the optional settings catalog only when desired. `maid init` runs the same guide from the CLI. See [`docs/mcp-and-codegraph.md`](./docs/mcp-and-codegraph.md).
 
 ## Roadmap
 
-See [`docs/roadmap.md`](./docs/roadmap.md) for completed and planned work (guided MCP project initialization, MCP completion/extension, benchmarking and composite scoring, dependency/library-selection guidance metrics, and commit guidance) aligned with the agent iteration interface.
+See [`docs/roadmap.md`](./docs/roadmap.md) for completed and planned work (guided project initialization via CLI and MCP, MCP completion/extension, benchmarking and composite scoring, dependency/library-selection guidance metrics, and commit guidance) aligned with the agent iteration interface.
 
 ## Development
 

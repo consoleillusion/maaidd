@@ -28,6 +28,8 @@ Tool availability/behavior is implemented in `src/mcp/server.ts` and respects pr
 
 MCP is pull-based: the server cannot spontaneously ask the user questions. Instead it advertises setup through the server `instructions` returned at initialization, the `project_init` tool, and an optional `initialize-project` prompt. The calling agent decides which questions to present.
 
+The CLI uses the same guide: `maid init` prompts for the same required fields, applies the same defaults silently, and writes the same `maid.project.json` and `PROJECT.md`. Use `maid init --show-options` to print the optional catalog, or `maid init --skip-project` to skip project setup.
+
 1. **Inspect** — call `project_init` with the default `include: "required"`. It returns:
    - `status`: `missing`, `partial`, or `complete`
    - `missing`: unresolved required fields

@@ -27,7 +27,7 @@ export function buildApp() {
     docs: {
       brief: "MAID — Metric Assisted AI Driven Development",
       fullDescription:
-        "Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.",
+        "Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.",
     },
   });
   return buildApplication(routes, {

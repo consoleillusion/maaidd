@@ -7,21 +7,24 @@ cd /path/to/maid
 bun install
 ```
 
-## 2) (Optional) Initialize tooling
+## 2) Initialize project and tooling
 
 ```bash
-./init.sh
+bun src/cli/index.ts init
 ```
 
-`init.sh` creates `metric/` (the metrics storage directory). For full project initialization via the CLI, see `maid init` (`bun src/cli/index.ts init --help`).
+`init` runs the same guided project setup as the MCP server. It asks only the required questions (goal, in-scope, out-of-scope, and software when it cannot be detected), applies best-practice defaults silently, writes `maid.project.json`, deterministically generates `PROJECT.md`, and initializes tooling config.
 
-## Project context initialization (AI agents)
+- Use `--non-interactive --goal "..." --scope-in "core, docs"` for automation.
+- Use `--show-options` to print the optional project settings catalog.
+- Use `--skip-project` to initialize tooling only.
+- `./init.sh` only creates `metric/` (the metrics storage directory).
 
-When MCP is connected to a new project, the server advertises setup through its `instructions` and the `project_init` tool.
+`maid init` and the MCP server share the same guide:
 
 - Ask only the required questions (goal, scope, and software). Software is detected from the repository where possible.
 - Do not prompt for defaults such as best-practice git commits, formatting, and testing expectations; they are applied automatically.
-- Call `project_init` with `include: "optional"` only if the user wants to review the optional settings catalog.
+- Request the optional settings catalog only when desired (`maid init --show-options` or MCP `project_init` with `include: "optional"`).
 - Save with `project_update`; it writes `maid.project.json` and deterministically generates `PROJECT.md`.
 - Use `project_read` in later sessions, and `project_read` with `verify: true` to confirm the generated document is in sync.
 
@@ -86,4 +89,4 @@ bun src/cli/index.ts report -o metric/report.html
 bun src/cli/index.ts mcp
 ```
 
-This runs an MCP stdio server exposing metrics/gate/history/codegraph tools. See [MCP and codegraph](./mcp-and-codegraph.md).
+This runs an MCP stdio server exposing project context, metrics, gate, history, and codegraph tools. See [MCP and codegraph](./mcp-and-codegraph.md).

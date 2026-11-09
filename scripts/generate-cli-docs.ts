@@ -43,14 +43,7 @@ function render(): string {
     "",
   ];
   for (const [route, helpText] of commands) {
-    lines.push(
-      `## \`maid ${route}\``,
-      "",
-      "```text",
-      helpText.trimEnd(),
-      "```",
-      "",
-    );
+    lines.push(`## \`${route}\``, "", "```text", helpText.trimEnd(), "```", "");
   }
   return lines.join("\n");
 }

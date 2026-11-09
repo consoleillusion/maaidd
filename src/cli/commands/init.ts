@@ -26,6 +26,14 @@ import { dirname, join, resolve } from "node:path";
 import { DEFAULT_CONFIG, type MaidConfig } from "../../types.ts";
 import { format } from "../../index.ts";
 import { resolveFormatOptions } from "../../config.ts";
+import {
+  buildSetupPlan,
+  detectProject,
+  readProjectContext,
+  updateProject,
+  type DetectedSoftware,
+  type ProjectInput,
+} from "../../project.ts";
 import { collectFiles, wasFlagProvided } from "./shared.ts";
 
 type Flags = Record<string, unknown>;
@@ -372,6 +380,247 @@ async function maybeHooks(
   }
 }
 
+function splitList(value: unknown): string[] {
+  if (value === undefined) return [];
+  return String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function describeSoftware(software: DetectedSoftware): string {
+  const parts = [
+    software.languages.length
+      ? `languages: ${software.languages.join(", ")}`
+      : "",
+    software.runtime ? `runtime: ${software.runtime}` : "",
+    software.packageManager
+      ? `package manager: ${software.packageManager}`
+      : "",
+    software.frameworks.length
+      ? `frameworks: ${software.frameworks.join(", ")}`
+      : "",
+    software.testCommand ? `test: \`${software.testCommand}\`` : "",
+    software.buildCommand ? `build: \`${software.buildCommand}\`` : "",
+  ].filter(Boolean);
+  return parts.length ? parts.join("; ") : "none detected";
+}
+
+function hasProjectFlags(flags: Flags): boolean {
+  return (
+    flags.name !== undefined ||
+    flags.goal !== undefined ||
+    flags.scopeIn !== undefined ||
+    flags.scopeOut !== undefined
+  );
+}
+
+async function promptValue(
+  label: string,
+  fallback: string,
+  required: boolean,
+): Promise<string> {
+  for (;;) {
+    const suffix = fallback ? ` [${fallback}]` : "";
+    const answer = (await promptLine(`${label}${suffix}: `)).trim();
+    const value = answer || fallback;
+    if (value || !required) return value;
+    stdout(`${label} is required.`);
+  }
+}
+
+async function promptList(
+  label: string,
+  fallback: string[],
+  required: boolean,
+): Promise<string[]> {
+  const fallbackText = fallback.join(", ");
+  for (;;) {
+    const suffix = fallbackText ? ` [${fallbackText}]` : "";
+    const answer = (await promptLine(`${label}${suffix}: `)).trim();
+    const value = answer ? splitList(answer) : fallback;
+    if (value.length || !required) return value;
+    stdout(`${label} requires at least one value.`);
+  }
+}
+
+async function promptSoftware(
+  software: DetectedSoftware,
+): Promise<DetectedSoftware> {
+  return {
+    languages: await promptList(
+      "Languages (comma-separated)",
+      software.languages,
+      true,
+    ),
+    runtime: await promptValue("Runtime", software.runtime, false),
+    packageManager: await promptValue(
+      "Package manager",
+      software.packageManager,
+      false,
+    ),
+    frameworks: await promptList(
+      "Frameworks (comma-separated)",
+      software.frameworks,
+      false,
+    ),
+    testCommand: await promptValue("Test command", software.testCommand, false),
+    buildCommand: await promptValue(
+      "Build command",
+      software.buildCommand,
+      false,
+    ),
+  };
+}
+
+function printOptionalOptions(dir: string): void {
+  const plan = buildSetupPlan(dir, "optional");
+  const options = plan.optional ?? [];
+  stdout("");
+  stdout("Optional project settings (not prompted by default):");
+  for (const option of options) {
+    stdout(
+      `- ${option.key} (${option.type}): ${JSON.stringify(option.value)} — ${option.description}`,
+    );
+  }
+  stdout(
+    "Set these in maid.project.json or maid.config.json, or via MCP project_update.",
+  );
+}
+
+function reportProject(result: ReturnType<typeof updateProject>): void {
+  stdout(
+    `Project context: ${
+      result.written.length ? result.written.join(", ") : "already up to date"
+    }`,
+  );
+  stdout(`Project status: ${result.status}`);
+  if (result.missing.length) {
+    stdout(`Missing project fields: ${result.missing.join(", ")}`);
+  }
+}
+
+async function maybeProject(
+  dir: string,
+  flags: Flags,
+  interactive: boolean,
+): Promise<void> {
+  if (flags.skipProject) {
+    stdout("Skipped project context initialization.");
+    if (flags.showOptions) printOptionalOptions(dir);
+    return;
+  }
+
+  const detected = detectProject(dir);
+  stdout(`Detected software: ${describeSoftware(detected.software)}`);
+  const plan = buildSetupPlan(dir, "required");
+  const existing = readProjectContext(dir).project;
+  const required = new Set(plan.required.map((question) => question.key));
+  const flagInput = hasProjectFlags(flags);
+
+  if (existing && (!interactive || plan.status === "complete") && !flagInput) {
+    stdout(
+      plan.status === "complete"
+        ? "Project context is already complete."
+        : "Project context already exists.",
+    );
+    reportProject(updateProject({ root: dir }));
+    if (flags.showOptions) printOptionalOptions(dir);
+    return;
+  }
+
+  let name =
+    flags.name !== undefined
+      ? String(flags.name).trim()
+      : existing?.name.trim()
+        ? existing.name
+        : detected.name;
+  let goal =
+    flags.goal !== undefined
+      ? String(flags.goal).trim()
+      : (existing?.goal ?? "");
+  let scopeIn =
+    flags.scopeIn !== undefined
+      ? splitList(flags.scopeIn)
+      : (existing?.scope.in ?? []);
+  let scopeOut =
+    flags.scopeOut !== undefined
+      ? splitList(flags.scopeOut)
+      : (existing?.scope.out ?? []);
+  const detectedSoftware = detected.software;
+  let software = existing
+    ? {
+        languages: existing.software.languages.length
+          ? existing.software.languages
+          : detectedSoftware.languages,
+        runtime: existing.software.runtime || detectedSoftware.runtime,
+        packageManager:
+          existing.software.packageManager || detectedSoftware.packageManager,
+        frameworks: existing.software.frameworks.length
+          ? existing.software.frameworks
+          : detectedSoftware.frameworks,
+        testCommand:
+          existing.software.testCommand || detectedSoftware.testCommand,
+        buildCommand:
+          existing.software.buildCommand || detectedSoftware.buildCommand,
+      }
+    : detectedSoftware;
+  let promptedSoftware = false;
+
+  if (interactive) {
+    if (required.has("name") && flags.name === undefined) {
+      name = await promptValue("Project name", detected.name || name, true);
+    }
+    if (required.has("goal") && flags.goal === undefined) {
+      goal = await promptValue(
+        "Project goal in one sentence",
+        detected.goal || goal,
+        true,
+      );
+    }
+    if (required.has("scope.in") && flags.scopeIn === undefined) {
+      scopeIn = await promptList(
+        "What is in scope? (comma-separated)",
+        scopeIn,
+        true,
+      );
+    }
+    if (required.has("scope.out") && flags.scopeOut === undefined) {
+      scopeOut = await promptList(
+        "What is explicitly out of scope? (comma-separated)",
+        scopeOut,
+        false,
+      );
+    }
+    if (required.has("software")) {
+      software = await promptSoftware(software);
+      promptedSoftware = true;
+    }
+  }
+
+  const project: ProjectInput = {};
+  if (name.trim()) project.name = name.trim();
+  if (goal.trim()) project.goal = goal.trim();
+  if (
+    scopeIn.length ||
+    scopeOut.length ||
+    flags.scopeIn !== undefined ||
+    flags.scopeOut !== undefined
+  ) {
+    project.scope = {};
+    if (scopeIn.length || flags.scopeIn !== undefined) {
+      project.scope.in = scopeIn;
+    }
+    if (scopeOut.length || flags.scopeOut !== undefined) {
+      project.scope.out = scopeOut;
+    }
+  }
+  if (promptedSoftware) project.software = software;
+
+  reportProject(updateProject({ root: dir, project }));
+  if (flags.showOptions) printOptionalOptions(dir);
+}
+
 function printMcpHint(dir: string): void {
   stdout("");
   stdout(
@@ -379,16 +628,19 @@ function printMcpHint(dir: string): void {
   );
   stdout(`Example cwd: ${dir}`);
   stdout(
-    "Tools: metrics, gate, history, codegraph. Prereqs: fta for metrics/gate; .code-graph/index.db for codegraph; maid.db/history as configured.",
+    "Tools: project_init, project_update, project_read, metrics, gate, history, codegraph. Project context lives in maid.project.json and generated PROJECT.md.",
+  );
+  stdout(
+    "Prereqs: fta for metrics/gate; .code-graph/index.db for codegraph; maid.db/history as configured.",
   );
 }
 
 const initCommand = buildCommand({
   docs: {
     brief:
-      "Initialize MAID (maid.config.json, biome.json, git hooks, optional formatting)",
+      "Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)",
     fullDescription:
-      "Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.",
+      "Interactive by default in a TTY. Prompts for the same project guide as the MCP server: goal, scope, and software, with best-practice defaults applied silently. Writes maid.project.json and deterministically regenerates PROJECT.md. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided. Use --skip-project to skip project context, --show-options to print the optional settings catalog, and --goal/--scope-in/--scope-out for non-interactive project setup.",
   },
   parameters: {
     flags: {
@@ -402,6 +654,40 @@ const initCommand = buildCommand({
         kind: "boolean",
         brief:
           "Disable prompts; requires explicit flags for hooks/destructive actions",
+        optional: true,
+      },
+      skipProject: {
+        kind: "boolean",
+        brief: "Skip guided project context initialization",
+        optional: true,
+      },
+      showOptions: {
+        kind: "boolean",
+        brief: "Print the optional project settings catalog",
+        optional: true,
+      },
+      name: {
+        kind: "parsed",
+        parse: String,
+        brief: "Project name for project context",
+        optional: true,
+      },
+      goal: {
+        kind: "parsed",
+        parse: String,
+        brief: "Project goal for non-interactive project setup",
+        optional: true,
+      },
+      scopeIn: {
+        kind: "parsed",
+        parse: String,
+        brief: "Comma-separated in-scope items",
+        optional: true,
+      },
+      scopeOut: {
+        kind: "parsed",
+        parse: String,
+        brief: "Comma-separated out-of-scope items",
         optional: true,
       },
       force: {
@@ -560,6 +846,14 @@ const initCommand = buildCommand({
     );
 
     await maybeWriteConfigs(dir, config, flags, interactive);
+    try {
+      await maybeProject(dir, flags, interactive);
+    } catch (error) {
+      stderr(
+        `Project setup failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      process.exitCode = 1;
+    }
     await maybeHooks(dir, flags, interactive);
     await maybeFormat(dir, config, flags, interactive);
     printMcpHint(dir);

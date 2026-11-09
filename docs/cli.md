@@ -13,10 +13,10 @@ USAGE
   maid report [--output path]
   maid mcp
   maid graph <args>...
-  maid init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
   maid completion install|uninstall ...
 
-Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing codegraph + analytics.
+Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.
 
 FLAGS
    --  All subsequent inputs should be interpreted as arguments
@@ -29,11 +29,11 @@ COMMANDS
   report      Generate uPlot HTML history dashboard from metric snapshots
   mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
   graph       Query the code-graph index
-  init        Initialize MAID (maid.config.json, biome.json, git hooks, optional formatting)
+  init        Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)
   completion  Install or uninstall shell completion for maid
 ```
 
-## `maid maid format`
+## `maid format`
 
 ```text
 USAGE
@@ -59,7 +59,7 @@ ARGUMENTS
   args...  Files or directories to format (default: stdin)
 ```
 
-## `maid maid check`
+## `maid check`
 
 ```text
 USAGE
@@ -84,7 +84,7 @@ ARGUMENTS
   args...  Files or directories to check (default: stdin)
 ```
 
-## `maid maid metrics`
+## `maid metrics`
 
 ```text
 USAGE
@@ -109,7 +109,7 @@ ARGUMENTS
   args...  Path to analyze (default: src)
 ```
 
-## `maid maid gate`
+## `maid gate`
 
 ```text
 USAGE
@@ -127,7 +127,7 @@ ARGUMENTS
   args...  Path to analyze (default: src)
 ```
 
-## `maid maid report`
+## `maid report`
 
 ```text
 USAGE
@@ -141,7 +141,7 @@ FLAGS
   -h  --help     Print help information and exit
 ```
 
-## `maid maid mcp`
+## `maid mcp`
 
 ```text
 USAGE
@@ -154,7 +154,7 @@ FLAGS
   -h --help  Print help information and exit
 ```
 
-## `maid maid graph`
+## `maid graph`
 
 ```text
 USAGE
@@ -170,18 +170,24 @@ ARGUMENTS
   args...  Query arguments passed to code-graph
 ```
 
-## `maid maid init`
+## `maid init`
 
 ```text
 USAGE
-  maid init [--yes] [--non-interactive] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
   maid init --help
 
-Interactive by default in a TTY. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided.
+Interactive by default in a TTY. Prompts for the same project guide as the MCP server: goal, scope, and software, with best-practice defaults applied silently. Writes maid.project.json and deterministically regenerates PROJECT.md. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided. Use --skip-project to skip project context, --show-options to print the optional settings catalog, and --goal/--scope-in/--scope-out for non-interactive project setup.
 
 FLAGS
   -y [--yes/--no-yes]                                                    Accept safe defaults non-interactively (does not format or force overwrite)
      [--non-interactive/--no-non-interactive]                            Disable prompts; requires explicit flags for hooks/destructive actions
+     [--skip-project/--no-skip-project]                                  Skip guided project context initialization
+     [--show-options/--no-show-options]                                  Print the optional project settings catalog
+     [--name]                                                            Project name for project context
+     [--goal]                                                            Project goal for non-interactive project setup
+     [--scope-in]                                                        Comma-separated in-scope items
+     [--scope-out]                                                       Comma-separated out-of-scope items
      [--force/--no-force]                                                Overwrite existing config files when writing
      [--write-config/--no-write-config]                                  Write maid.config.json and biome.json
      [--format/--no-format]                                              Run initial formatting (destructive; explicit opt-in)
@@ -212,7 +218,7 @@ FLAGS
   -h  --help                                                             Print help information and exit
 ```
 
-## `maid maid completion install`
+## `maid completion install`
 
 ```text
 USAGE
@@ -225,7 +231,7 @@ FLAGS
   -h --help  Print help information and exit
 ```
 
-## `maid maid completion uninstall`
+## `maid completion uninstall`
 
 ```text
 USAGE
