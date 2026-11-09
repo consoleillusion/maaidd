@@ -26,6 +26,7 @@ import { dirname, join, resolve } from "node:path";
 import { DEFAULT_CONFIG, type MaidConfig } from "../../types.ts";
 import { format } from "../../index.ts";
 import { resolveFormatOptions } from "../../config.ts";
+import { mergeInsightsConfig } from "../../insights/index.ts";
 import {
   buildSetupPlan,
   detectProject,
@@ -118,6 +119,12 @@ function applyFlagsToConfig(flags: Flags): MaidConfig {
     c.mcp.codegraph = Boolean(flags.mcpCodegraph);
   if (wasFlagProvided("mcp-metrics", "no-mcp-metrics"))
     c.mcp.metrics = Boolean(flags.mcpMetrics);
+
+  if (flags.insightsConfig !== undefined) {
+    const raw = String(flags.insightsConfig);
+    const text = existsSync(raw) ? readFileSync(raw, "utf8") : raw;
+    c.insights = mergeInsightsConfig(c.insights, JSON.parse(text));
+  }
 
   return c;
 }
@@ -830,6 +837,14 @@ const initCommand = buildCommand({
       mcpMetrics: {
         kind: "boolean",
         brief: "Enable MCP metrics tool/config flag",
+        optional: true,
+      },
+      insightsConfig: {
+        kind: "parsed",
+        parse: String,
+        brief:
+          "Path or inline JSON for partial insights config (benchmark, score, dependencies, commit)",
+        placeholder: "path|json",
         optional: true,
       },
     },

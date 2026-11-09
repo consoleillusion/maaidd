@@ -11,6 +11,7 @@ import { mcpCommand } from "./commands/mcp.ts";
 import { graphCommand } from "./commands/graph.ts";
 import { initCommand } from "./commands/init.ts";
 import { completionCommand } from "./commands/completion.ts";
+import { statusCommand } from "./commands/status.ts";
 export function buildApp() {
   const routes = buildRouteMap({
     routes: {
@@ -22,6 +23,7 @@ export function buildApp() {
       mcp: mcpCommand,
       graph: graphCommand,
       init: initCommand,
+      status: statusCommand,
       completion: completionCommand,
     },
     docs: {

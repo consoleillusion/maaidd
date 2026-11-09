@@ -13,6 +13,7 @@ import {
   runCodegraph,
 } from "../codegraph.ts";
 import { loadConfig } from "../config.ts";
+import { getStatus, renderInsight } from "../insights/index.ts";
 import { runFta } from "../metrics/fta.ts";
 import { checkGate } from "../metrics/gate.ts";
 import { readAggregatedHistory } from "../metrics/history.ts";
@@ -209,6 +210,58 @@ export function createMcpServer(): McpServer {
         content: [{ type: "text" as const, text }],
         isError: result.status !== 0 || Boolean(result.error),
       };
+    },
+  );
+  // status — one-call project, snapshot, and iteration summary.
+  server.registerTool(
+    "status",
+    {
+      title: "Project and iteration status",
+      description:
+        "Return the same structured status payload as `maid status`: project context, HEAD/pending snapshots, and working-tree state. Use format=toon for token-efficient output.",
+      inputSchema: {
+        format: z
+          .enum(["json", "toon"])
+          .default("json")
+          .describe("Output encoding."),
+        sections: z
+          .array(
+            z.enum([
+              "project",
+              "snapshot",
+              "git",
+              "benchmark",
+              "score",
+              "dependencies",
+              "commit",
+            ]),
+          )
+          .optional()
+          .describe("Sections to include; defaults to the summary set."),
+        detail: z
+          .enum(["summary", "full"])
+          .default("summary")
+          .describe("Payload detail level."),
+      },
+    },
+    async ({ format, sections, detail }) => {
+      try {
+        const payload = getStatus({
+          root: findProjectRoot(),
+          sections,
+          detail,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: renderInsight(payload, format),
+            },
+          ],
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
     },
   );
   // project_init — pull-based project setup plan.

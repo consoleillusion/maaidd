@@ -2,21 +2,24 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import {
   DEFAULT_CONFIG,
-  FormatOptions,
-  Indent,
-  MaidConfig,
-  ResolvedFormatOptions,
+  type FormatOptions,
+  type Indent,
+  type MaidConfig,
+  type ResolvedFormatOptions,
 } from "./types.ts";
-const isRecord = (value: unknown) => {
+import { resolveInsightsConfig } from "./insights/config.ts";
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 };
-const mergeDeep = (base: T, patch: unknown) => {
+const mergeDeep = <T>(base: T, patch: unknown): T => {
   if (!isRecord(patch)) return structuredClone(base);
-  const out: Record<string, unknown> = { ...structuredClone(base) };
+  const out: Record<string, unknown> = {
+    ...(structuredClone(base) as Record<string, unknown>),
+  };
   for (const [key, value] of Object.entries(patch)) {
     const current = out[key];
     if (isRecord(current) && isRecord(value)) {
-      out[key] = mergeDeep(current, value);
+      out[key] = mergeDeep<Record<string, unknown>>(current, value);
     } else if (value !== undefined) {
       out[key] = value;
     }
@@ -34,6 +37,16 @@ export function findConfigPath(start = process.cwd()): string | undefined {
     dir = parent;
   }
 }
+/** Fill defaults and validate a raw config document. */
+export function normalizeConfig(raw: unknown): MaidConfig {
+  const merged = mergeDeep(
+    DEFAULT_CONFIG as unknown as Record<string, unknown>,
+    raw,
+  ) as unknown as MaidConfig;
+  merged.insights = resolveInsightsConfig(merged.insights);
+  return merged;
+}
+
 export function loadConfig(configPath?: string): MaidConfig {
   const file = configPath ? resolve(configPath) : findConfigPath();
   if (!file || !existsSync(file)) return structuredClone(DEFAULT_CONFIG);
@@ -45,10 +58,7 @@ export function loadConfig(configPath?: string): MaidConfig {
       `Cannot read MAID config ${file}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
-  return mergeDeep(
-    DEFAULT_CONFIG as unknown as Record<string, unknown>,
-    parsed,
-  ) as unknown as MaidConfig;
+  return normalizeConfig(parsed);
 }
 export function normalizeIndent(indent: Indent): Indent {
   if (indent === "tab") return "tab";

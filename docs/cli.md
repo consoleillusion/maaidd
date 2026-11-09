@@ -13,7 +13,8 @@ USAGE
   maid report [--output path]
   maid mcp
   maid graph <args>...
-  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics] [--insights-config path|json]
+  maid status [--format json|toon] [--section list] [--detail summary|full]
   maid completion install|uninstall ...
 
 Guided project context initialization, Biome-first formatting, optional Dhall/Haskell-style leading commas, FTA code metrics, gates, uplot history reports, and an MCP server exposing project context plus codegraph and analytics.
@@ -30,6 +31,7 @@ COMMANDS
   mcp         Start the MCP server (stdio transport) exposing codegraph + metrics tools
   graph       Query the code-graph index
   init        Initialize MAID (project context, maid.config.json, biome.json, git hooks, optional formatting)
+  status      Show project, snapshot, and iteration status
   completion  Install or uninstall shell completion for maid
 ```
 
@@ -174,7 +176,7 @@ ARGUMENTS
 
 ```text
 USAGE
-  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics]
+  maid init [--yes] [--non-interactive] [--skip-project] [--show-options] [--name value] [--goal value] [--scope-in value] [--scope-out value] [--force] [--write-config] [--format] [--format-path value] [--accept-git-hooks] [--hooks] [--reject-git-hooks] [--style biome|functional] [--indent value] [--line-width value] [--semicolons] [--quote-style double|single] [--trailing-comma all|es5|none] [--to-arrow] [--biome] [--functional-comma-style leading|trailing] [--functional-object-value-indent value] [--functional-array-value-indent value] [--functional-force-blank-lines] [--functional-semicolons] [--functional-max-inline-array-items value] [--metrics-exclude-under value] [--metrics-test-command value] [--metrics-max-cyclomatic value] [--metrics-min-fta-score value] [--mcp-codegraph] [--mcp-metrics] [--insights-config path|json]
   maid init --help
 
 Interactive by default in a TTY. Prompts for the same project guide as the MCP server: goal, scope, and software, with best-practice defaults applied silently. Writes maid.project.json and deterministically regenerates PROJECT.md. Default config is Biome; enabling functional style enables additional functional options. Every maid.config.json option can be set via explicit CLI flags. Destructive actions (formatting/force overwrite) require confirmation or explicit flags. Git hooks: prompted for y (accept) or anything else (decline) unless --accept-git-hooks/--no-hooks is provided. Use --skip-project to skip project context, --show-options to print the optional settings catalog, and --goal/--scope-in/--scope-out for non-interactive project setup.
@@ -195,15 +197,15 @@ FLAGS
      [--accept-git-hooks/--no-accept-git-hooks]                          Install git pre/post commit hooks without prompting
      [--hooks/--no-hooks]                                                Install git hooks (alias for --accept-git-hooks; use --no-hooks to decline)
      [--reject-git-hooks/--no-reject-git-hooks]                          Do not install git hooks without prompting
-     [--style]                                                           Formatting style (default: biome)                                           [biome|functional]
+     [--style]                                                           Formatting style (default: biome)                                                        [biome|functional]
      [--indent]                                                          Indent width (2|4|8|tab)
      [--line-width]                                                      Maximum line width
      [--semicolons/--no-semicolons]                                      Emit semicolons
-     [--quote-style]                                                     Quote style                                                                 [double|single]
-     [--trailing-comma]                                                  Trailing comma style                                                        [all|es5|none]
+     [--quote-style]                                                     Quote style                                                                              [double|single]
+     [--trailing-comma]                                                  Trailing comma style                                                                     [all|es5|none]
      [--to-arrow/--no-to-arrow]                                          Convert to const arrows in functional pipeline
      [--biome/--no-biome]                                                Enable Biome pass
-     [--functional-comma-style]                                          Functional comma style                                                      [leading|trailing]
+     [--functional-comma-style]                                          Functional comma style                                                                   [leading|trailing]
      [--functional-object-value-indent]                                  Functional object value indent
      [--functional-array-value-indent]                                   Functional array value indent
      [--functional-force-blank-lines/--no-functional-force-blank-lines]  Functional force blank lines
@@ -215,7 +217,24 @@ FLAGS
      [--metrics-min-fta-score]                                           Gate minimum FTA score
      [--mcp-codegraph/--no-mcp-codegraph]                                Enable MCP codegraph tool/config flag
      [--mcp-metrics/--no-mcp-metrics]                                    Enable MCP metrics tool/config flag
+     [--insights-config]                                                 Path or inline JSON for partial insights config (benchmark, score, dependencies, commit)
   -h  --help                                                             Print help information and exit
+```
+
+## `maid status`
+
+```text
+USAGE
+  maid status [--format json|toon] [--section list] [--detail summary|full]
+  maid status --help
+
+Reports the same structured payload as the MCP `status` tool. Use --format toon for token-efficient output and --section/--detail to control the payload.
+
+FLAGS
+     [--format]   Output format (default: json)                                                       [json|toon]
+     [--section]  Comma-separated sections (project,snapshot,git,benchmark,score,dependencies,commit)
+     [--detail]   Payload detail (default: summary)                                                   [summary|full]
+  -h  --help      Print help information and exit
 ```
 
 ## `maid completion install`

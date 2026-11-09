@@ -8,7 +8,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { z } from "zod";
-import { loadConfig } from "./config.ts";
+import { loadConfig, normalizeConfig } from "./config.ts";
+import { InsightsConfigPatchSchema } from "./insights/config.ts";
 import { DEFAULT_CONFIG, type MaidConfig } from "./types.ts";
 
 export const PROJECT_SCHEMA_VERSION = 1 as const;
@@ -114,6 +115,7 @@ export const ConfigPatchSchema = z.object({
       metrics: z.boolean().optional(),
     })
     .optional(),
+  insights: InsightsConfigPatchSchema,
 });
 
 export type ConfigPatch = z.infer<typeof ConfigPatchSchema>;
@@ -672,6 +674,15 @@ export function renderProjectMarkdown(
     `- **Min FTA score:** \`${config.metrics.thresholds.minFtaScore}\``,
     `- **MCP codegraph:** \`${yesNo(config.mcp.codegraph)}\``,
     `- **MCP metrics:** \`${yesNo(config.mcp.metrics)}\``,
+    "",
+    "## Insights",
+    "",
+    `- **Benchmark baseline:** \`${config.insights.benchmark.baseline}\``,
+    `- **Score weights:** \`${Object.entries(config.insights.score.weights)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(", ")}\``,
+    `- **Dependency manifests:** \`${config.insights.dependencies.manifests.join(", ")}\``,
+    `- **Commit limits:** \`${config.insights.commit.maxChangedFiles} files / ${config.insights.commit.maxChangedLines} lines\``,
   ];
   return `${lines.join("\n").trimEnd()}\n`;
 }
@@ -843,6 +854,60 @@ const optionalOptions = (
       value: config.mcp.metrics,
       description: "Enable metrics MCP functionality.",
     },
+    {
+      key: "config.insights.benchmark.baseline",
+      type: "string",
+      value: config.insights.benchmark.baseline,
+      description: "Default benchmark baseline (previous, first, or a commit).",
+    },
+    {
+      key: "config.insights.score.weights",
+      type: "object",
+      value: config.insights.score.weights,
+      description: "Weights used by the composite commit score.",
+    },
+    {
+      key: "config.insights.score.grades",
+      type: "object",
+      value: config.insights.score.grades,
+      description: "Grade cutoffs for the composite commit score.",
+    },
+    {
+      key: "config.insights.dependencies.penalties",
+      type: "object",
+      value: config.insights.dependencies.penalties,
+      description: "Score penalties for newly added dependencies by scope.",
+    },
+    {
+      key: "config.insights.dependencies.removalBonuses",
+      type: "object",
+      value: config.insights.dependencies.removalBonuses,
+      description: "Score bonuses for removed dependencies by scope.",
+    },
+    {
+      key: "config.insights.dependencies.allow",
+      type: "string[]",
+      value: config.insights.dependencies.allow,
+      description: "Dependencies treated as preferred (reduced penalty).",
+    },
+    {
+      key: "config.insights.dependencies.deny",
+      type: "string[]",
+      value: config.insights.dependencies.deny,
+      description: "Dependencies that should be avoided.",
+    },
+    {
+      key: "config.insights.commit.maxChangedFiles",
+      type: "number",
+      value: config.insights.commit.maxChangedFiles,
+      description: "Recommended maximum files per commit.",
+    },
+    {
+      key: "config.insights.commit.maxChangedLines",
+      type: "number",
+      value: config.insights.commit.maxChangedLines,
+      description: "Recommended maximum changed lines per commit.",
+    },
   ];
 };
 
@@ -904,11 +969,7 @@ const readConfigObject = (root: string): unknown => {
 
 const mergedConfig = (root: string, patch: ConfigPatch): MaidConfig => {
   const existing = readConfigObject(root);
-  const withExisting = mergeDeep(
-    DEFAULT_CONFIG as unknown as Record<string, unknown>,
-    existing,
-  );
-  return mergeDeep(withExisting, patch) as unknown as MaidConfig;
+  return normalizeConfig(mergeDeep(existing, patch));
 };
 
 export function updateProject(

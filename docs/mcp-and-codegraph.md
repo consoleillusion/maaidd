@@ -17,12 +17,19 @@ bun src/cli/index.ts mcp
 | `project_init` | Start guided project initialization. Returns required questions, repository-detected software, automatic defaults, and optionally the optional settings catalog (`include: "required" \| "optional" \| "all"`). |
 | `project_update` | Merge validated project context and optional `maid.config.json` overrides; writes `maid.project.json` and deterministically regenerates `PROJECT.md`. Supports `dryRun`. |
 | `project_read` | Read the saved project context as Markdown (default) or JSON, and optionally verify that `PROJECT.md` is in sync. |
+| `status` | Return the same structured iteration-status payload as `maid status`: project context, HEAD/pending snapshots, and working-tree state. Supports `format: "json" \| "toon"`, section filtering, and `detail: "summary" \| "full"`. |
 | `metrics` | Run FTA on a path and return results (`json`/`toon`/`table`). |
 | `gate` | Check FTA results against configured thresholds; reports pass/fail and violations. |
 | `history` | Read aggregated snapshot history from `./maid.db` (tests, LOC, gate counts, cyclo, FTA, Halstead; includes pending as `current` where supported). |
 | `codegraph` | Inspect code-graph index status or run code-graph commands/queries (supports `query` or exact `args`). Requires an index (e.g. `bunx @sdsrs/code-graph incremental-index`). |
 
 Tool availability/behavior is implemented in `src/mcp/server.ts` and respects project config where applicable.
+
+## CLI/MCP parity
+
+The CLI is a first-class interface, not an afterthought: every insight command and its MCP tool call the same core functions in `src/insights/` and return the same structured payload. The only difference is transport. So a user can install MAID solely to drive governance, metrics, and scope manually from the CLI, while an agent gets the identical surface over MCP.
+
+Both surfaces support `format: "json" | "toon"`. `toon` is the token-efficient encoding intended for agents; `json` is the canonical machine payload.
 
 ## Project initialization
 

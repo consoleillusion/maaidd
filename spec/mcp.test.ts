@@ -58,6 +58,7 @@ describe("MCP development tools", () => {
       "project_init",
       "project_read",
       "project_update",
+      "status",
     ]);
   });
 
