@@ -67,10 +67,16 @@ describe("project setup plan", () => {
     expect(plan.status).toBe("missing");
     expect(plan.missing).toContain("goal");
     expect(plan.required.map((question) => question.key)).toEqual(
-      expect.arrayContaining(["goal", "scope.in", "scope.out"]),
+      expect.arrayContaining(["goal"]),
     );
     expect(plan.required.map((question) => question.key)).not.toContain(
       "software",
+    );
+    expect(plan.required.map((question) => question.key)).not.toContain(
+      "scope.in",
+    );
+    expect(plan.required.map((question) => question.key)).not.toContain(
+      "scope.out",
     );
     expect(plan.defaults?.bestPractices.commits).toContain("atomic");
     expect(plan.optional).toBeUndefined();

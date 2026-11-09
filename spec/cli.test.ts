@@ -126,7 +126,7 @@ describe("CLI", () => {
     expect(project.name).toBe("init-demo");
     expect(project.goal).toBe("");
     expect(project.bestPractices.commits).toContain("atomic");
-    expect(result.stdout).toContain("Missing project fields: goal, scope.in");
+    expect(result.stdout).toContain("Missing project fields: goal");
     rmSync(tmp, { recursive: true, force: true });
   });
 

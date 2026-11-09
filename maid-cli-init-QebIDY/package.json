@@ -1,0 +1,9 @@
+{
+  "name": "init-demo",
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
