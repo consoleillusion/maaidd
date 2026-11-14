@@ -15,9 +15,7 @@
     "check": "bun src/cli/index.ts check",
     "metrics": "bun src/cli/index.ts metrics",
     "gate": "bun src/cli/index.ts gate",
-    "report": "bun src/cli/index.ts report",
     "mcp": "bun src/cli/index.ts mcp",
-    "docs:cli": "bun scripts/generate-cli-docs.ts",
     "docs": "bun run docs:cli",
     "test": "bun test"
   },
