@@ -1,64 +1,58 @@
 # Git Best Practices
-Effective Git usage relies on two core pillars: how you structure your changes and how you write your commit messages. Following these industry standards keeps your repository history clean, makes code reviews efficient, and simplifies debugging or rolling back changes.
 
-## How to Commit (Structuring Changes)
+## Structuring Commits
 
-- Make atomic, single-purpose commits: A commit should wrap a single, logical change. Do not bundle a bug fix, a new feature, and a typo fix into one massive commit. Small commits are easier to review, test, and revert if something breaks.
-- Commit early and often: Share and save your progress frequently rather than waiting for a "perfect" or massive end-of-week update. This minimizes devastating merge conflicts.
-- Never commit broken or uncompilable code: While opinions on personal workflows differ on platforms like Stack Overflow, a widely supported guideline is that every commit pushed to a shared branch should compile, pass automated tests, and run successfully.
-- Don't commit auto-generated or sensitive files: Always maintain a .gitignore file to exclude node_modules/, local environment files (.env), build artifacts, and OS-specific files (like .DS_Store).
+- **Keep commits atomic.** One logical change per commit. Don't bundle a bug fix, a feature, and a typo fix. Small commits are easier to review, test, and revert.
+- **Commit often.** Frequent small commits are easier to merge and keep your history useful. Push regularly to avoid long-lived divergent branches.
+- **Don't push broken code.** Every commit on a shared branch should build and pass tests.
+- **Keep generated and sensitive files out.** Maintain a `.gitignore` for `node_modules/`, `.env`, build artifacts, and OS files like `.DS_Store`.
 
-## Conventional Commits Guidelines
+## Commit Messages
 
-Follow the Conventional Commits specification to keep commit messages consistent, readable, and compatible with automated changelog generation and semantic versioning.
+Follow [Conventional Commits](https://www.conventionalcommits.org/) so messages stay consistent and support automated changelogs and semantic versioning.
 
-### 1. Commit Format
-
-text
+### Format
 
 ```text
 <type>(<optional scope>): <description>
 
 [optional body]
+
+[optional footer]
 ```
 
-### 2. Subject Line Rules
+### Rules
 
+- Use the imperative mood ("add", "fix", "update").
+- Keep the subject under 50 characters if you can, 72 at most.
+- Don't end the subject with a period.
 - Separate subject and body with a blank line.
-- Keep the subject within 50 characters (72 maximum if necessary).
-- Capitalize the first letter.
-- Do not end with a period.
-- Use the imperative mood (e.g., Add, Fix, Update).
+- Wrap body lines at 72 characters and explain *why* the change was made.
+- Mark breaking changes with `!` after the type (`feat!:`) or a `BREAKING CHANGE:` footer.
 
-### 3. Body Rules
-
-- Wrap lines at 72 characters.
-- Explain what changed and why, not how.
-- Include additional context only when necessary.
-
-### 4. Commit Types
+### Types
 
 | Type | Purpose |
 | --- | --- |
-| `feat` | Add a new feature |
-| `fix` | Fix a bug |
-| `docs` | Update documentation |
-| `style` | Formatting-only changes |
-| `refactor` | Improve code structure without changing behavior |
-| `perf` | Improve performance |
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting, no logic change |
+| `refactor` | Restructuring without behavior change |
+| `perf` | Performance improvement |
 | `test` | Add or update tests |
-| `chore` | Update dependencies or configuration |
+| `build` / `ci` | Build system or CI changes |
+| `chore` | Maintenance and dependency updates |
 
-### 5. Examples
-
-text
+### Examples
 
 ```text
-feat(ui): Add dark mode toggle
+feat(ui): add dark mode toggle
 
-fix(api): Handle missing user records
+fix(api): handle missing user records
 
-docs: Update setup instructions
+Return a 404 instead of throwing when the user ID doesn't exist,
+which was crashing the profile endpoint.
+
+Closes #482
 ```
-
-Goal: Keep commit history clean, consistent, and easy to understand while supporting automated changelogs and semantic versioning.
