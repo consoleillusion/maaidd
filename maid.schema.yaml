@@ -1,0 +1,76 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Configuration
+type: object
+additionalProperties: false
+required: []
+properties:
+  format:
+    type: string
+    enum: [none, biome, functional]
+
+  formatBiome:
+    type: object
+    default: 
+      formatter:
+        enabled: true
+        indentStyle: space
+        indentWidth: 2
+        lineWidth: 80
+        lineEnding: lf
+      javascript:
+        formatter:
+          quoteStyle: double
+          jsxQuoteStyle: double
+          semicolons: asNeeded
+          trailingCommas: none
+          arrowParentheses: always
+          quoteProperties: asNeeded
+      linter:
+        enabled: true
+        rules:
+          recommended: true
+
+  formatFunctional:
+    type: object
+    default:
+      commaStyle:
+        type: string
+        enum: [leading, trailing]
+        default: trailing
+      toArrow:
+        type: boolean
+        default: false
+      objectValueIndent:
+        type: integer
+        minimum: 0
+      arrayValueIndent:
+        type: integer
+        minimum: 0
+      forceBlankLines:
+        type: boolean
+      maxInlineArrayItems:
+        type: integer
+        minimum: 0
+
+  metrics:
+    type: object
+    
+  mcp:
+    type: object
+    additionalProperties: false
+    properties:
+      codegraph:
+        type: boolean
+        default: true
+      metrics:
+        type: boolean
+        default: true
+      gitCommit:
+        type: boolean
+        default: true
+      modify:
+        type: boolean
+        defaulte: false
+      style:
+        type: boolean
+        default: false
